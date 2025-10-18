@@ -1,1 +1,6 @@
-
+[
+  { "id": 4101, "name": "Azeite de oliva",        "family": "Gordura", "state": "IN NATURA", "method": "colher", "kcal": 884, "P": 0, "C": 0, "G": 100, "def": 10, "tags": ["temperar","saudável"] },
+  { "id": 4102, "name": "Óleo de coco",           "family": "Gordura", "state": "IN NATURA", "method": "colher", "kcal": 892, "P": 0, "C": 0, "G": 100, "def": 10, "tags": ["cozinha"] },
+  { "id": 4201, "name": "Pasta de amendoim",      "family": "Gordura", "state": "INDUSTRIALIZADO", "method": "colher", "kcal": 588, "P": 25, "C": 20, "G": 50, "def": 15, "tags": ["rápido","snack"] },
+  { "id": 4202, "name": "Castanha de caju",       "family": "Gordura", "state": "IN NATURA", "method": "porção", "kcal": 553, "P": 18, "C": 30, "G": 44, "def": 30, "tags": ["snack"] }
+]
