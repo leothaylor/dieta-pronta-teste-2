@@ -50,7 +50,6 @@
   .swap-list{max-height:360px;overflow:auto;display:flex;flex-direction:column;gap:8px;margin-top:10px}
   .swap-item{display:flex;justify-content:space-between;align-items:center;border:1px solid #2a3d60;border-radius:10px;padding:8px}
   .list-simple{border:1px dashed #2c3e63;padding:12px;border-radius:10px}
-  .center{display:flex;align-items:center;justify-content:center}
 </style>
 </head>
 <body>
@@ -225,15 +224,15 @@ const state = {
   week: null
 };
 const rand = (() => {
-  let s=123456789; // inicial; será trocado a cada geração
+  let s=123456789;
   return {
     setSeed(n){ s = (n>>>0) || 1; },
-    next(){ // LCG simples
+    next(){
       s = (1664525*s + 1013904223) >>> 0;
       return s / 2**32;
     },
     pick(arr){ return arr[Math.floor(rand.next()*arr.length)]; },
-    shuffle(arr){ // Fisher-Yates
+    shuffle(arr){
       const a = arr.slice();
       for(let i=a.length-1;i>0;i--){
         const j = Math.floor(rand.next()*(i+1));
@@ -250,23 +249,22 @@ function newSeed(){
   return (u[0] ^ Date.now()) >>> 0;
 }
 function alertMsg(t){ window.alert(t); }
-
 function clamp(x,min,max){ return Math.max(min, Math.min(max, x)); }
 function sum(arr, k){ return arr.reduce((a,b)=>a+(k?b[k]:b),0); }
 
 /* ===========================
-   Carregamento dos dados
+   Carregamento dos dados (ROBUSTO)
    =========================== */
 async function loadAll(){
+  // Manifesto e alimentos
   const man = await fetch('data/foods_manifest.json').then(r=>r.json());
   const files = new Map(Object.entries(man.files||{}));
   const foods = {};
   for(const [family, path] of files){
     foods[family] = await fetch(`data/${path}`).then(r=>r.json());
   }
-  const presets = await fetch('data/presets.json').then(r=>r.json());
 
-  // index por nome
+  // Index por nome
   const byName = {};
   for(const fam of Object.keys(foods)){
     for(const f of foods[fam]){
@@ -274,28 +272,43 @@ async function loadAll(){
     }
   }
 
+  // PRESETS ROBUSTO
+  const raw = await fetch('data/presets.json').then(r=>r.json());
+  let presets = Array.isArray(raw) ? raw : (raw.presets || raw.items || raw.data || []);
+  if (!Array.isArray(presets)) presets = [];
+
+  presets = presets.map(p=>{
+    const name = p.name || p.titulo || 'Preset';
+    const slug = (p.slug || name)
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g,'-')
+      .replace(/^-+|-+$/g,'');
+    const meals = p.meals || p.refeicoes || [];
+    return { ...p, name, slug, meals };
+  });
+
   state.manifest = man;
   state.foodsIndex = byName;
   state.presets = presets;
 
   console.info('[load] manifest:', man);
-  console.info('[load] presets:', presets.map(p=>p.name));
+  console.info('[load] presets:', state.presets.map(p=>p.slug));
 }
 
 function buildPoolsFromManifest(){
   const pools = {};
-  // construir por family -> state -> array
   for(const family of Object.keys(state.manifest.files)){
     pools[family] = {};
   }
-  // distribuir
   for(const name of Object.keys(state.foodsIndex)){
     const f = state.foodsIndex[name];
     if(!pools[f.family]) pools[f.family] = {};
     if(!pools[f.family][f.state]) pools[f.family][f.state] = [];
     pools[f.family][f.state].push(f);
   }
-  // fallback geral por família (all)
   for(const fam of Object.keys(pools)){
     const all = [];
     for(const st of Object.keys(pools[fam])){
@@ -343,18 +356,28 @@ document.getElementById('saveProfile').addEventListener('click', ()=>{
 });
 
 /* ===========================
-   Passo 2: Presets com filtro por objetivo
+   Passo 2: Presets com filtro por objetivo (TOLERANTE)
    =========================== */
 function filterPresetsByGoal(){
-  const goal = (state.profile?.obj)||document.getElementById('obj').value;
+  const goal = (state.profile?.obj) || document.getElementById('obj').value;
   const grid = document.getElementById('presetsGrid');
-  grid.innerHTML='';
-  const allowed = state.presets.filter(p=>{
-    // regra: cut -> sem bulk; bulk -> sem cut/lowcarb; keep -> todos
-    if(goal==='cut') return !/bulk/i.test(p.slug||p.name);
-    if(goal==='bulk') return !/(cut|low[-\s]?carb)/i.test(p.slug||p.name);
+  grid.innerHTML = '';
+
+  if (!Array.isArray(state.presets) || state.presets.length === 0) {
+    grid.innerHTML = `<div class="muted">Nenhum preset encontrado em <code>data/presets.json</code>.</div>`;
+    return;
+  }
+
+  const isBulk = p => /bulk/i.test(p.slug) || /bulk/i.test(p.name);
+  const isCut  = p => /\bcut\b/i.test(p.slug)  || /\bcut\b/i.test(p.name);
+  const isLow  = p => /low[-\s]?carb/i.test(p.slug) || /low[-\s]?carb/i.test(p.name);
+
+  let allowed = state.presets.filter(p=>{
+    if (goal === 'cut')  return !isBulk(p);
+    if (goal === 'bulk') return !(isCut(p) || isLow(p));
     return true;
   });
+  if (allowed.length === 0) allowed = state.presets.slice();
 
   allowed.forEach(p=>{
     const el = document.createElement('div');
@@ -362,14 +385,14 @@ function filterPresetsByGoal(){
     el.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
-          <div style="font-weight:700">${p.name} (${p.meals.length})</div>
+          <div style="font-weight:700">${p.name} (${p.meals?.length || 0})</div>
           <div class="muted" style="font-size:13px">${p.pitch||'Variedade elástica com trocas simples.'}</div>
           <div class="kpi" style="margin-top:6px">
-            ${p.meals.map(m=>`<div class="tag">${m.name}</div>`).join('')}
+            ${(p.meals || []).map(m=>`<div class="tag">${m.name || m.titulo || 'Refeição'}</div>`).join('')}
           </div>
         </div>
         <div>
-          <button class="btn success" data-preset="${p.slug||p.name}">Selecionar</button>
+          <button class="btn success" data-preset="${p.slug}">Selecionar</button>
         </div>
       </div>`;
     grid.appendChild(el);
@@ -378,12 +401,15 @@ function filterPresetsByGoal(){
   grid.querySelectorAll('[data-preset]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const key = btn.getAttribute('data-preset');
-      state.preset = state.presets.find(p=>(p.slug||p.name)===key);
-      // dar um feedback
+      state.preset = state.presets.find(p=>p.slug === key);
       btn.textContent = 'Selecionado ✓';
       setTimeout(()=>{ btn.textContent = 'Selecionar'; },900);
     });
   });
+
+  if (!grid.childElementCount) {
+    grid.innerHTML = `<div class="muted">Nenhum modelo disponível após o filtro do objetivo. Reveja os nomes/slug no <code>presets.json</code>.</div>`;
+  }
 }
 
 /* ===========================
@@ -392,28 +418,20 @@ function filterPresetsByGoal(){
 function kcalFromMacros(P,C,G){ return P*4 + C*4 + G*9; }
 
 function solveMeal(mealSpec, kcalTarget){
-  // mealSpec: {name, families:[{family, state?}], macro_ratio:{P,C,G}, portion_caps:{...}}
-  // Construir tripé: proteína, carbo, gordura/misto – conforme families do preset
-  // Estratégia: 1) escolha 1 alimento de cada família requerida; 2) estimativa de gramas; 3) clamp + redistribuição; 4) itera fallback se necessário
   const families = mealSpec.families || [];
   const caps = mealSpec.portion_caps || {min: {default: 30}, max: {default: 400}};
   const ratio = mealSpec.macro_ratio || {P:.3, C:.5, G:.2};
 
   function pickFood(fam, statePref){
-    // estágio A: mesma familia e estado
     const poolA = (state.pools?.[fam]?.[statePref]) || [];
     if(poolA.length) return rand.pick(poolA);
-    // estágio B: mesma família (qualquer estado)
     const poolB = (state.pools?.[fam]?._all)||[];
     if(poolB.length) return rand.pick(poolB);
-    // fallback: se família “Misto” existe e refeição permite:
-    if(state.pools?.Misto?._all?.length && fam!=='Misto'){
-      return rand.pick(state.pools.Misto._all);
-    }
+    const c = (state.pools?.Misto?._all)||[];
+    if(c.length && fam!=='Misto') return rand.pick(c);
     return null;
   }
 
-  // 1) montar seleção base
   const items = [];
   for(const f of families){
     const food = pickFood(f.family, f.state);
@@ -424,14 +442,11 @@ function solveMeal(mealSpec, kcalTarget){
     });
   }
 
-  // 2) estimativa inicial pelas macros alvo
   const targetP = (ratio.P||0)*kcalTarget/4;
   const targetC = (ratio.C||0)*kcalTarget/4;
   const targetG = (ratio.G||0)*kcalTarget/9;
 
-  // dividir pelos itens aproximando por função:
   function gramsFor(item, gramP, gramC, gramG){
-    // converter “g de macronutriente” em “g de alimento”, priorizando seu macro predominante
     const scores = [
       {k:'P100', want:gramP},
       {k:'C100', want:gramC},
@@ -443,25 +458,21 @@ function solveMeal(mealSpec, kcalTarget){
     return (want/per100)*100;
   }
 
-  // chute inicial proporcional
   const grams = [];
   for(const it of items){
     const g = gramsFor(it, targetP, targetC, targetG);
     grams.push(g);
   }
 
-  // 3) clamp + correção
   function minCap(it){ return caps.min?.[it.family] ?? caps.min?.default ?? 20; }
   function maxCap(it){ return caps.max?.[it.family] ?? caps.max?.default ?? 500; }
 
   let iters = 0;
   while(iters++ < 3){
-    // clamp
     for(let i=0;i<items.length;i++){
       grams[i] = clamp(grams[i], minCap(items[i]), maxCap(items[i]));
     }
 
-    // medir resultado
     let P=0,C=0,G=0,K=0;
     for(let i=0;i<items.length;i++){
       const it = items[i], g = grams[i];
@@ -472,7 +483,6 @@ function solveMeal(mealSpec, kcalTarget){
     const dK = kcalTarget - K;
 
     if(Math.abs(dK) <= Math.max(30, kcalTarget*0.03)){
-      // sucesso
       const outItems = items.map((it,i)=>{
         const g = Math.round(grams[i]);
         const f = g/100;
@@ -485,8 +495,6 @@ function solveMeal(mealSpec, kcalTarget){
       return {ok:true, items: outItems};
     }
 
-    // redistribuir: ajustar item com macro dominante mais próximo do sinal de dK
-    // simples: mexe no item de maior kcal/100
     const idx = items
       .map((it,i)=>({i,kcal:it.kcal100}))
       .sort((a,b)=>b.kcal-a.kcal)[0].i;
@@ -501,7 +509,6 @@ function generateDay(){
   if(!state.preset){ alertMsg('Escolha um modelo no passo 2.'); return; }
   if(!state.profile) calcProfile();
 
-  // nova seed e pools novos a cada geração
   state.seed = newSeed(); rand.setSeed(state.seed);
   buildPoolsFromManifest();
 
@@ -531,11 +538,9 @@ function generateDay(){
 
 function regenMeal(idx){
   if(!state.day){ alertMsg('Gere um dia antes.'); return; }
-  // manter locked daquela refeição
   const meal = state.day.meals[idx];
   const locked = meal.items.filter(x=>x.locked);
   const kcalTarget = sum(meal.items,'kcal');
-  // seed nova
   state.seed = newSeed(); rand.setSeed(state.seed);
   buildPoolsFromManifest();
 
@@ -544,13 +549,11 @@ function regenMeal(idx){
     alertMsg(`Erro ao regerar a refeição. Veja os dados dos alimentos no JSON. (${solved.reason})`);
     return;
   }
-  // re-inserir itens locked (sobrepõe mesmo family)
   const map = new Map(solved.items.map(it=>[it.family, it]));
   for(const it of locked){ map.set(it.family, it); }
   const items = [...map.values()];
 
   meal.items = items;
-  // recalc totais
   recalcTotals();
   renderPlan();
 }
@@ -620,7 +623,6 @@ function renderPlan(){
     });
   });
 
-  // eventos
   plan.querySelectorAll('[data-rm]').forEach(b=>{
     b.onclick = ()=> regenMeal(+b.getAttribute('data-rm'));
   });
@@ -636,7 +638,6 @@ function renderPlan(){
     b.onclick = ()=> openSwap(b.getAttribute('data-swap'));
   });
 
-  // lista diária
   renderListDay();
 }
 
@@ -660,11 +661,8 @@ function openSwap(key){
   const hint = document.getElementById('swapHint');
   hint.textContent = `Equivalentes para ${fam} (prioriza estado ${st}).`;
 
-  // Estágio A
   const a = (state.pools?.[fam]?.[st])||[];
-  // Estágio B
   const b = (state.pools?.[fam]?._all)||[];
-  // Estágio C (se família Misto existir)
   const c = (state.pools?.Misto?._all)||[];
 
   const list = document.getElementById('swapList');
@@ -680,7 +678,6 @@ function openSwap(key){
       </div>
       <button class="btn success">Usar</button>`;
     el.querySelector('button').onclick = ()=>{
-      // mantém mesma gramatura aproximada e resolve só a refeição
       const grams = current.grams;
       state.day.meals[mi].items[fi] = {
         food: food.name, family: food.family, state: food.state, grams,
@@ -711,7 +708,7 @@ function openSwap(key){
 }
 
 /* ===========================
-   Abas: plano, lista diária, semana, favs
+   Abas / Listas / Semana
    =========================== */
 function renderListDay(){
   if(!state.day) return;
@@ -744,7 +741,6 @@ async function generateWeek(){
   }
   state.week = days;
 
-  // lista de compras semanal (soma)
   const box = document.getElementById('weekListBox');
   const agg = new Map();
   for(const d of days){
@@ -799,7 +795,6 @@ document.getElementById('importJson').onclick = ()=>{
     const data = JSON.parse(await file.text());
     state.profile = data.profile; state.preset = state.presets.find(p=>(p.slug||p.name)===data.preset) || state.presets[0];
     state.day = data.day; renderPlan(); enableListDay();
-    // steps
     goStep(3);
   };
   inp.click();
@@ -814,8 +809,17 @@ function goStep(n){
     document.getElementById(`s${i}`).classList.toggle('active', i===n);
   });
 }
-document.getElementById('go2').onclick = ()=>{ if(!state.profile) calcProfile(); filterPresetsByGoal(); goStep(2); };
+
+document.getElementById('go2').onclick = async ()=>{
+  if (!state.profile) calcProfile();
+  if (!state.presets || state.presets.length === 0) {
+    await loadAll();
+  }
+  filterPresetsByGoal();
+  goStep(2);
+};
 document.getElementById('back1').onclick = ()=> goStep(1);
+
 document.getElementById('go3').onclick = ()=>{
   if(!state.preset){ alertMsg('Selecione um modelo.'); return; }
   generateDay(); goStep(3);
@@ -824,7 +828,6 @@ document.getElementById('back2').onclick = ()=> goStep(2);
 document.getElementById('finish').onclick = ()=> window.scrollTo({top:0,behavior:'smooth'});
 
 document.getElementById('regenDay').onclick = ()=>{
-  // opção: perguntar se mantém locks
   if(state.day){
     const keep = confirm('Manter itens fixos? (OK = mantém; Cancelar = libera tudo)');
     if(!keep){ for(const m of state.day.meals){ m.items.forEach(it=>it.locked=false); } }
@@ -857,7 +860,16 @@ document.querySelectorAll('.tab').forEach(t=>{
 (async function init(){
   await loadAll();
   const p = localStorage.getItem('fitProfile');
-  if(p){ state.profile = JSON.parse(p); document.getElementById('sexo').value=state.profile.sexo; document.getElementById('idade').value=state.profile.idade; document.getElementById('altura').value=state.profile.altura; document.getElementById('peso').value=state.profile.peso; document.getElementById('ativ').value=state.profile.ativ; document.getElementById('obj').value=state.profile.obj; calcProfile(); }
+  if(p){
+    state.profile = JSON.parse(p);
+    document.getElementById('sexo').value=state.profile.sexo;
+    document.getElementById('idade').value=state.profile.idade;
+    document.getElementById('altura').value=state.profile.altura;
+    document.getElementById('peso').value=state.profile.peso;
+    document.getElementById('ativ').value=state.profile.ativ;
+    document.getElementById('obj').value=state.profile.obj;
+    calcProfile();
+  }
 })();
 </script>
 </body>
