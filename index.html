@@ -3,25 +3,28 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Dieta Pronta – Single File</title>
+<title>Dieta Pronta – v2 (2 arquivos)</title>
 <style>
 :root{
-  --bg:#0b0f14; --card:#10161d; --ink:#e7eef5; --muted:#9fb1c2;
-  --ok:#10B981; --warn:#F59E0B; --err:#EF4444; --ring:#1f2a37;
-  --br:14px;
+  --bg:#0b0f14; --card:#10161d; --ink:#e7eef5; --muted:#9fb1c2; --ring:#1f2a37;
+  --ok:#10B981; --warn:#F59E0B; --err:#EF4444; --br:14px;
 }
 *{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,Segoe UI,Roboto,Arial}
 .appbar{position:sticky;top:0;z-index:10;background:#0b0f14ee;border-bottom:1px solid #0f1720;padding:14px 16px}
 .appbar h1{margin:0;font-size:18px}
-.container{max-width:960px;margin:14px auto;padding:0 14px}
+.container{max-width:1000px;margin:14px auto;padding:0 14px}
 .card{background:var(--card);border:1px solid var(--ring);border-radius:var(--br);padding:12px}
 .grid{display:grid;gap:12px}
 label span{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
 input,select{width:100%;background:#0f141a;color:var(--ink);border:1px solid #182232;border-radius:10px;padding:10px}
 .row{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .row3{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.stepper{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.stepper .step{padding:6px 10px;border-radius:999px;border:1px solid #223243;background:#0f141a;color:#9fb1c2;font-size:12px}
+.stepper .step.active{background:var(--ok);color:#052018;border-color:#0c8f6d;font-weight:700}
 .btn{display:inline-block;background:#1b2a3a;color:#dfe8f2;border:1px solid #223243;border-radius:10px;padding:10px 14px;cursor:pointer}
 .btn.primary{background:var(--ok);color:#062016;border-color:#0c8f6d;font-weight:700}
+.btn.ghost{background:transparent}
 .meta{color:var(--muted);font-size:14px}
 .totals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .totals .box{background:#0f141a;border:1px solid #19232e;border-radius:10px;padding:10px;display:flex;flex-direction:column}
@@ -33,243 +36,402 @@ input,select{width:100%;background:#0f141a;color:var(--ink);border:1px solid #18
 .meal .kcal{color:var(--ok);font-weight:600}
 .meal ul{list-style:none;margin:8px 0 4px;padding:0;display:grid;gap:6px}
 .meal li{display:flex;justify-content:space-between;align-items:center;background:#0f141a;border:1px solid #182232;border-radius:10px;padding:8px 10px}
+.meal .right{display:flex;gap:8px;align-items:center}
 .meal .macros{display:flex;gap:10px;color:var(--muted);font-size:14px}
-small.disclaimer{display:block;color:var(--muted);text-align:center;margin:22px 0}
-footer{border-top:1px solid #0f1720;padding:18px 14px;text-align:center;color:var(--muted)}
-@media (max-width:640px){ .row3{grid-template-columns:1fr 1fr}; .totals{grid-template-columns:1fr 1fr} }
+small.disclaimer{display:block;color:var(--muted);text-align:center;margin:18px 0}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+hr.sep{border:0;border-top:1px solid #15202b;margin:6px 0 10px}
+.badge{display:inline-flex;align-items:center;gap:6px;background:#0c1520;border:1px solid #172636;color:#cfe4ff;padding:6px 10px;border-radius:999px;font-size:12px}
+@media (max-width:740px){ .row3{grid-template-columns:1fr 1fr}; .totals{grid-template-columns:1fr 1fr} }
+
+/* Modal */
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:16px}
+.modal .panel{background:#0f141a;border:1px solid #223243;border-radius:14px;max-width:640px;width:100%;padding:12px}
+.modal header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.modal ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;max-height:360px;overflow:auto}
+.modal li{display:flex;justify-content:space-between;align-items:center;background:#0b1219;border:1px solid #1a2633;border-radius:10px;padding:8px 10px}
+.modal .name{font-weight:600}
+.modal .sub{color:#9fb1c2;font-size:12px}
+
+/* Impressão */
+@media print{
+  .appbar, .toolbar, .stepper, .generator { display:none !important; }
+  body{ background:#fff; color:#000 }
+  .card{ border:0; }
+  .meal{ page-break-inside:avoid; }
+}
 </style>
 </head>
 <body>
   <header class="appbar">
-    <h1>Dieta Pronta (2 arquivos)</h1>
+    <h1>Dieta Pronta v2 — 2 arquivos</h1>
   </header>
 
   <main class="container grid">
-    <!-- FORMULÁRIO RÁPIDO -->
-    <section class="card">
-      <h2 style="margin:4px 0 10px;">Questionário rápido</h2>
-      <div class="row3" id="form">
-        <label><span>Sexo</span>
-          <select id="sex"><option value="male">Masculino</option><option value="female">Feminino</option></select>
-        </label>
-        <label><span>Idade</span><input id="age" type="number" min="14" value="30"/></label>
-        <label><span>Altura (cm)</span><input id="height" type="number" min="120" value="175"/></label>
-        <label><span>Peso (kg)</span><input id="weight" type="number" min="35" step="0.1" value="75"/></label>
-        <label><span>Atividade</span>
-          <select id="activity">
-            <option value="sedentary">Sedentário</option>
-            <option value="light">Leve</option>
-            <option value="moderate" selected>Moderado</option>
-            <option value="high">Alta</option>
-            <option value="athlete">Atleta</option>
-          </select>
-        </label>
-        <label><span>Objetivo</span>
-          <select id="goal">
-            <option value="cut">Emagrecer</option>
-            <option value="maintain" selected>Manter</option>
-            <option value="bulk">Ganhar Massa</option>
-          </select>
-        </label>
+    <!-- =========== PASSO A PASSO =========== -->
+    <section class="card generator">
+      <div class="stepper">
+        <span class="step active" id="s1">1) Objetivo</span>
+        <span class="step" id="s2">2) Dados básicos</span>
+        <span class="step" id="s3">3) Atividade & BF</span>
+        <span class="step" id="s4">4) Preferências</span>
       </div>
-      <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
-        <button id="gen" class="btn primary">Gerar plano</button>
-        <span id="meta" class="meta"></span>
+
+      <div id="step1" class="grid">
+        <div class="row">
+          <label><span>Objetivo</span>
+            <select id="goal">
+              <option value="cut">Emagrecer</option>
+              <option value="maintain" selected>Manter</option>
+              <option value="bulk">Ganhar massa</option>
+            </select>
+          </label>
+          <div style="display:flex;align-items:end">
+            <button class="btn primary" onclick="nextStep(2)">Continuar</button>
+          </div>
+        </div>
+        <div class="badge">Dica: déficit leve (10–15%) emagrece sem sofrimento.</div>
+      </div>
+
+      <div id="step2" class="grid" style="display:none">
+        <div class="row3">
+          <label><span>Sexo</span>
+            <select id="sex"><option value="male">Masculino</option><option value="female">Feminino</option></select>
+          </label>
+          <label><span>Idade</span><input id="age" type="number" min="14" value="30"/></label>
+          <label><span>Altura (cm)</span><input id="height" type="number" min="120" value="175"/></label>
+          <label><span>Peso (kg)</span><input id="weight" type="number" min="35" step="0.1" value="75"/></label>
+        </div>
+        <div style="display:flex;gap:8px"><button class="btn" onclick="nextStep(1)">Voltar</button><button class="btn primary" onclick="nextStep(3)">Próximo</button></div>
+      </div>
+
+      <div id="step3" class="grid" style="display:none">
+        <div class="row3">
+          <label><span>Atividade</span>
+            <select id="activity">
+              <option value="sedentary">Sedentário</option>
+              <option value="light">Leve</option>
+              <option value="moderate" selected>Moderado</option>
+              <option value="high">Alta</option>
+              <option value="athlete">Atleta</option>
+            </select>
+          </label>
+          <label><span>Estimativa de BF</span>
+            <select id="bfMode">
+              <option value="quick" selected>Rápido (sem fita)</option>
+              <option value="navy">Precisão (Navy)</option>
+            </select>
+          </label>
+          <div></div>
+        </div>
+
+        <!-- Navy opcional -->
+        <div id="navyFields" class="row" style="display:none">
+          <label><span>Pescoço (cm)</span><input id="neck" type="number" step="0.1"/></label>
+          <label><span>Cintura (cm)</span><input id="waist" type="number" step="0.1"/></label>
+          <label><span>Quadril (cm) – apenas feminino</span><input id="hip" type="number" step="0.1"/></label>
+        </div>
+
+        <div style="display:flex;gap:8px"><button class="btn" onclick="nextStep(2)">Voltar</button><button class="btn primary" onclick="nextStep(4)">Próximo</button></div>
+      </div>
+
+      <div id="step4" class="grid" style="display:none">
+        <div class="row3">
+          <label><span>Tempo de preparo</span>
+            <select id="time"><option value="">Qualquer</option><option value="<15">Rápido (&lt;15min)</option><option value="15-30">Médio (15–30)</option><option value=">30">Elaborado (&gt;30)</option></select>
+          </label>
+          <label><span>Orçamento</span>
+            <select id="budget"><option value="">Qualquer</option><option value="low">Baixo</option><option value="mid">Médio</option><option value="high">Alto</option></select>
+          </label>
+          <label><span>Restrições</span>
+            <select id="restr">
+              <option value="">Nenhuma</option>
+              <option value="lactoseFree">Sem lactose</option>
+              <option value="glutenFree">Sem glúten</option>
+              <option value="vegetarian">Vegetariano</option>
+              <option value="vegan">Vegano</option>
+            </select>
+          </label>
+        </div>
+        <div class="toolbar">
+          <button class="btn" onclick="nextStep(3)">Voltar</button>
+          <button id="gen" class="btn primary">Gerar plano</button>
+          <span id="meta" class="meta"></span>
+        </div>
       </div>
     </section>
 
-    <!-- RESUMO -->
+    <!-- =========== RESUMO / EXPORTAÇÃO =========== -->
     <section class="card">
+      <div class="toolbar">
+        <button class="btn" onclick="window.print()">Imprimir / PDF</button>
+        <button class="btn" id="whats">Compartilhar WhatsApp</button>
+      </div>
+      <hr class="sep" />
       <h2 style="margin:4px 0 10px;">Resumo do Dia 1</h2>
       <div id="totals" class="totals"></div>
     </section>
 
-    <!-- REFEIÇÕES -->
+    <!-- =========== REFEIÇÕES =========== -->
     <section class="card">
       <h2 style="margin:4px 0 10px;">Refeições</h2>
       <div id="meals" class="meals"></div>
     </section>
 
+    <!-- =========== LISTA DE COMPRAS =========== -->
+    <section class="card">
+      <h2 style="margin:4px 0 10px;">Lista de compras (semana)</h2>
+      <div id="shopping"></div>
+    </section>
+
     <small class="disclaimer">Este plano é educativo e não substitui avaliação profissional.</small>
   </main>
 
-  <footer>Feito com 💚 – Single-file para GitHub Pages</footer>
+  <footer style="text-align:center;color:#9fb1c2;padding:18px">Feito com 💚 — Single-file para GitHub Pages</footer>
+
+  <!-- MODAL TROCAS -->
+  <div class="modal" id="modal">
+    <div class="panel">
+      <header>
+        <strong>Trocar alimento</strong>
+        <button class="btn ghost" onclick="closeModal()">Fechar</button>
+      </header>
+      <ul id="swapList"></ul>
+    </div>
+  </div>
 
 <script>
-// ======= UTIL =======
-const round = (n,d=0)=>Number(Math.round((+n+Number.EPSILON)*10**d)/10**d);
-const clamp = (v,mi,ma)=>Math.min(Math.max(+v,mi),ma);
-const safe = (v,f=0)=>isFinite(+v)?+v:f;
+/* ======== CORE NUMÉRICO ======== */
+const round=(n,d=0)=>Number(Math.round((+n+Number.EPSILON)*10**d)/10**d);
+const clamp=(v,mi,ma)=>Math.min(Math.max(+v,mi),ma);
+const safe =(v,f=0)=>isFinite(+v)?+v:f;
 
-// ======= CÁLCULOS =======
-const ACTIVITY = {
-  sedentary:1.2, light:1.375, moderate:1.55, high:1.725, athlete:1.9
-};
-const DEFAULT_MACROS = {
-  cut:{p:0.35,c:0.40,f:0.25},
-  maintain:{p:0.30,c:0.45,f:0.25},
-  bulk:{p:0.28,c:0.50,f:0.22}
-};
-function bmi(weightKg, heightCm){ const h = safe(heightCm)/100; return h?round(safe(weightKg)/(h*h),1):0; }
-function bfDeurenberg(bmiV, age, sex){ const s = sex==="male"?1:0; return clamp(round(1.2*bmiV + 0.23*age - 10.8*s - 5.4,1),3,60); }
-function bmrMifflin({sex, weightKg, heightCm, age}){ const s = sex==="male"?5:-161; return round(10*weightKg + 6.25*heightCm - 5*age + s); }
-function tdee(bmr, activity){ return round(bmr*(ACTIVITY[activity]??1.55)); }
-function goalDelta(goal){ return goal==="cut"?-0.15:goal==="bulk"?0.08:0; }
-function targetKcal(tdeeValue, goal){ return clamp(round(tdeeValue*(1+goalDelta(goal))),900,6000); }
+const ACTIVITY={sedentary:1.2,light:1.375,moderate:1.55,high:1.725,athlete:1.9};
+const DEFAULT_MACROS={cut:{p:0.35,c:0.40,f:0.25},maintain:{p:0.30,c:0.45,f:0.25},bulk:{p:0.28,c:0.50,f:0.22}};
+function bmi(w, h){ const m=safe(h)/100; return m?round(safe(w)/(m*m),1):0; }
+function bfQuick(bmiV, age, sex){ const s=sex==="male"?1:0; return clamp(round(1.2*bmiV+0.23*age-10.8*s-5.4,1),3,60); }
+function bfNavy(sex,h,neck,waist,hip){ if(sex==="male"){ if(!h||!neck||!waist)return null; return clamp(round(86.010*Math.log10(waist-neck)-70.041*Math.log10(h)+36.76,1),3,60); } else { if(!h||!neck||!waist||!hip)return null; return clamp(round(163.205*Math.log10(waist+hip-neck)-97.684*Math.log10(h)-78.387,1),6,60); } }
+function bmrMifflin({sex,weightKg,heightCm,age}){ const s=sex==="male"?5:-161; return round(10*weightKg+6.25*heightCm-5*age+s); }
+function tdee(bmr,activity){ return round(bmr*(ACTIVITY[activity]??1.55)); }
+function targetKcal(tdeeVal,goal){ const d=goal==="cut"?-0.15:goal==="bulk"?0.08:0; return clamp(round(tdeeVal*(1+d)),900,6000); }
 function macroSplit(goal){ return DEFAULT_MACROS[goal]||DEFAULT_MACROS.maintain; }
-function macrosGrams(kcal, split){
-  return {
-    proteinG: round((kcal*split.p)/4,0),
-    carbsG:   round((kcal*split.c)/4,0),
-    fatG:     round((kcal*split.f)/9,0),
-    kcalTarget: round(kcal)
-  };
-}
-function proteinMinKg(goal){
-  if(goal==="cut") return 1.6; if(goal==="bulk") return 2.0; return 1.2;
-}
-function enforceProtein(weightKg, macros, goal){
-  const min = round(weightKg*proteinMinKg(goal),0);
-  if(macros.proteinG>=min) return macros;
-  const delta = min - macros.proteinG;
-  let c = Math.max(0, macros.carbsG - delta);
-  let f = Math.max(0, macros.fatG - Math.max(0, delta - (macros.carbsG - c)));
-  return { kcalTarget: macros.kcalTarget, proteinG:min, carbsG:c, fatG:f };
-}
-function compute({sex, age, heightCm, weightKg, activity, goal}){
-  const bmiV = bmi(weightKg, heightCm);
-  const bf = bfDeurenberg(bmiV, age, sex); // rápido
-  const bmr = bmrMifflin({sex, weightKg, heightCm, age});
-  const tdeeV = tdee(bmr, activity);
-  const kcal = targetKcal(tdeeV, goal);
-  let m = macrosGrams(kcal, macroSplit(goal));
-  m = enforceProtein(weightKg, m, goal);
-  return { bmiV, bf, bmr, tdeeV, kcal, macros:m, meta:{goal,activity} };
+function macrosGrams(kcal,{p,c,f}){ return { proteinG:round((kcal*p)/4,0), carbsG:round((kcal*c)/4,0), fatG:round((kcal*f)/9,0), kcalTarget:round(kcal) }; }
+function proteinMin(goal){ if(goal==="cut")return 1.6; if(goal==="bulk")return 2.0; return 1.2; }
+function enforceProtein(weightKg,macros,goal){ const min=round(weightKg*proteinMin(goal),0); if(macros.proteinG>=min)return macros; const d=min-macros.proteinG; let c=Math.max(0,macros.carbsG-d); let f=Math.max(0,macros.fatG-Math.max(0,d-(macros.carbsG-c))); return {kcalTarget:macros.kcalTarget,proteinG:min,carbsG:c,fatG:f}; }
+function compute({sex,age,heightCm,weightKg,activity,goal,bfMode,neck,waist,hip}){
+  const bmiV=bmi(weightKg,heightCm);
+  const bf = bfMode==="navy" ? (bfNavy(sex,heightCm,neck,waist,hip) ?? bfQuick(bmiV,age,sex)) : bfQuick(bmiV,age,sex);
+  const bmr=bmrMifflin({sex,weightKg,heightCm,age});
+  const tdeeV=tdee(bmr,activity);
+  const kcal=targetKcal(tdeeV,goal);
+  let m=macrosGrams(kcal, macroSplit(goal)); m=enforceProtein(weightKg,m,goal);
+  return {bmiV,bf,bmr,tdeeV,kcal,macros:m,meta:{goal,activity,bfMode}};
 }
 
-// ======= CATÁLOGO =======
+/* ======== CATÁLOGO ======== */
 async function loadCatalog(){
   try{
-    const r = await fetch("./meals.json", {cache:"no-store"});
-    if(!r.ok) throw 0;
-    return await r.json();
+    const r=await fetch("./meals.json",{cache:"no-store"}); if(!r.ok) throw 0; return await r.json();
   }catch{
-    // fallback mínimo
-    return {
-      protein:[
-        {"name":"Peito de frango grelhado","kcalPer100":165,"p":31,"c":0,"f":3,"unit":"g"},
-        {"name":"Ovo cozido","kcalPer100":155,"p":13,"c":1.1,"f":11,"unit":"g"},
-        {"name":"Tofu firme","kcalPer100":76,"p":8,"c":1.9,"f":4.8,"unit":"g"}
-      ],
-      carbs:[
-        {"name":"Arroz branco cozido","kcalPer100":130,"p":2.4,"c":28,"f":0.3,"unit":"g"},
-        {"name":"Batata-doce cozida","kcalPer100":90,"p":2,"c":21,"f":0.1,"unit":"g"},
-        {"name":"Aveia em flocos","kcalPer100":389,"p":17,"c":66,"f":7,"unit":"g"}
-      ],
-      fat:[
-        {"name":"Azeite de oliva","kcalPer100":884,"p":0,"c":0,"f":100,"unit":"ml"},
-        {"name":"Abacate","kcalPer100":160,"p":2,"c":9,"f":15,"unit":"g"},
-        {"name":"Castanha de caju","kcalPer100":553,"p":18,"c":30,"f":44,"unit":"g"}
-      ],
-      mixed:[
-        {"name":"Iogurte natural","kcalPer100":61,"p":3.5,"c":4.7,"f":3.3,"unit":"g"},
-        {"name":"Feijão cozido","kcalPer100":76,"p":5.1,"c":14,"f":0.5,"unit":"g"},
-        {"name":"Pão francês","kcalPer100":270,"p":8,"c":57,"f":3,"unit":"g"}
-      ]
+    return { // fallback
+      protein:[{"name":"Peito de frango grelhado","kcalPer100":165,"p":31,"c":0,"f":3,"unit":"g"},
+               {"name":"Ovo cozido","kcalPer100":155,"p":13,"c":1.1,"f":11,"unit":"g"},
+               {"name":"Tofu firme","kcalPer100":76,"p":8,"c":1.9,"f":4.8,"unit":"g"}],
+      carbs:[{"name":"Arroz branco cozido","kcalPer100":130,"p":2.4,"c":28,"f":0.3,"unit":"g"},
+             {"name":"Arroz integral","kcalPer100":124,"p":2.6,"c":26,"f":1,"unit":"g"},
+             {"name":"Batata-doce cozida","kcalPer100":90,"p":2,"c":21,"f":0.1,"unit":"g"}],
+      fat:[{"name":"Azeite de oliva","kcalPer100":884,"p":0,"c":0,"f":100,"unit":"ml"},
+           {"name":"Abacate","kcalPer100":160,"p":2,"c":9,"f":15,"unit":"g"},
+           {"name":"Castanha de caju","kcalPer100":553,"p":18,"c":30,"f":44,"unit":"g"}],
+      mixed:[{"name":"Iogurte natural","kcalPer100":61,"p":3.5,"c":4.7,"f":3.3,"unit":"g"},
+             {"name":"Feijão cozido","kcalPer100":76,"p":5.1,"c":14,"f":0.5,"unit":"g"},
+             {"name":"Pão francês","kcalPer100":270,"p":8,"c":57,"f":3,"unit":"g"}]
     };
   }
 }
 
-// ======= PLANEJAMENTO (Dia 1 com 4 refeições) =======
-const MEALS = [
-  {key:"breakfast", label:"Café da manhã", pct:0.25},
-  {key:"lunch",     label:"Almoço",        pct:0.35},
-  {key:"snack",     label:"Lanche",        pct:0.15},
-  {key:"dinner",    label:"Jantar",        pct:0.25}
-];
-
-function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-function portionFromKcal(food, kcalPart){
-  const grams = clamp((kcalPart/(food.kcalPer100||100))*100, 10, 400);
-  const p = round((grams/100)*(food.p||0));
-  const c = round((grams/100)*(food.c||0));
-  const f = round((grams/100)*(food.f||0));
-  const kcal = round((grams/100)*(food.kcalPer100||100));
-  return { grams:round(grams), p, c, f, kcal, unit: food.unit || "g" };
+/* ======== PLANEJAMENTO ======== */
+const MEALS=[{key:"breakfast",label:"Café da manhã",pct:0.25},{key:"lunch",label:"Almoço",pct:0.35},{key:"snack",label:"Lanche",pct:0.15},{key:"dinner",label:"Jantar",pct:0.25}];
+const state={catalog:null, plan:null, nums:null};
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function portionFromKcal(food,kcalPart){
+  const grams=clamp((kcalPart/(food.kcalPer100||100))*100,10,400);
+  const p=round((grams/100)*(food.p||0)), c=round((grams/100)*(food.c||0)), f=round((grams/100)*(food.f||0));
+  const kcal=round((grams/100)*(food.kcalPer100||100)); return {grams:round(grams),p,c,f,kcal,unit:food.unit||"g"};
 }
-function composeMeal(catalog, mealKcal){
-  const prot = pick(catalog.protein);
-  const carb = pick(catalog.carbs);
-  const fat  = pick(catalog.fat);
-  const p1 = portionFromKcal(prot, mealKcal*0.50);
-  const p2 = portionFromKcal(carb, mealKcal*0.35);
-  const p3 = portionFromKcal(fat,  mealKcal*0.15);
+function portionVisual(unit,grams){
+  if(unit==="ml"){ const cups=grams/240; if(cups>=1) return `≈ ${round(cups,1)} xíc.`; const tbsp=grams/15; return `≈ ${round(tbsp,0)} col. sopa`; }
+  const cups=grams/140; if(cups>=1) return `≈ ${round(cups,1)} xíc.`; const palms=grams/100; if(palms>=1) return `≈ ${round(palms,1)} palma`; const tbsp=grams/15; return `≈ ${round(tbsp,0)} col. sopa`;
+}
+function composeMeal(catalog, mealKcal, prefs){
+  const pass=(f)=>{
+    if(!f) return false;
+    if(prefs.restr==="lactoseFree" && f.flags?.lactose) return false;
+    if(prefs.restr==="glutenFree"  && f.flags?.gluten)  return false;
+    if(prefs.restr==="vegetarian"  && !f.flags?.vegetarian) return false;
+    if(prefs.restr==="vegan"       && !f.flags?.vegan) return false;
+    if(prefs.budget && f.priceTier && f.priceTier!==prefs.budget) return false;
+    if(prefs.time && f.timeTag && f.timeTag!==prefs.time) return false;
+    return true;
+  };
+  const pickOk=(fam,fallback=null)=>{
+    const arr=(catalog[fam]||[]).filter(pass); if(arr.length) return pick(arr);
+    if(fallback){ const arr2=(catalog[fallback]||[]).filter(pass); if(arr2.length) return pick(arr2); }
+    return null;
+  };
+  const prot=pickOk("protein","mixed") || {name:"Proteína",kcalPer100:100,p:20,c:0,f:2,unit:"g"};
+  const carb=pickOk("carbs","mixed")   || {name:"Carboidrato",kcalPer100:120,p:3,c:24,f:1,unit:"g"};
+  const fat =pickOk("fat","mixed")     || {name:"Gordura",kcalPer100:884,p:0,c:0,f:100,unit:"ml"};
+
+  const p1=portionFromKcal(prot, mealKcal*0.50);
+  const p2=portionFromKcal(carb, mealKcal*0.35);
+  const p3=portionFromKcal(fat,  mealKcal*0.15);
+
   return {
     kcal: p1.kcal+p2.kcal+p3.kcal,
-    proteinG: p1.p+p2.p+p3.p,
-    carbsG:   p1.c+p2.c+p3.c,
-    fatG:     p1.f+p2.f+p3.f,
+    proteinG: p1.p+p2.p+p3.p, carbsG: p1.c+p2.c+p3.c, fatG: p1.f+p2.f+p3.f,
     items: [
-      {name: prot.name, grams:p1.grams, unit:p1.unit},
-      {name: carb.name, grams:p2.grams, unit:p2.unit},
-      {name: fat.name,  grams:p3.grams, unit:p3.unit}
+      {name:prot.name,family:"protein",grams:p1.grams,unit:p1.unit,kcalPer100:prot.kcalPer100},
+      {name:carb.name,family:"carbs",  grams:p2.grams,unit:p2.unit,kcalPer100:carb.kcalPer100},
+      {name:fat.name, family:"fat",    grams:p3.grams,unit:p3.unit,kcalPer100:fat.kcalPer100}
     ]
   };
 }
-function fmtTotals(plan){
-  const acc = plan.reduce((a,m)=>({kcal:a.kcal+m.kcal,p:a.p+m.proteinG,c:a.c+m.carbsG,f:a.f+m.fatG}),{kcal:0,p:0,c:0,f:0});
-  return {kcal:round(acc.kcal), proteinG:round(acc.p), carbsG:round(acc.c), fatG:round(acc.f)};
+function buildDay(nums,catalog,prefs){
+  const meals = MEALS.map(m=> composeMeal(catalog, round(nums.kcal*m.pct), prefs));
+  const totals = meals.reduce((a,x)=>({kcal:a.kcal+x.kcal,p:a.p+x.proteinG,c:a.c+x.carbsG,f:a.f+x.fatG}),{kcal:0,p:0,c:0,f:0});
+  return { meals, totals:{kcal:round(totals.kcal),proteinG:round(totals.p),carbsG:round(totals.c),fatG:round(totals.f)} };
 }
 
-// ======= RENDER =======
+/* ======== TROCA (MODAL) ======== */
+let swapCtx=null;
+function openSwap(mealIdx,itemIdx){
+  swapCtx={mealIdx,itemIdx};
+  const item=state.plan.meals[mealIdx].items[itemIdx];
+  const fam=item.family, kcal=item.kcalPer100;
+  const opts=(state.catalog[fam]||[]).slice().sort((a,b)=>Math.abs(a.kcalPer100-kcal)-Math.abs(b.kcalPer100-kcal)).slice(0,30);
+  const ul=document.getElementById("swapList");
+  ul.innerHTML=opts.map(o=>`<li><span class="name">${o.name}</span><span class="sub">${o.kcalPer100} kcal/100${o.unit||"g"}</span><button class="btn" onclick='applySwap(${mealIdx},${itemIdx},${JSON.stringify(o.kcalPer100)}, ${JSON.stringify(o.unit||"g")}, ${JSON.stringify(o.name)})'>Usar</button></li>`).join("");
+  document.getElementById("modal").style.display="flex";
+}
+function closeModal(){ document.getElementById("modal").style.display="none"; swapCtx=null; }
+function applySwap(mealIdx,itemIdx,kcalPer100,unit,name){
+  const meal=state.plan.meals[mealIdx], item=meal.items[itemIdx];
+  const prevKcal= (item.grams/100)*item.kcalPer100;
+  // ajusta gramas para manter kcal semelhante
+  const grams = clamp((prevKcal/ (kcalPer100||100))*100, 10, 400);
+  item.name=name; item.kcalPer100=kcalPer100; item.unit=unit; item.grams=round(grams);
+  // recomputa macros do card
+  const recompute=(it)=>({p:(it.grams/100)*(fam(it).p||0), c:(it.grams/100)*(fam(it).c||0), f:(it.grams/100)*(fam(it).f||0), kcal:(it.grams/100)*(it.kcalPer100||100)});
+  const fam=(it)=> (state.catalog[it.family]||[]).find(f=>f.name===it.name) || {};
+  let p=0,c=0,f=0,k=0; meal.items.forEach(it=>{const r=recompute(it); p+=r.p;c+=r.c;f+=r.f;k+=r.kcal;});
+  meal.proteinG=round(p); meal.carbsG=round(c); meal.fatG=round(f); meal.kcal=round(k);
+  // totais
+  const t=state.plan.meals.reduce((a,x)=>({kcal:a.kcal+x.kcal,p:a.p+x.proteinG,c:a.c+x.carbsG,f:a.f+x.fatG}),{kcal:0,p:0,c:0,f:0});
+  state.plan.totals={kcal:round(t.kcal),proteinG:round(t.p),carbsG:round(t.c),fatG:round(t.f)};
+  render(); closeModal();
+}
+
+/* ======== RENDER ======== */
 function renderTotals(t){
   document.getElementById("totals").innerHTML = `
     <div class="box"><strong>kcal</strong><span>${t.kcal}</span></div>
     <div class="box"><strong>Proteína</strong><span>${t.proteinG} g</span></div>
     <div class="box"><strong>Carbo</strong><span>${t.carbsG} g</span></div>
-    <div class="box"><strong>Gordura</strong><span>${t.fatG} g</span></div>
-  `;
+    <div class="box"><strong>Gordura</strong><span>${t.fatG} g</span></div>`;
 }
-function renderMeals(meals){
-  document.getElementById("meals").innerHTML = meals.map((m,i)=>`
+function renderMeals(){
+  const html = state.plan.meals.map((m,i)=>`
     <article class="meal">
       <header><h3>${MEALS[i].label}</h3><span class="kcal">${m.kcal} kcal</span></header>
       <ul>
-        ${m.items.map(it=>`<li><span>${it.name}</span><span>${it.grams}${it.unit}</span></li>`).join("")}
+        ${m.items.map((it,idx)=>`
+          <li>
+            <span>${it.name} <small style="color:#9fb1c2">(${portionVisual(it.unit,it.grams)}, ${it.grams}${it.unit})</small></span>
+            <div class="right">
+              <button class="btn" onclick="openSwap(${i},${idx})">Trocar</button>
+            </div>
+          </li>`).join("")}
       </ul>
-      <div class="macros">
-        <span>P: ${m.proteinG} g</span><span>C: ${m.carbsG} g</span><span>G: ${m.fatG} g</span>
-      </div>
+      <div class="macros"><span>P: ${m.proteinG} g</span><span>C: ${m.carbsG} g</span><span>G: ${m.fatG} g</span></div>
     </article>
   `).join("");
+  document.getElementById("meals").innerHTML = html;
+}
+function renderShopping(){
+  const map=new Map();
+  state.plan.meals.forEach(m=>m.items.forEach(it=>{
+    const key=`${it.name}__${it.unit}`;
+    map.set(key,(map.get(key)||0)+it.grams);
+  }));
+  const arr=[...map.entries()].map(([k,g])=>({name:k.split("__")[0],unit:k.split("__")[1],grams:round(g)}));
+  document.getElementById("shopping").innerHTML = `
+    <ul style="list-style:none;margin:0;padding:0;display:grid;gap:6px">
+      ${arr.map(i=>`<li class="badge">${i.name} — ${i.grams}${i.unit}</li>`).join("")}
+    </ul>`;
+}
+function render(){
+  renderTotals(state.plan.totals);
+  renderMeals();
+  renderShopping();
 }
 
-// ======= AÇÃO =======
-document.getElementById("gen").addEventListener("click", async ()=>{
-  const sex = document.getElementById("sex").value;
-  const age = +document.getElementById("age").value;
-  const heightCm = +document.getElementById("height").value;
-  const weightKg = +document.getElementById("weight").value;
-  const activity = document.getElementById("activity").value;
-  const goal = document.getElementById("goal").value;
-
-  const nums = compute({sex, age, heightCm, weightKg, activity, goal});
-  document.getElementById("meta").textContent =
-    `Meta: ${nums.kcal} kcal • Prot ${nums.macros.proteinG}g • Carb ${nums.macros.carbsG}g • Gord ${nums.macros.fatG}g`;
-
-  const catalog = await loadCatalog();
-  const meals = MEALS.map(m=>{
-    const mealKcal = round(nums.kcal * m.pct);
-    const card = composeMeal(catalog, mealKcal);
-    return {...card};
-  });
-
-  renderTotals(fmtTotals(meals));
-  renderMeals(meals);
+/* ======== FLUXO ======== */
+function nextStep(n){
+  for(let i=1;i<=4;i++){
+    document.getElementById(`step${i}`).style.display = (i===n)?"grid":"none";
+    document.getElementById(`s${i}`).classList.toggle("active", i===n);
+  }
+}
+document.getElementById("bfMode").addEventListener("change", e=>{
+  document.getElementById("navyFields").style.display = e.target.value==="navy"?"grid":"none";
 });
 
-// Gera um plano inicial na abertura (opcional):
-document.getElementById("gen").click();
+document.getElementById("gen").addEventListener("click", async ()=>{
+  const sex=document.getElementById("sex").value;
+  const age=+document.getElementById("age").value;
+  const heightCm=+document.getElementById("height").value;
+  const weightKg=+document.getElementById("weight").value;
+  const activity=document.getElementById("activity").value;
+  const goal=document.getElementById("goal").value;
+  const bfMode=document.getElementById("bfMode").value;
+  const neck=+document.getElementById("neck").value||null;
+  const waist=+document.getElementById("waist").value||null;
+  const hip=+document.getElementById("hip").value||null;
+
+  state.catalog = state.catalog || await loadCatalog();
+
+  state.nums = compute({sex,age,heightCm,weightKg,activity,goal,bfMode,neck,waist,hip});
+  document.getElementById("meta").textContent =
+    `Meta: ${state.nums.kcal} kcal • Prot ${state.nums.macros.proteinG}g • Carb ${state.nums.macros.carbsG}g • Gord ${state.nums.macros.fatG}g`;
+
+  const prefs = {
+    time: document.getElementById("time").value || null,
+    budget: document.getElementById("budget").value || null,
+    restr: document.getElementById("restr").value || null
+  };
+
+  state.plan = buildDay(state.nums, state.catalog, prefs);
+  nextStep(4); // fica no último passo (preferências + meta)
+  render();
+});
+
+/* Compartilhar WhatsApp (texto simples do plano) */
+document.getElementById("whats").addEventListener("click", ()=>{
+  if(!state.plan) return;
+  let text = `Meu Plano (Dia 1) - ${state.nums.kcal} kcal\n`;
+  state.plan.meals.forEach((m,i)=>{
+    text += `\n${MEALS[i].label} (${m.kcal} kcal)\n`;
+    m.items.forEach(it=> text += `- ${it.name}: ${it.grams}${it.unit}\n`);
+  });
+  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(url, "_blank");
+});
+
+/* Gera um plano inicial com defaults */
+(async function boot(){
+  state.catalog = await loadCatalog();
+})();
 </script>
 </body>
 </html>
