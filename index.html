@@ -1,653 +1,556 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FitPlan Pro ⚡ | v7.2</title>
-
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Export: html2canvas (principal), dom-to-image-more (fallback), jsPDF (PDF) -->
-  <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.2.0/dist/dom-to-image-more.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-
-  <style>
-    :root{
-      --bg:#0a0f1c; --card:#0b1220; --muted:#9ca3af; --text:#e5e7eb;
-      --green:#10b981; --green2:#86efac; --amber:#f59e0b; --red:#ef4444; --border:#334155;
-    }
-    html,body{background:var(--bg);color:var(--text)}
-    *{-webkit-font-smoothing:antialiased}
-    .shadow-soft{box-shadow:0 10px 30px rgba(0,0,0,.28)}
-    .btn{padding:.6rem 1rem;border-radius:.8rem;background:var(--green);color:#001c12;font-weight:800}
-    .btn:hover{filter:brightness(1.05)}
-    .btn-ghost{padding:.55rem .9rem;border-radius:.8rem;border:1px solid var(--border);background:#111827;color:#e5e7eb}
-    .btn-xs{padding:.35rem .6rem;border-radius:.6rem;font-size:.8rem}
-    .field{width:100%;padding:.6rem .75rem;border-radius:.8rem;background:#111827;color:#e5e7eb;border:1px solid var(--border)}
-    .label{font-size:.8rem;color:var(--muted)}
-    .step{background:#111827;color:#cbd5e1;border-radius:.8rem;padding:.55rem 0;text-align:center;border:1px solid var(--border)}
-    .step.active{background:#065f46;color:white;border-color:#0ea5a4}
-    .tag{display:inline-flex;align-items:center;border-radius:999px;padding:.15rem .55rem;font-size:.75rem;background:#111827;border:1px solid var(--border);margin:.25rem .35rem .25rem 0}
-    .kcal-flag{color:var(--green2)}
-    .tabs button{border-bottom:2px solid transparent;padding-bottom:.4rem}
-    .tabs button.active{border-color:var(--green); color:var(--green2)}
-    .no-transform{transform:none !important}
-    #overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:60}
-    #overlay .box{background:#0b1220;border:1px solid var(--border);border-radius:1rem;padding:1rem 1.2rem;display:flex;gap:.6rem;align-items:center}
-    .dot{width:.55rem;height:.55rem;border-radius:999px;background:var(--green);animation:b .9s infinite alternate}
-    .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
-    @keyframes b{to{opacity:.2; transform:translateY(-2px)}}
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FitPlan Pro ⚡ | v7.3</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.2.0/dist/dom-to-image-more.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#0a0f1c;--card:#0b1220;--muted:#9ca3af;--text:#e5e7eb;--green:#10b981;--green2:#86efac;--border:#334155;}
+html,body{background:var(--bg);color:var(--text)}
+.shadow-soft{box-shadow:0 10px 30px rgba(0,0,0,.28)}
+.btn{padding:.6rem 1rem;border-radius:.8rem;background:var(--green);color:#001c12;font-weight:800}
+.btn:hover{filter:brightness(1.05)}
+.btn-ghost{padding:.55rem .9rem;border-radius:.8rem;border:1px solid var(--border);background:#111827;color:#e5e7eb}
+.btn-xs{padding:.35rem .6rem;border-radius:.6rem;font-size:.8rem}
+.field{width:100%;padding:.6rem .75rem;border-radius:.8rem;background:#111827;color:#e5e7eb;border:1px solid var(--border)}
+.label{font-size:.8rem;color:var(--muted)}
+.step{background:#111827;color:#cbd5e1;border-radius:.8rem;padding:.55rem 0;text-align:center;border:1px solid var(--border)}
+.step.active{background:#065f46;color:white;border-color:#0ea5a4}
+.tag{display:inline-flex;align-items:center;border-radius:999px;padding:.15rem .55rem;font-size:.75rem;background:#111827;border:1px solid var(--border);margin:.25rem .35rem .25rem 0}
+.kcal-flag{color:var(--green2)}
+.tabs button{border-bottom:2px solid transparent;padding-bottom:.4rem}
+.tabs button.active{border-color:var(--green); color:var(--green2)}
+.no-transform{transform:none !important}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:60}
+#overlay .box{background:#0b1220;border:1px solid var(--border);border-radius:1rem;padding:1rem 1.2rem;display:flex;gap:.6rem;align-items:center}
+.dot{width:.55rem;height:.55rem;border-radius:999px;background:var(--green);animation:b .9s infinite alternate}
+.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+@keyframes b{to{opacity:.2; transform:translateY(-2px)}}
+</style>
 </head>
 <body class="min-h-screen">
-  <header class="max-w-6xl mx-auto px-4 pt-8 pb-4">
-    <h1 class="text-3xl md:text-4xl font-extrabold">FitPlan Pro ⚡</h1>
-    <p class="text-slate-300">Gere sua dieta realista em <b>3 passos</b> — apenas <b>index.html</b> + <b>.json</b>.</p>
-  </header>
+<header class="max-w-6xl mx-auto px-4 pt-8 pb-4">
+  <h1 class="text-3xl md:text-4xl font-extrabold">FitPlan Pro ⚡</h1>
+  <p class="text-slate-300">Gere sua dieta realista em <b>3 passos</b> — apenas <b>index.html</b> + <b>.json</b>.</p>
+</header>
 
-  <!-- Overlay -->
-  <div id="overlay">
-    <div class="box">
-      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-      <div id="overlayMsg" class="text-slate-200 text-sm">Otimizando calorias…</div>
+<!-- Overlay -->
+<div id="overlay">
+  <div class="box">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div id="overlayMsg" class="text-slate-200 text-sm">Processando…</div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 space-y-6 pb-24">
+  <nav class="grid grid-cols-3 gap-2 sticky top-0 z-10">
+    <button id="st1" class="step">1</button>
+    <button id="st2" class="step">2</button>
+    <button id="st3" class="step">3</button>
+  </nav>
+
+  <!-- 1) Perfil -->
+  <section id="s1" class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
+    <h2 class="text-xl font-semibold mb-3">1) Seu Perfil</h2>
+    <div class="grid lg:grid-cols-4 md:grid-cols-3 gap-4">
+      <div><div class="label">Sexo</div>
+        <select id="sx" class="field"><option value="M">Masculino</option><option value="F">Feminino</option></select>
+      </div>
+      <div><div class="label">Idade (anos)</div><input id="age" type="number" class="field" value="33" min="12" max="90"/></div>
+      <div><div class="label">Altura (cm)</div><input id="h" type="number" class="field" value="170" min="120" max="220"/></div>
+      <div><div class="label">Peso (kg)</div><input id="w" type="number" class="field" value="69" min="35" max="200"/></div>
+      <div><div class="label">Atividade</div>
+        <select id="act" class="field">
+          <option value="sedentario">Sedentário</option>
+          <option value="leve">Leve (1–2x/sem)</option>
+          <option value="moderada" selected>Moderada (3–4x/sem)</option>
+          <option value="intensa">Intensa (5–7x/sem)</option>
+        </select>
+      </div>
+      <div><div class="label">Objetivo</div>
+        <select id="goal" class="field">
+          <option value="cut" selected>Secar (−15%)</option>
+          <option value="maint">Manter (±0%)</option>
+          <option value="bulk">Ganhar (+8%)</option>
+        </select>
+      </div>
+      <div><div class="label">Maior fome</div>
+        <select id="hunger" class="field">
+          <option value="none" selected>Indiferente</option><option value="cafe">Café</option><option value="almoco">Almoço</option><option value="lanche">Lanche</option><option value="jantar">Jantar</option>
+        </select>
+      </div>
+      <div><div class="label">Treino</div>
+        <select id="train" class="field">
+          <option value="none" selected>Sem treino</option><option value="cafe">Treino: manhã</option><option value="almoco">Treino: meio-dia</option><option value="lanche">Treino: tarde</option><option value="jantar">Treino: noite</option>
+        </select>
+      </div>
+    </div>
+    <div class="mt-4 flex gap-2">
+      <button id="btnCalc" class="btn">Calcular TDEE & Meta</button>
+      <button id="btnSaveProfile" class="btn-ghost">Salvar Perfil</button>
+    </div>
+    <div id="calcBox" class="hidden mt-4 bg-[#0f172a] rounded-xl p-4 border border-[color:var(--border)]">
+      <div class="grid md:grid-cols-3 gap-3">
+        <div><div class="label">BMR (Mifflin)</div><div id="bmrOut" class="text-emerald-300 text-xl">—</div></div>
+        <div><div class="label">TDEE</div><div id="tdeeOut" class="text-emerald-300 text-xl">—</div></div>
+        <div><div class="label">Meta diária</div><div id="targetOut" class="text-emerald-300 text-xl">—</div></div>
+      </div>
+      <p class="text-slate-400 text-sm mt-2">Proteína é pesada <b>CRUA</b>; carboidratos <b>COZIDOS</b>. Dica cardio Z2 ≈ <b>145 bpm</b>.</p>
+    </div>
+    <div class="mt-6 flex items-center justify-between">
+      <span></span><button id="next1" class="btn">Próximo</button>
+    </div>
+  </section>
+
+  <!-- 2) Presets + preferências -->
+  <section id="s2" class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
+    <h2 class="text-xl font-semibold mb-1">2) Modelo & Preferências</h2>
+    <p id="goalInfo" class="text-emerald-300 text-xs mb-3"></p>
+    <div class="grid md:grid-cols-4 gap-3 mb-4">
+      <div><div class="label">Estilo</div>
+        <select id="prefStyle" class="field"><option value="indiferente" selected>Indiferente</option><option value="natural">Natural</option><option value="pratico">Prático</option></select></div>
+      <div><div class="label">Tempo</div>
+        <select id="prefTime" class="field"><option value="indiferente" selected>Indiferente</option><option value="rapido">Rápido</option><option value="normal">Normal</option></select></div>
+      <div><div class="label">Orçamento</div>
+        <select id="prefBudget" class="field"><option value="indiferente" selected>Indiferente</option><option value="baixo">Baixo</option><option value="medio">Médio</option></select></div>
+      <div><div class="label">Restrições</div>
+        <select id="prefRestrict" class="field">
+          <option value="nenhuma" selected>Nenhuma</option>
+          <option value="sem-lactose">Sem lactose</option>
+          <option value="sem-gluten">Sem glúten</option>
+          <option value="vegetariano">Vegetariano</option>
+          <option value="sem-peixe">Sem peixe</option>
+          <option value="sem-porco">Sem porco</option>
+        </select></div>
+    </div>
+    <div class="grid md:grid-cols-2 gap-3 mb-5">
+      <div><div class="label">Evitar (vírgulas)</div><input id="prefAvoid" class="field" placeholder="ex.: maionese, refrigerante, bacon"/></div>
+      <div>
+        <div class="label">Dispensa/Hábitos (opcional)</div>
+        <input id="prefPantry" class="field" placeholder="ex.: arroz integral, frango, banana"/>
+        <label class="text-xs text-slate-400 mt-1 inline-flex items-center gap-2"><input id="togglePantry" type="checkbox" class="accent-emerald-500"> Considerar dispensa e hábitos na montagem</label>
+      </div>
+    </div>
+    <h3 class="text-slate-200 font-semibold mb-2">Presets disponíveis</h3>
+    <div id="presetList" class="grid md:grid-cols-2 gap-3"></div>
+    <div class="mt-6 flex items-center justify-between">
+      <button id="prev2" class="btn-ghost">Voltar</button>
+      <button id="next2" class="btn">Ir para plano</button>
+    </div>
+  </section>
+
+  <!-- 3) Plano -->
+  <section id="s3" class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
+    <div class="flex items-center justify-between gap-2 flex-wrap">
+      <h2 class="text-xl font-semibold">3) Seu Plano</h2>
+      <div class="flex gap-2 flex-wrap">
+        <button id="btnRegenDay" class="btn-ghost">Regerar dia</button>
+        <button id="btnFav" class="btn-ghost">Favoritar</button>
+        <button id="btnExportPNG" class="btn">Exportar PNG</button>
+        <button id="btnExportPDF" class="btn-ghost">Exportar PDF</button>
+        <button id="btnSavePlan" class="btn-ghost">Salvar JSON</button>
+        <label class="btn-ghost cursor-pointer">Importar<input id="importPlan" type="file" accept="application/json" class="hidden"/></label>
+      </div>
+    </div>
+    <p class="text-slate-400 text-sm mt-1">Fixe itens (📌) para não mudarem ao regerar. Proteína: CRU · Carbo: COZIDO.</p>
+
+    <div class="tabs mt-4 flex gap-4 text-slate-300">
+      <button id="tabPlan" class="active">Plano</button>
+      <button id="tabListDay">Lista diária</button>
+      <button id="tabListWeek">Lista semanal</button>
+      <button id="tabFavs">Favoritos</button>
+    </div>
+
+    <div id="plannerWrap" class="mt-4 no-transform"><div id="planner" class="space-y-4 no-transform"></div></div>
+    <div id="listDay" class="hidden mt-4"></div>
+    <div id="listWeek" class="hidden mt-4"></div>
+    <div id="favsBox" class="hidden mt-4"></div>
+
+    <div class="mt-6 flex items-center justify-between">
+      <button id="prev3" class="btn-ghost">Voltar</button>
+      <button class="btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">Finalizar ↑</button>
+    </div>
+  </section>
+
+  <!-- Modal Swap -->
+  <div id="swapModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
+    <div class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 max-w-2xl w-full shadow-soft border border-[color:var(--border)]">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Trocar alimento</h3>
+        <button id="btnCloseSwap" class="btn-ghost">Fechar</button>
+      </div>
+      <p id="swapHint" class="text-slate-400 text-sm mt-1"></p>
+      <div id="swapList" class="mt-3 max-h-[58vh] overflow-auto space-y-2"></div>
     </div>
   </div>
+</main>
 
-  <main class="max-w-6xl mx-auto px-4 space-y-6 pb-24">
-    <!-- Stepper -->
-    <nav class="grid grid-cols-3 gap-2 sticky top-0 z-10">
-      <button id="st1" class="step">1</button>
-      <button id="st2" class="step">2</button>
-      <button id="st3" class="step">3</button>
-    </nav>
+<script>
+/* ========== Util/Store/Overlay ========== */
+const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+const LS={profile:'fp_profile',prefs:'fp_prefs',plan:'fp_plan',favs:'fp_favs'};
+const State={save:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),load:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}}};
+const Overlay={show:(m='Processando…')=>{overlayMsg.textContent=m; overlay.style.display='flex'},hide:()=>{overlay.style.display='none'}};
 
-    <!-- 1) Perfil -->
-    <section id="s1" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
-      <h2 class="text-xl font-semibold mb-3">1) Seu Perfil</h2>
-      <div class="grid lg:grid-cols-4 md:grid-cols-3 gap-4">
-        <div><div class="label">Sexo</div>
-          <select id="sx" class="field"><option value="M">Masculino</option><option value="F">Feminino</option></select>
-        </div>
-        <div><div class="label">Idade (anos)</div>
-          <input id="age" type="number" class="field" value="33" min="12" max="90"/>
-        </div>
-        <div><div class="label">Altura (cm)</div>
-          <input id="h" type="number" class="field" value="170" min="120" max="220"/>
-        </div>
-        <div><div class="label">Peso (kg)</div>
-          <input id="w" type="number" class="field" value="69" min="35" max="200"/>
-        </div>
-        <div><div class="label">Atividade</div>
-          <select id="act" class="field">
-            <option value="sedentario">Sedentário</option>
-            <option value="leve">Leve (1–2x/sem)</option>
-            <option value="moderada" selected>Moderada (3–4x/sem)</option>
-            <option value="intensa">Intensa (5–7x/sem)</option>
-          </select>
-        </div>
-        <div><div class="label">Objetivo</div>
-          <select id="goal" class="field">
-            <option value="cut" selected>Secar (−15%)</option>
-            <option value="maint">Manter (±0%)</option>
-            <option value="bulk">Ganhar (+8%)</option>
-          </select>
-        </div>
-        <div><div class="label">Maior fome</div>
-          <select id="hunger" class="field">
-            <option value="none" selected>Indiferente</option>
-            <option value="cafe">Café</option>
-            <option value="almoco">Almoço</option>
-            <option value="lanche">Lanche</option>
-            <option value="jantar">Jantar</option>
-          </select>
-        </div>
-        <div><div class="label">Treino</div>
-          <select id="train" class="field">
-            <option value="none" selected>Sem treino</option>
-            <option value="cafe">Treino: manhã</option>
-            <option value="almoco">Treino: meio-dia</option>
-            <option value="lanche">Treino: tarde</option>
-            <option value="jantar">Treino: noite</option>
-          </select>
-        </div>
-      </div>
+const slides=['s1','s2','s3']; let step=1;
+function showStep(n){step=Math.max(1,Math.min(3,n)); slides.forEach((id,i)=>{document.getElementById(id).style.display=(i===step-1?'block':'none')}); [1,2,3].forEach(i=>st(i).classList.toggle('active',i===step)); window.scrollTo({top:0,behavior:'smooth'});}
+const st=i=>document.getElementById('st'+i); showStep(1);
 
-      <div class="mt-4 flex gap-2">
-        <button id="btnCalc" class="btn">Calcular TDEE & Meta</button>
-        <button id="btnSaveProfile" class="btn-ghost">Salvar Perfil</button>
-      </div>
-
-      <div id="calcBox" class="hidden mt-4 bg-[#0f172a] rounded-xl p-4 border border-[color:var(--border)]">
-        <div class="grid md:grid-cols-3 gap-3">
-          <div><div class="label">BMR (Mifflin)</div><div id="bmrOut" class="text-emerald-300 text-xl">—</div></div>
-          <div><div class="label">TDEE</div><div id="tdeeOut" class="text-emerald-300 text-xl">—</div></div>
-          <div><div class="label">Meta diária</div><div id="targetOut" class="text-emerald-300 text-xl">—</div></div>
-        </div>
-        <p class="text-slate-400 text-sm mt-2">Proteína é pesada <b>CRUA</b>; carboidratos <b>COZIDOS</b>. Dica cardio Z2 ≈ <b>145 bpm</b>.</p>
-      </div>
-
-      <div class="mt-6 flex items-center justify-between">
-        <span></span><button id="next1" class="btn">Próximo</button>
-      </div>
-    </section>
-
-    <!-- 2) Presets + Preferências compactas -->
-    <section id="s2" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
-      <h2 class="text-xl font-semibold mb-1">2) Modelo & Preferências</h2>
-      <p id="goalInfo" class="text-emerald-300 text-xs mb-3"></p>
-
-      <div class="grid md:grid-cols-4 gap-3 mb-4">
-        <div>
-          <div class="label">Estilo</div>
-          <select id="prefStyle" class="field">
-            <option value="indiferente" selected>Indiferente</option>
-            <option value="natural">Natural</option>
-            <option value="pratico">Prático</option>
-          </select>
-        </div>
-        <div>
-          <div class="label">Tempo</div>
-          <select id="prefTime" class="field">
-            <option value="indiferente" selected>Indiferente</option>
-            <option value="rapido">Rápido</option>
-            <option value="normal">Normal</option>
-          </select>
-        </div>
-        <div>
-          <div class="label">Orçamento</div>
-          <select id="prefBudget" class="field">
-            <option value="indiferente" selected>Indiferente</option>
-            <option value="baixo">Baixo</option>
-            <option value="medio">Médio</option>
-          </select>
-        </div>
-        <div>
-          <div class="label">Restrições</div>
-          <select id="prefRestrict" class="field">
-            <option value="nenhuma" selected>Nenhuma</option>
-            <option value="sem-lactose">Sem lactose</option>
-            <option value="sem-gluten">Sem glúten</option>
-            <option value="vegetariano">Vegetariano</option>
-            <option value="sem-peixe">Sem peixe</option>
-            <option value="sem-porco">Sem porco</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="grid md:grid-cols-2 gap-3 mb-5">
-        <div>
-          <div class="label">Evitar (vírgula para separar)</div>
-          <input id="prefAvoid" class="field" placeholder="ex.: maionese, refrigerante, bacon" />
-        </div>
-        <div>
-          <div class="label">Dispensa/Hábitos (opcional)</div>
-          <input id="prefPantry" class="field" placeholder="ex.: arroz integral, frango, banana" />
-          <label class="text-xs text-slate-400 mt-1 inline-flex items-center gap-2"><input id="togglePantry" type="checkbox" class="accent-emerald-500"> Considerar dispensa e hábitos na montagem</label>
-        </div>
-      </div>
-
-      <h3 class="text-slate-200 font-semibold mb-2">Presets disponíveis</h3>
-      <div id="presetList" class="grid md:grid-cols-2 gap-3"></div>
-
-      <div class="mt-6 flex items-center justify-between">
-        <button id="prev2" class="btn-ghost">Voltar</button>
-        <button id="next2" class="btn">Ir para plano</button>
-      </div>
-    </section>
-
-    <!-- 3) Plano + abas -->
-    <section id="s3" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
-      <div class="flex items-center justify-between gap-2 flex-wrap">
-        <h2 class="text-xl font-semibold">3) Seu Plano</h2>
-        <div class="flex gap-2 flex-wrap">
-          <button id="btnRegenDay" class="btn-ghost">Regerar dia</button>
-          <button id="btnFav" class="btn-ghost">Favoritar</button>
-          <button id="btnExportPNG" class="btn">Exportar PNG</button>
-          <button id="btnExportPDF" class="btn-ghost">Exportar PDF</button>
-          <button id="btnSavePlan" class="btn-ghost">Salvar JSON</button>
-          <label class="btn-ghost cursor-pointer">Importar<input id="importPlan" type="file" accept="application/json" class="hidden"/></label>
-        </div>
-      </div>
-      <p class="text-slate-400 text-sm mt-1">Fixe itens (📌) para não mudarem ao regerar. Proteína: CRU · Carbo: COZIDO.</p>
-
-      <div class="tabs mt-4 flex gap-4 text-slate-300">
-        <button id="tabPlan" class="active">Plano</button>
-        <button id="tabListDay">Lista diária</button>
-        <button id="tabListWeek">Lista semanal</button>
-        <button id="tabFavs">Favoritos</button>
-      </div>
-
-      <div id="plannerWrap" class="mt-4 no-transform">
-        <div id="planner" class="space-y-4 no-transform"></div>
-      </div>
-
-      <div id="listDay" class="hidden mt-4"></div>
-      <div id="listWeek" class="hidden mt-4"></div>
-      <div id="favsBox" class="hidden mt-4"></div>
-
-      <div class="mt-6 flex items-center justify-between">
-        <button id="prev3" class="btn-ghost">Voltar</button>
-        <button class="btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">Finalizar ↑</button>
-      </div>
-    </section>
-
-    <!-- Modal Swap -->
-    <div id="swapModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
-      <div class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 max-w-2xl w-full shadow-soft border border-[color:var(--border)]">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold">Trocar alimento</h3>
-          <button id="btnCloseSwap" class="btn-ghost">Fechar</button>
-        </div>
-        <p id="swapHint" class="text-slate-400 text-sm mt-1"></p>
-        <div id="swapList" class="mt-3 max-h-[58vh] overflow-auto space-y-2"></div>
-      </div>
-    </div>
-  </main>
-
-  <script>
-  /* ---------------- Utils & Store ---------------- */
-  const slides=["s1","s2","s3"]; let step=1;
-  const showStep=n=>{
-    step=Math.min(3,Math.max(1,n));
-    slides.forEach((id,i)=>{const el=document.getElementById(id); el.style.display=(i===step-1?'block':'none')});
-    [1,2,3].forEach(i=>document.getElementById('st'+i).classList.toggle('active',i===step));
-    if(step===2) renderPresets();
-    window.scrollTo({top:0,behavior:'smooth'});
-  }; showStep(1);
-
-  const LS={profile:'fp_profile',prefs:'fp_prefs',plan:'fp_plan',favs:'fp_favs'};
-  const State={save:(k,v)=>localStorage.setItem(k,JSON.stringify(v)), load:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}}};
-  const Overlay={show:(msg='Processando…')=>{document.getElementById('overlayMsg').textContent=msg; document.getElementById('overlay').style.display='flex'}, hide:()=>{document.getElementById('overlay').style.display='none'}};
-
-  const Data={foods:[],presets:[],manifestVersion:0};
-  async function loadManifest(){const r=await fetch('data/foods_manifest.json'); const j=await r.json(); Data.manifestVersion=j.version||1; return j.files||[]}
-  async function loadFoods(files){
-    const acc=[];
-    for(const f of files){
-      try{
-        const r=await fetch('data/'+f+'?v='+Data.manifestVersion);
-        const j=await r.json(); if(Array.isArray(j)) acc.push(...j);
-      }catch(e){console.warn('Falha ao carregar',f,e)}
-    }
-    const seen=new Set();
-    Data.foods=acc
-      .filter(x=>x && typeof x.id!=='undefined')
-      .map(x=>({
-        id:x.id,
-        name:String(x.name||'Item'),
-        family:String(x.family||'Misto'),
-        state:x.state||'',
-        kcal:+x.kcal||0, P:+x.P||0, C:+x.C||0, G:+x.G||0,
-        tags:Array.isArray(x.tags)?x.tags:[]
-      }))
-      .filter(x=>!seen.has(x.id) && seen.add(x.id)===true);
+/* ========== Data ========== */
+const Data={foods:[],presets:[],manifestVersion:0};
+async function loadManifest(){const r=await fetch('data/foods_manifest.json'); const j=await r.json(); Data.manifestVersion=j.version||1; return j.files||[]}
+async function loadFoods(files){
+  const acc=[];
+  for(const f of files){
+    try{const r=await fetch('data/'+f+'?v='+Data.manifestVersion); const j=await r.json(); if(Array.isArray(j)) acc.push(...j);}catch(e){console.warn('Falha ao carregar',f,e)}
   }
-  async function loadPresets(){ const r=await fetch('data/presets.json?v='+Data.manifestVersion); const j=await r.json(); Data.presets=j.presets||[] }
+  const seen=new Set();
+  Data.foods=acc.filter(x=>x && x.id!=null).map(x=>({
+    id:String(x.id), name:String(x.name||'Item'),
+    family:String(x.family||'Misto'),
+    state:x.state?String(x.state):'',
+    kcal:+(x.kcal||0), P:+(x.P||0), C:+(x.C||0), G:+(x.G||0),
+    tags:Array.isArray(x.tags)?x.tags.map(String):[]
+  })).filter(x=>!seen.has(x.id) && seen.add(x.id)===true);
+}
+async function loadPresets(){const r=await fetch('data/presets.json?v='+Data.manifestVersion); const j=await r.json(); Data.presets=j.presets||[]}
 
-  /* ---------------- Cálculo ---------------- */
-  function bmrMifflin(sexo,peso,alt,idade){return sexo==='M'?(10*peso+6.25*alt-5*idade+5):(10*peso+6.25*alt-5*idade-161)}
-  function tdeeFrom(bmr,act){const mult={sedentario:1.2,leve:1.375,moderada:1.55,intensa:1.725}; return bmr*(mult[act]||1.55)}
-  function targetFrom(tdee,goal){if(goal==='cut') return Math.round(tdee*0.85); if(goal==='bulk') return Math.round(tdee*1.08); return Math.round(tdee)}
+function getFoodById(id){const s=String(id); return Data.foods.find(f=>f.id===s)}
 
-  /* ---------------- Variedade/Score ---------------- */
-  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a}
-  function weightedPick(items,getW){const acc=[]; let s=0; for(const it of items){ s+=Math.max(.0001,getW(it)); acc.push(s); } const r=Math.random()*s; const idx=acc.findIndex(x=>x>=r); return items[Math.max(0,idx)]}
-  const Memory={last:new Set(),clear(){this.last.clear()},mark(id){this.last.add(id)},has(id){return this.last.has(id)}};
+/* ========== Cálculos base ========== */
+function bmrMifflin(sexo,peso,alt,idade){return sexo==='M'?(10*peso+6.25*alt-5*idade+5):(10*peso+6.25*alt-5*idade-161)}
+function tdeeFrom(bmr,act){const m={sedentario:1.2,leve:1.375,moderada:1.55,intensa:1.725}; return bmr*(m[act]||1.55)}
+function targetFrom(tdee,goal){if(goal==='cut')return Math.round(tdee*0.85); if(goal==='bulk')return Math.round(tdee*1.08); return Math.round(tdee)}
+const CAPS={solidMin:30,solidMax:300,oilMin:5,oilMax:20};
 
-  /* ---------------- Caps & metas ---------------- */
-  const CAPS={solidMin:30,solidMax:300, oilMin:5, oilMax:20};
-  function mealTargets(kcal,ratio){const P=(ratio.P||.3),C=(ratio.C||.45),G=(ratio.G||.25); return {kcal:Math.round(kcal),P:+(kcal*P/4).toFixed(1),C:+(kcal*C/4).toFixed(1),G:+(kcal*G/9).toFixed(1)}}
+/* ========== Helpers alimento ========== */
+const isBean=f=>/feij(a|ã)o|leguminosa/.test(norm(f.name))|| (f.tags||[]).map(norm).includes('leguminosa');
+const isFishOrTuna=f=>/(peixe|atum|sardinha|tilapia)/.test(norm(f.name)) || (f.tags||[]).map(norm).some(t=>/peixe|atum|sardinha/.test(t));
+const isDairy=f=>/(iogurte|queijo|lactose)/.test(norm(f.name)) || (f.tags||[]).map(norm).includes('lactose');
+const isPork=f=>/(porco|suino|lombo|bacon)/.test(norm(f.name));
+const isAnimal=f=>/(frango|carne|boi|bovino|peixe|atum|sardinha|suino|porco|ovo)/.test(norm(f.name));
 
-  /* ---------------- Helpers alimento ---------------- */
-  const sf=s=>String(s||'').toLowerCase();
-  function getFood(id){return Data.foods.find(x=>x.id===id)}
-  function isFamily(f, fam){return sf(f.family)===sf(fam)}
-  function hasTag(f, t){return (f.tags||[]).map(sf).includes(sf(t))}
-  function isBean(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return n.includes('feijao')||n.includes('feijão')||t.includes('leguminosa')}
-  function isFishOrTuna(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return t.includes('peixe')||t.includes('atum')||t.includes('tilapia')||t.includes('sardinha')||n.includes('tilápia')||n.includes('peixe')||n.includes('atum')}
-  function isDairy(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return t.includes('lactose')||n.includes('iogurte')||n.includes('queijo')}
-  function isPork(f){const n=sf(f.name); return /porco|bacon|lombo|su[ií]no/.test(n)}
-  function isAnimal(f){const n=sf(f.name); return /frango|carne|boi|bovino|peixe|atum|sardinha|su[ií]no|porco|ovo/.test(n)}
+function familiesEquivalent(a,b){
+  const na=norm(a), nb=norm(b);
+  if(na===nb) return true;
+  const map={'proteina':['proteina','proteina','proteina'],'carbo':['carbo','carboidrato','carboidratos'],'gordura':['gordura','oleo','azeite'],'misto':['misto']};
+  const keyA=Object.keys(map).find(k=>map[k].includes(na));
+  const keyB=Object.keys(map).find(k=>map[k].includes(nb));
+  return keyA && keyB && keyA===keyB;
+}
 
-  function pickPoolByFamily(family,prefs,preferState){
-    let list=Data.foods.filter(f=>sf(f.family)===sf(family));
-    if(!list.length) return [];
+function pickPoolByFamily(family,prefs,preferState){
+  let list=Data.foods.filter(f=>familiesEquivalent(f.family,family));
+  if(!list.length) return [];
 
-    list=list.filter(f=>{
-      if(prefs.restrict==='sem-lactose' && isDairy(f)) return false;
-      if(prefs.restrict==='sem-gluten' && hasTag(f,'gluten')) return false;
-      if(prefs.restrict==='sem-peixe' && isFishOrTuna(f)) return false;
-      if(prefs.restrict==='sem-porco' && isPork(f)) return false;
-      if(prefs.restrict==='vegetariano' && isAnimal(f)) return false;
-      return true;
-    });
+  list=list.filter(f=>{
+    if(prefs.restrict==='sem-lactose' && isDairy(f)) return false;
+    if(prefs.restrict==='sem-gluten' && (f.tags||[]).map(norm).includes('gluten')) return false;
+    if(prefs.restrict==='sem-peixe' && isFishOrTuna(f)) return false;
+    if(prefs.restrict==='sem-porco' && isPork(f)) return false;
+    if(prefs.restrict==='vegetariano' && isAnimal(f)) return false;
+    return true;
+  });
 
-    const avoid=(prefs.avoid||[]).map(sf);
-    if(avoid.length) list=list.filter(f=>!avoid.some(w=>sf(f.name).includes(w)));
+  const avoid=(prefs.avoid||[]).map(norm);
+  if(avoid.length) list=list.filter(f=>!avoid.some(w=>norm(f.name).includes(w)));
 
-    const style=prefs.style||'indiferente';
-    const preferNatural = style==='natural';
-    const preferPratico = style==='pratico';
+  const style=prefs.style||'indiferente';
+  const preferNatural = style==='natural';
+  const preferPratico = style==='pratico';
+  const fastWanted   = prefs.time==='rapido';
+  const cheapWanted  = prefs.budget==='baixo';
+  const pantrySet=new Set((prefs.pantry||[]).map(norm));
+  const considerPantry=!!prefs.considerPantry;
+  const inc=new Set((prefs.tags_incluir||[]).map(norm));
+  const varF=(+prefs.var||45)/100;
 
-    const fastWanted = prefs.time==='rapido';
-    const cheapWanted = prefs.budget==='baixo';
+  const score=f=>{
+    const tags=(f.tags||[]).map(norm); let s=1;
+    if(inc.size) s+=0.2*tags.filter(t=>inc.has(t)).length;
+    if(preferState && norm(f.state)===norm(preferState)) s+=0.25;
+    if(fastWanted && f.prep_min!=null && f.prep_min<=10) s+=0.25;
+    if(cheapWanted && tags.includes('baixo-custo')) s+=0.2;
+    const st=norm(f.state);
+    if(preferNatural && st.includes('in natura')) s+=0.25;
+    if(preferPratico  && (st.includes('industrializado')||tags.includes('marmita'))) s+=0.2;
+    if(considerPantry && pantrySet.has(norm(f.name))) s+=0.35;
+    if(Memory.has(f.id)) s-= (0.35+0.3*varF);
+    return Math.max(0.05,s);
+  };
 
-    const pantrySet=new Set((prefs.pantry||[]).map(sf));
-    const considerPantry=!!prefs.considerPantry;
+  return list.map(x=>({...x,__w:score(x)})).sort((a,b)=>b.__w-a.__w);
+}
 
-    const inc=new Set((prefs.tags_incluir||[]).map(sf));
-    const varF=(+prefs.var||45)/100;
+function gramsForTargets(food,t){
+  const p=food.P||0,c=food.C||0,g=food.G||0;
+  const basis = (t.P>=t.C && t.P>=t.G && p)?'P':(t.C>=t.P && t.C>=t.G && c)?'C':(g?'G':'C');
+  const v=basis==='P'?p:basis==='C'?c:g; if(v<=0) return 0;
+  let gms=(t[basis]/v)*100;
+  if(familiesEquivalent(food.family,'Gordura')) gms=Math.min(Math.max(gms,CAPS.oilMin),CAPS.oilMax);
+  else gms=Math.min(Math.max(gms,CAPS.solidMin),CAPS.solidMax);
+  return Math.round(gms);
+}
 
-    const score=f=>{
-      const tags=(f.tags||[]).map(sf);
-      let s=1;
-      if(inc.size) s+=0.2*tags.filter(t=>inc.has(t)).length;
-      if(preferState && f.state===preferState) s+=0.25;
-      if(fastWanted && f.prep_min!=null && f.prep_min<=10) s+=0.25;
-      if(cheapWanted && tags.includes('baixo-custo')) s+=0.2;
-      if(preferNatural && sf(f.state).includes('in natura')) s+=0.25;
-      if(preferPratico  && (sf(f.state).includes('industrializado')||tags.includes('marmita'))) s+=0.2;
-      if(considerPantry && (pantrySet.has(sf(f.name)))) s+=0.35;
-      if(Memory.has(f.id)) s-= (0.35+0.3*varF);
-      return Math.max(0.05,s);
-    };
-
-    return shuffle(list.slice(0)).map(x=>({...x,__w:score(x)})).sort((a,b)=>b.__w-a.__w)
+function sumMeal(items){
+  let kcal=0,P=0,C=0,G=0;
+  for(const it of items){
+    const f=getFoodById(it.id);
+    if(!f){ console.warn('[sumMeal] alimento não encontrado:', it.id); continue; }
+    const k=(it.g||0)/100;
+    kcal+=(f.kcal||0)*k; P+=(f.P||0)*k; C+=(f.C||0)*k; G+=(f.G||0)*k;
   }
+  return {kcal:Math.round(kcal),P:+P.toFixed(1),C:+C.toFixed(1),G:+G.toFixed(1)};
+}
 
-  function gramsForTargets(food,t){
-    const p=food.P||0,c=food.C||0,g=food.G||0;
-    const basis = (t.P>=t.C && t.P>=t.G && p)?'P':(t.C>=t.P && t.C>=t.G && c)?'C':(g?'G':'C');
-    const v=basis==='P'?p:basis==='C'?c:g; if(v<=0) return 0;
-    let gms=(t[basis]/v)*100;
-    if(isFamily(food,'Gordura')) gms=Math.min(Math.max(gms,CAPS.oilMin),CAPS.oilMax);
-    else gms=Math.min(Math.max(gms,CAPS.solidMin),CAPS.solidMax);
-    return Math.round(gms);
-  }
+function mealKind(name){const n=norm(name); if(n.includes('cafe')) return 'cafe'; if(n.includes('almoco')) return 'almoco'; if(n.includes('jantar')) return 'jantar'; return 'lanche'}
 
-  function sumMeal(items){
-    let kcal=0,P=0,C=0,G=0; for(const it of items){ const f=getFood(it.id); if(!f) continue; const k=(it.g||0)/100;
-      kcal+=(f.kcal||0)*k; P+=(f.P||0)*k; C+=(f.C||0)*k; G+=(f.G||0)*k; }
-    return {kcal:Math.round(kcal),P:+P.toFixed(1),C:+C.toFixed(1),G:+G.toFixed(1)}
-  }
-
-  function mealKind(name){const n=sf(name); if(n.includes('café')) return 'cafe'; if(n.includes('almoço')||n.includes('almoco')) return 'almoco'; if(n.includes('jantar')) return 'jantar'; return 'lanche'}
-
-  function enforceCompatibility(kind, items){
-    if(kind==='lanche'){
-      for(let i=0;i<items.length;i++){ const f=getFood(items[i].id); if(f && isBean(f)){ items.splice(i,1); break; } }
-      return items;
-    }
-    let hasBean=-1, fishIdx=-1, dairyIdx=-1;
-    items.forEach((it,idx)=>{ const f=getFood(it.id); if(!f) return; if(isBean(f)) hasBean=idx; if(isFishOrTuna(f)) fishIdx=idx; if(isDairy(f)) dairyIdx=idx; });
-    if(hasBean>-1 && fishIdx>-1){
-      const prefs=readPrefs(); const pool=pickPoolByFamily('Carbo',prefs,null);
-      const rice= pool.find(x=>sf(x.name).includes('arroz')) || pool[0]; if(rice){ items[hasBean]={id:rice.id,name:rice.name,family:'Carbo',state:rice.state,g:items[hasBean].g,locked:false}; }
-    }
-    if(hasBean>-1 && dairyIdx>-1){
-      const prefs=readPrefs(); const pool=pickPoolByFamily('Proteína',prefs,null);
-      const fr= pool.find(x=>!isDairy(x)) || pool[0]; if(fr){ items[dairyIdx]={id:fr.id,name:fr.name,family:'Proteína',state:fr.state,g:items[dairyIdx].g,locked:false}; }
-    }
+function enforceCompatibility(kind, items){
+  if(kind==='lanche'){ // não botar feijão no lanche
+    for(let i=0;i<items.length;i++){ const f=getFoodById(items[i].id); if(f && isBean(f)){ items.splice(i,1); break; } }
     return items;
   }
-
-  /* ---------------- Plano ---------------- */
-  function mealTargetsByPreset(preset,hunger,train){
-    const meals=preset.meals||[]; let fracs=meals.map(m=>m.kcal_frac||0.25);
-    const idxMap={cafe:meals.findIndex(m=>mealKind(m.name)==='cafe'),
-                  almoco:meals.findIndex(m=>mealKind(m.name)==='almoco'),
-                  lanche:meals.findIndex(m=>mealKind(m.name)==='lanche'),
-                  jantar:meals.findIndex(m=>mealKind(m.name)==='jantar')};
-    if(hunger!=='none' && idxMap[hunger]>-1) fracs[idxMap[hunger]]+=0.08;
-    if(train!=='none' && idxMap[train]>-1){
-      fracs[idxMap[train]]+=0.12;
-      const ids=Object.values(idxMap).filter(i=>i>-1).sort((a,b)=>a-b);
-      const pos=ids.indexOf(idxMap[train]);
-      if(ids[pos-1]!=null) fracs[ids[pos-1]]+=0.06;
-      if(ids[pos+1]!=null) fracs[ids[pos+1]]+=0.06;
-    }
-    const s=fracs.reduce((a,b)=>a+b,0)||1;
-    return fracs.map(x=>x/s);
+  let bean=-1, fish=-1, dairy=-1;
+  items.forEach((it,idx)=>{ const f=getFoodById(it.id); if(!f) return; if(isBean(f)) bean=idx; if(isFishOrTuna(f)) fish=idx; if(isDairy(f)) dairy=idx; });
+  if(bean>-1 && fish>-1){ // trocar feijão por arroz
+    const prefs=readPrefs(); const pool=pickPoolByFamily('Carbo',prefs,null);
+    const rice= pool.find(x=>norm(x.name).includes('arroz')) || pool[0];
+    if(rice){ items[bean]={id:String(rice.id),name:rice.name,family:'Carbo',state:rice.state,g:items[bean].g,locked:false}; }
   }
+  if(bean>-1 && dairy>-1){ // evitar feijão + laticínio
+    const prefs=readPrefs(); const pool=pickPoolByFamily('Proteína',prefs,null);
+    const fr= pool.find(x=>!isDairy(x)) || pool[0];
+    if(fr){ items[dairy]={id:String(fr.id),name:fr.name,family:'Proteína',state:fr.state,g:items[dairy].g,locked:false}; }
+  }
+  return items;
+}
 
-  function buildPlan(meta,preset,prefs){
-    const plan={meta_kcal:meta,preset_id:preset.id,meals:[]};
+/* ========== Metas por refeição ========== */
+function mealTargets(kcal,ratio){const P=(ratio.P||.3),C=(ratio.C||.45),G=(ratio.G||.25); return {kcal:Math.round(kcal),P:+(kcal*P/4).toFixed(1),C:+(kcal*C/4).toFixed(1),G:+(kcal*G/9).toFixed(1)}}
+function mealTargetsByPreset(preset,hunger,train){
+  const meals=preset.meals||[]; let fracs=meals.map(m=>m.kcal_frac||0.25);
+  const idxMap={cafe:meals.findIndex(m=>mealKind(m.name)==='cafe'),
+                almoco:meals.findIndex(m=>mealKind(m.name)==='almoco'),
+                lanche:meals.findIndex(m=>mealKind(m.name)==='lanche'),
+                jantar:meals.findIndex(m=>mealKind(m.name)==='jantar')};
+  if(hunger!=='none' && idxMap[hunger]>-1) fracs[idxMap[hunger]]+=0.08;
+  if(train!=='none' && idxMap[train]>-1){
+    fracs[idxMap[train]]+=0.12;
+    const ids=Object.values(idxMap).filter(i=>i>-1).sort((a,b)=>a-b);
+    const pos=ids.indexOf(idxMap[train]);
+    if(ids[pos-1]!=null) fracs[ids[pos-1]]+=0.06;
+    if(ids[pos+1]!=null) fracs[ids[pos+1]]+=0.06;
+  }
+  const s=fracs.reduce((a,b)=>a+b,0)||1;
+  return fracs.map(x=>x/s);
+}
+
+/* ========== Construção/ajustes do plano ========== */
+const Memory={last:new Set(),clear(){this.last.clear()},mark(id){this.last.add(String(id))},has(id){return this.last.has(String(id))}};
+function buildPlan(meta,preset,prefs){
+  const plan={meta_kcal:meta,preset_id:preset.id,meals:[]}; Memory.clear();
+  const prof=readProfile(); const fracs=mealTargetsByPreset(preset,prof.fome||'none',prof.treino||'none');
+  (preset.meals||[]).forEach((m,idx)=>{
+    const kcalMeal= meta*fracs[idx]; const tgt=mealTargets(kcalMeal, m.macro_ratio||{P:.3,C:.45,G:.25});
+    const kind=mealKind(m.name||''); const items=[];
+    for(const fam of (m.families||[])){
+      let pool=pickPoolByFamily(fam,prefs,null);
+      if(!pool.length){ // fallback duro
+        const alt = Data.foods.filter(f=>familiesEquivalent(f.family,fam));
+        pool = alt;
+      }
+      if(!pool.length) continue;
+      const chosen=pool[0].__w!=null?pool[0]:pool.sort(()=>Math.random()-0.5)[0];
+      const grams=gramsForTargets(chosen,tgt);
+      items.push({id:String(chosen.id),name:chosen.name,family:fam,state:chosen.state,g:grams,locked:false});
+      Memory.mark(chosen.id);
+    }
+    enforceCompatibility(kind, items);
+    adjustMealToTarget({target:tgt,items});
+    plan.meals.push({id:m.id,name:m.name,target:tgt,items});
+  });
+  adjustDayToMeta(plan); return plan;
+}
+
+function chooseItemForMacro(items,macro){
+  const order = macro==='C'?[ 'Carbo','Misto','Proteína','Gordura'] : macro==='P'?[ 'Proteína','Misto','Carbo','Gordura'] : ['Gordura','Misto','Carbo','Proteína'];
+  for(const fam of order){
+    const idx=items.findIndex(it=>{ const f=getFoodById(it.id); if(!f) return false; const v=macro==='P'?f.P:macro==='C'?f.C:f.G; return familiesEquivalent(f.family,fam) && v>0; });
+    if(idx>-1) return idx;
+  }
+  return items.findIndex(it=>{ const f=getFoodById(it.id); if(!f) return false; const v=macro==='P'?f.P:macro==='C'?f.C:f.G; return v>0; });
+}
+function adjustMealToTarget(meal){
+  const tgt=meal.target; const calc=()=>sumMeal(meal.items); let cur=calc();
+  const clampG=(food, g)=> familiesEquivalent(food.family,'Gordura') ? Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax) : Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax);
+  for(const M of ['P','C','G']){
+    let deficit = +(tgt[M]-cur[M]).toFixed(1); if(Math.abs(deficit)<1) continue;
+    const idx=chooseItemForMacro(meal.items,M); if(idx<0) continue;
+    const it=meal.items[idx]; const f=getFoodById(it.id); if(!f) continue; const per100 = M==='P'?f.P:M==='C'?f.C:f.G; if(!per100) continue;
+    const delta = (deficit/per100)*100; const newG = clampG(f, (it.g||0)+delta); it.g=Math.round(newG); cur=calc();
+  }
+  return meal;
+}
+function adjustDayToMeta(plan){
+  const meta=plan.meta_kcal; const totals=plan.meals.reduce((a,m)=>{const s=sumMeal(m.items); a.kcal+=s.kcal; return a;},{kcal:0});
+  const diff = meta - totals.kcal; if(!isFinite(diff)) return plan; const tol=Math.abs(diff)/Math.max(1,meta); if(tol<=0.02) return plan;
+  let idx = plan.meals.findIndex(m=>mealKind(m.name)==='jantar'); if(idx<0) idx=plan.meals.findIndex(m=>mealKind(m.name)==='almoco'); if(idx<0) idx=0;
+  const m=plan.meals[idx]; const id=chooseItemForMacro(m.items,'C'); if(id<0) return plan;
+  const it=m.items[id]; const f=getFoodById(it.id); if(!f||!f.kcal) return plan; const delta = (diff/f.kcal)*100;
+  const clampG=(food, g)=> familiesEquivalent(food.family,'Gordura')?Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax) : Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax);
+  it.g=Math.round(clampG(f,(it.g||0)+delta)); return plan;
+}
+
+/* ========== Regeneração robusta ========== */
+function regenerateDay(plan,preset,prefs){
+  Overlay.show('Gerando variedade…');
+  try{
     Memory.clear();
-    const prof=readProfile();
-    const fracs = mealTargetsByPreset(preset, prof.fome||'none', prof.treino||'none');
-
-    (preset.meals||[]).forEach((m,idx)=>{
-      const kcalMeal= meta*fracs[idx];
-      const tgt=mealTargets(kcalMeal, m.macro_ratio||{P:.3,C:.45,G:.25});
-      const kind=mealKind(m.name||'');
-      const items=[];
-      for(const fam of (m.families||[])){
-        const pool=pickPoolByFamily(fam,prefs,null); if(!pool.length) continue;
-        const chosen=weightedPick(pool,x=>x.__w||1);
-        const grams=gramsForTargets(chosen,tgt);
-        items.push({id:chosen.id,name:chosen.name,family:fam,state:chosen.state,g:grams,locked:false});
+    for(const m of plan.meals){
+      const kind=mealKind(m.name); const tgt=m.target; const newItems=[];
+      for(const it of m.items){
+        if(it.locked){ newItems.push(it); Memory.mark(it.id); continue; }
+        let pool=pickPoolByFamily(it.family,prefs,it.state);
+        if(!pool.length){ const alt=Data.foods.filter(f=>familiesEquivalent(f.family,it.family)); pool=alt; }
+        if(!pool.length){ newItems.push(it); continue; }
+        const chosen = pool[0];
+        const grams  = gramsForTargets(chosen,tgt);
+        newItems.push({id:String(chosen.id),name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false});
         Memory.mark(chosen.id);
       }
-      enforceCompatibility(kind, items);
-      adjustMealToTarget({target:tgt,items});
-      plan.meals.push({id:m.id,name:m.name,target:tgt,items});
-    });
-
+      enforceCompatibility(kind,newItems);
+      m.items=newItems; adjustMealToTarget(m);
+    }
     adjustDayToMeta(plan);
     return plan;
-  }
-
-  function chooseItemForMacro(items, macro){
-    const order = macro==='C'?[ 'Carbo','Misto','Proteína','Gordura'] : macro==='P'?[ 'Proteína','Misto','Carbo','Gordura'] : ['Gordura','Misto','Carbo','Proteína'];
-    for(const fam of order){
-      const idx=items.findIndex(it=>{ const f=getFood(it.id); if(!f) return false; const v=macro==='P'?f.P:macro==='C'?f.C:f.G; return isFamily(f,fam) && v>0; });
-      if(idx>-1) return idx;
+  }catch(e){ console.error('[regenerateDay]',e); alert('Ops! Ocorreu um erro ao regerar o dia. Verifique se os alimentos estão válidos no JSON.'); return plan; }
+  finally{ Overlay.hide(); }
+}
+function regenerateMeal(plan,mi,prefs){
+  Overlay.show('Trocando refeição…');
+  try{
+    const m=plan.meals[mi]; const tgt=m.target; const kind=mealKind(m.name); const newItems=[]; Memory.clear();
+    for(const it of m.items){
+      if(it.locked){ newItems.push(it); Memory.mark(it.id); continue; }
+      let pool=pickPoolByFamily(it.family,prefs,it.state);
+      if(!pool.length){ const alt=Data.foods.filter(f=>familiesEquivalent(f.family,it.family)); pool=alt; }
+      if(!pool.length){ newItems.push(it); continue; }
+      const chosen=pool[0]; const grams=gramsForTargets(chosen,tgt);
+      newItems.push({id:String(chosen.id),name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false});
+      Memory.mark(chosen.id);
     }
-    return items.findIndex(it=>{ const f=getFood(it.id); const v=macro==='P'?f.P:macro==='C'?f.C:f.G; return v>0; });
-  }
+    enforceCompatibility(kind,newItems); m.items=newItems; adjustMealToTarget(m); adjustDayToMeta(plan); return plan;
+  }catch(e){ console.error('[regenerateMeal]',e); alert('Erro ao regerar a refeição. Veja os dados dos alimentos no JSON.'); return plan; }
+  finally{ Overlay.hide(); }
+}
 
-  function adjustMealToTarget(meal){
-    const tgt=meal.target; const calc=()=>sumMeal(meal.items); let cur=calc();
-    const clampG=(food, g)=> isFamily(food,'Gordura') ? Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax) : Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax);
-    for(const M of ['P','C','G']){
-      let deficit = +(tgt[M]-cur[M]).toFixed(1); if(Math.abs(deficit)<1) continue;
-      const idx=chooseItemForMacro(meal.items,M); if(idx<0) continue;
-      const it=meal.items[idx]; const f=getFood(it.id); const per100 = M==='P'?f.P:M==='C'?f.C:f.G; if(!per100) continue;
-      const delta = (deficit/per100)*100; const newG = clampG(f, (it.g||0)+delta); it.g=Math.round(newG); cur=calc();
-    }
-    return meal;
-  }
-
-  function adjustDayToMeta(plan){
-    const meta=plan.meta_kcal; const totals=plan.meals.reduce((a,m)=>{const s=sumMeal(m.items); a.kcal+=s.kcal; return a;},{kcal:0});
-    const diff = meta - totals.kcal; const tol = Math.abs(diff)/meta; if(tol<=0.02) return plan;
-    let idx = plan.meals.findIndex(m=>mealKind(m.name)==='jantar'); if(idx<0) idx=plan.meals.findIndex(m=>mealKind(m.name)==='almoco'); if(idx<0) idx=0;
-    const m=plan.meals[idx]; const id=chooseItemForMacro(m.items,'C'); if(id<0){ return plan; }
-    const it=m.items[id]; const f=getFood(it.id); const kcal100 = f.kcal||0; if(kcal100<=0) return plan; const delta = (diff/kcal100)*100;
-    const clampG=(food, g)=> isFamily(food,'Gordura')?Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax) : Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax);
-    it.g=Math.round(clampG(f,(it.g||0)+delta)); return plan;
-  }
-
-  /* ---------------- Regeneração (com try/finally) ---------------- */
-  function regenerateDay(plan, preset, prefs){
-    Overlay.show('Gerando variedade…');
-    try {
-      Memory.clear();
-      for (const m of plan.meals) {
-        const kind = mealKind(m.name);
-        const tgt  = m.target;
-        const newItems = [];
-        for (const it of m.items) {
-          if (it.locked) { newItems.push(it); Memory.mark(it.id); continue; }
-          const pool = pickPoolByFamily(it.family, prefs, it.state);
-          if (!pool || !pool.length) { newItems.push(it); continue; }
-          const chosen = weightedPick(pool, x => x.__w || 1);
-          const grams  = gramsForTargets(chosen, tgt);
-          newItems.push({ id: chosen.id, name: chosen.name, family: it.family, state: chosen.state, g: grams, locked: false });
-          Memory.mark(chosen.id);
-        }
-        enforceCompatibility(kind, newItems);
-        m.items = newItems;
-        adjustMealToTarget(m);
-      }
-      adjustDayToMeta(plan);
-      return plan;
-    } catch (err) {
-      console.error('[regenerateDay] erro:', err);
-      alert('Ops! Ocorreu um erro ao regerar o dia. Verifique se os alimentos estão válidos no JSON.');
-      return plan;
-    } finally {
-      Overlay.hide();
-    }
-  }
-
-  function regenerateMeal(plan, mi, prefs){
-    Overlay.show('Trocando refeição…');
-    try {
-      const m   = plan.meals[mi];
-      const tgt = m.target;
-      const kind= mealKind(m.name);
-      const newItems = [];
-      Memory.clear();
-      for (const it of m.items) {
-        if (it.locked) { newItems.push(it); Memory.mark(it.id); continue; }
-        const pool = pickPoolByFamily(it.family, prefs, it.state);
-        if (!pool || !pool.length) { newItems.push(it); continue; }
-        const chosen = weightedPick(pool, x => x.__w || 1);
-        const grams  = gramsForTargets(chosen, tgt);
-        newItems.push({ id: chosen.id, name: chosen.name, family: it.family, state: chosen.state, g: grams, locked: false });
-        Memory.mark(chosen.id);
-      }
-      enforceCompatibility(kind, newItems);
-      m.items = newItems;
-      adjustMealToTarget(m);
-      adjustDayToMeta(plan);
-      return plan;
-    } catch (err) {
-      console.error('[regenerateMeal] erro:', err);
-      alert('Erro ao regerar a refeição. Veja os dados dos alimentos no JSON.');
-      return plan;
-    } finally {
-      Overlay.hide();
-    }
-  }
-
-  /* ---------------- Presets filtrados ---------------- */
-  function isPresetAllowedForGoal(preset, goal){
-    const name = String(preset.name||'').toLowerCase();
-    const isCutLike  = /cut|secar|defini[cç][aã]o|low[- ]?carb/.test(name);
-    const isBulkLike = /bulk|ganho|super[aá]vit|superavit|hipercal[oó]rico|hipercalorico/.test(name);
-    if (goal === 'cut')  return !isBulkLike;
-    if (goal === 'bulk') return !isCutLike;
+/* ========== UI render ========== */
+function pctDev(v,t){if(!t) return 0; return Math.round(((v-t)/t)*100)}
+function devTxt(p){return (Math.abs(p)<=2?'±2%': (p>0?('+'+p+'%'):(p+'%')))}
+function renderPresets(){
+  const box=presetList; box.innerHTML='';
+  const prof=readProfile();
+  const filtered=(Data.presets||[]).filter(p=>{
+    const n=norm(p.name||'');
+    const cutLike = /(cut|secar|definicao|definicao|lowcarb)/.test(n);
+    const bulkLike=/(bulk|ganho|superavit|hipercalorico|hipercalorico)/.test(n);
+    if(prof.objetivo==='cut') return !bulkLike;
+    if(prof.objetivo==='bulk')return !cutLike;
     return true;
-  }
+  });
+  goalInfo.textContent = prof.objetivo==='cut' ? 'Filtrando modelos para SECAR.' : prof.objetivo==='bulk' ? 'Filtrando modelos para GANHAR.' : 'Mostrando todos os modelos.';
+  (filtered.length?filtered:Data.presets).forEach(p=>{
+    const meals=(p.meals||[]).map(m=>m.name).join(' · ');
+    const desc=p.description||'Variedade elástica com trocas simples.';
+    const who=p.indicado_para||'Público geral (2–4x/sem).';
+    const chips=(p.chips||meals.split(' · '));
+    const el=document.createElement('div'); el.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
+    el.innerHTML=`<div class="flex items-start justify-between gap-3">
+      <div>
+        <div class="font-semibold text-lg">${p.name||'Modelo'}</div>
+        <div class="text-slate-300 text-sm mb-1">${desc}</div>
+        <div class="text-slate-400 text-xs mb-2">Indicado para: ${who}</div>
+        <div class="flex flex-wrap">${(chips||[]).map(c=>`<span class='tag'>${c}</span>`).join('')}</div>
+      </div>
+      <div class="min-w-[120px] text-right">
+        <div class="text-slate-400 text-xs mb-1">Refeições: ${meals}</div>
+        <button class="btn" data-pid="${p.id}">Selecionar</button>
+      </div>
+    </div>`;
+    box.appendChild(el);
+  });
+  box.querySelectorAll('button[data-pid]').forEach(b=>b.addEventListener('click',()=>{
+    const p=Data.presets.find(x=>x.id===b.dataset.pid);
+    const prof=readProfile(); const b=bmrMifflin(prof.sexo,prof.peso_kg,prof.altura_cm,prof.idade); const td=tdeeFrom(b,prof.atividade); const meta=targetFrom(td,prof.objetivo);
+    showCalc(b,td,meta); savePrefs(); const prefs=readPrefs(); const plan=buildPlan(meta,p,prefs); State.save(LS.plan,plan); renderPlanner(plan); showStep(3);
+  }));
+}
 
-  /* ---------------- Render ---------------- */
-  function pctDev(v,t){if(!t) return 0; return Math.round(((v-t)/t)*100)}
-  function devTxt(p){return (Math.abs(p)<=2?'±2%': (p>0?('+'+p+'%'):(p+'%')))}
+function renderPlanner(plan){
+  const host=planner; host.innerHTML=''; if(!plan||!plan.meals) return;
+  const meta=plan.meta_kcal;
+  const totals=plan.meals.reduce((a,m)=>{const s=sumMeal(m.items); a.kcal+=s.kcal; a.P+=s.P; a.C+=s.C; a.G+=s.G; return a;},{kcal:0,P:0,C:0,G:0});
+  const tol=Math.abs(totals.kcal-meta)/Math.max(1,meta);
+  const status= tol<=0.02?`<span class='text-emerald-400'>🟢 dentro do alvo (±2%)</span>`:`<span class='text-amber-300'>🟠 fora do alvo (${Math.round(tol*100)}%)</span>`;
+  const head=document.createElement('div'); head.className='bg-[#0f172a] rounded-xl p-3 border border-[color:var(--border)] flex items-center justify-between flex-wrap gap-2';
+  head.innerHTML=`<div class='text-sm md:text-base'>Meta: <b>${meta}</b> kcal · Total: <b>${totals.kcal}</b> kcal ${status}</div><div class='text-slate-400 text-sm'>P:${totals.P.toFixed(0)}g · C:${totals.C.toFixed(0)}g · G:${totals.G.toFixed(0)}g</div>`;
+  host.appendChild(head);
 
-  function renderPresets(){
-    const box=document.getElementById('presetList'); box.innerHTML='';
-    const prof = readProfile();
-    const filtered = (Data.presets||[]).filter(p => isPresetAllowedForGoal(p, prof.objetivo));
-    const gi = document.getElementById('goalInfo');
-    if (gi) {
-      gi.textContent = prof.objetivo==='cut'
-        ? 'Filtrando modelos para SECAR (sem modelos de ganho).'
-        : prof.objetivo==='bulk'
-          ? 'Filtrando modelos para GANHAR (sem modelos de corte/low-carb).'
-          : 'Mostrando todos os modelos (objetivo: manter).';
-    }
-
-    (filtered.length ? filtered : Data.presets).forEach(p=>{
-      const meals=(p.meals||[]).map(m=>m.name).join(' · ');
-      const desc=p.description||'Variedade elástica com trocas simples.';
-      const who=p.indicado_para||'Público geral (2–4x/sem).';
-      const chips=(p.chips||meals.split(' · '));
-      const el=document.createElement('div'); el.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
-      el.innerHTML=`<div class="flex items-start justify-between gap-3">
-        <div>
-          <div class="font-semibold text-lg">${p.name||'Modelo'}</div>
-          <div class="text-slate-300 text-sm mb-1">${desc}</div>
-          <div class="text-slate-400 text-xs mb-2">Indicado para: ${who}</div>
-          <div class="flex flex-wrap">${(chips||[]).map(c=>`<span class='tag'>${c}</span>`).join('')}</div>
+  plan.meals.forEach((m,mi)=>{
+    const sum=sumMeal(m.items); const devP=pctDev(sum.P,m.target.P), devC=pctDev(sum.C,m.target.C), devG=pctDev(sum.G,m.target.G);
+    const card=document.createElement('div'); card.className='bg-[#0f172a] rounded-xl p-4 border border-[color:var(--border)]';
+    card.innerHTML=`
+      <div class='flex items-center justify-between gap-2 flex-wrap'>
+        <div class='font-semibold'>${m.name}</div>
+        <div class='flex items-center gap-2'>
+          <button class='btn-ghost btn-xs' data-regmi='${mi}'>Regerar refeição</button>
+          <div class='kcal-flag font-semibold'>${sum.kcal} kcal</div>
         </div>
-        <div class="min-w-[120px] text-right">
-          <div class="text-slate-400 text-xs mb-1">Refeições: ${meals}</div>
-          <button class="btn" data-pid="${p.id}">Selecionar</button>
-        </div>
+      </div>
+      <div class='text-slate-400 text-sm mt-1'>Alvo: P ${m.target.P}g (${devTxt(devP)}) · C ${m.target.C}g (${devTxt(devC)}) · G ${m.target.G}g (${devTxt(devG)})</div>
+      <div class='mt-3 space-y-2'>
+        ${m.items.map((it,ii)=>{ const f=getFoodById(it.id)||{}; const pin=it.locked?"📌":"📍";
+          return `<div class='flex items-center justify-between bg-[#111827] rounded-lg p-2 border border-[color:var(--border)]'>
+            <div><div class='font-medium'>${f.name||it.name}</div><div class='text-slate-400 text-xs'>Família: ${it.family} · Estado: ${it.state||'-'}</div></div>
+            <div class='flex items-center gap-2'>
+              <button class='btn-ghost btn-xs' title='Fixar/soltar' data-pin='${mi}:${ii}'>${pin}</button>
+              <div class='text-sm w-20 text-right'>${it.g} g</div>
+              <button class='btn-ghost btn-xs' data-swap='${mi}:${ii}'>Trocar</button>
+            </div></div>`;
+      }).join('')}
       </div>`;
-      box.appendChild(el);
-    });
+    host.appendChild(card);
+  });
 
-    box.querySelectorAll('button[data-pid]').forEach(b=>b.addEventListener('click',()=>{
-      const p=Data.presets.find(x=>x.id===b.dataset.pid);
-      const prof=readProfile(); const bmr=bmrMifflin(prof.sexo,prof.peso_kg,prof.altura_cm,prof.idade);
-      const td=tdeeFrom(bmr,prof.atividade); const meta=targetFrom(td,prof.objetivo);
-      showCalc(bmr,td,meta);
-      savePrefs();
-      const prefs=readPrefs();
-      const plan=buildPlan(meta,p,prefs); State.save(LS.plan,plan); renderPlanner(plan); showStep(3);
-    }));
-  }
+  host.querySelectorAll('button[data-swap]').forEach(b=>b.addEventListener('click',()=>{ const [mi,ii]=b.dataset.swap.split(':').map(Number); openSwap(State.load(LS.plan),mi,ii); }));
+  host.querySelectorAll('button[data-pin]').forEach(b=>b.addEventListener('click',()=>{ const [mi,ii]=b.dataset.pin.split(':').map(Number); togglePin(mi,ii); }));
+  host.querySelectorAll('button[data-regmi]').forEach(b=>b.addEventListener('click',()=>{ const mi=+b.dataset.regmi; const plan=State.load(LS.plan); const prefs=readPrefs(); regenerateMeal(plan,mi,prefs); State.save(LS.plan,plan); renderPlanner(plan); }));
 
-  function renderPlanner(plan){
-    const host=document.getElementById('planner'); host.innerHTML=''; if(!plan||!plan.meals) return; const meta=plan.meta_kcal;
-    const totals=plan.meals.reduce((a,m)=>{ const s=sumMeal(m.items); a.kcal+=s.kcal; a.P+=s.P; a.C+=s.C; a.G+=s.G; return a; },{kcal:0,P:0,C:0,G:0});
-    const tol=Math.abs(totals.kcal-meta)/meta; const status= tol<=0.02?`<span class='text-emerald-400'>🟢 dentro do alvo (±2%)</span>`:`<span class='text-amber-300'>🟠 fora do alvo (${Math.round(tol*100)}%)</span>`;
-    const head=document.createElement('div'); head.className='bg-[#0f172a] rounded-xl p-3 border border-[color:var(--border)] flex items-center justify-between flex-wrap gap-2';
-    head.innerHTML=`<div class='text-sm md:text-base'>Meta: <b>${meta}</b> kcal · Total: <b>${totals.kcal}</b> kcal ${status}</div><div class='text-slate-400 text-sm'>P:${totals.P.toFixed(0)}g · C:${totals.C.toFixed(0)}g · G:${totals.G.toFixed(0)}g</div>`;
-    host.appendChild(head);
+  renderListDay(plan);
+}
 
-    plan.meals.forEach((m,mi)=>{ const sum=sumMeal(m.items); const devP=pctDev(sum.P,m.target.P), devC=pctDev(sum.C,m.target.C), devG=pctDev(sum.G,m.target.G);
-      const card=document.createElement('div'); card.className='bg-[#0f172a] rounded-xl p-4 border border-[color:var(--border)]';
-      card.innerHTML=`
-        <div class='flex items-center justify-between gap-2 flex-wrap'>
-          <div class='font-semibold'>${m.name}</div>
-          <div class='flex items-center gap-2'>
-            <button class='btn-ghost btn-xs' data-regmi='${mi}'>Regerar refeição</button>
-            <div class='kcal-flag font-semibold'>${sum.kcal} kcal</div>
-          </div>
-        </div>
-        <div class='text-slate-400 text-sm mt-1'>Alvo: P ${m.target.P}g (${devTxt(devP)}) · C ${m.target.C}g (${devTxt(devC)}) · G ${m.target.G}g (${devTxt(devG)})</div>
-        <div class='mt-3 space-y-2'>
-          ${m.items.map((it,ii)=>{ const f=getFood(it.id)||{}; const pin=it.locked?"📌":"📍";
-            return `<div class='flex items-center justify-between bg-[#111827] rounded-lg p-2 border border-[color:var(--border)]'>
-              <div><div class='font-medium'>${f.name||it.name}</div><div class='text-slate-400 text-xs'>Família: ${it.family} · Estado: ${it.state||'-'}</div></div>
-              <div class='flex items-center gap-2'>
-                <button class='btn-ghost btn-xs' title='Fixar/soltar' data-pin='${mi}:${ii}'>${pin}</button>
-                <div class='text-sm w-20 text-right'>${it.g} g</div>
-                <button class='btn-ghost btn-xs' data-swap='${mi}:${ii}'>Trocar</button>
-              </div></div>`;
-          }).join('')}
-        </div>`;
-      host.appendChild(card);
-    });
+function showCalc(bmr,tdee,meta){calcBox.style.display='block'; bmrOut.textContent=Math.round(bmr); tdeeOut.textContent=Math.round(tdee); targetOut.textContent=meta}
 
-    host.querySelectorAll('button[data-swap]').forEach(b=>b.addEventListener('click',()=>{ const [mi,ii]=b.dataset.swap.split(':').map(Number); openSwap(State.load(LS.plan),mi,ii); }));
-    host.querySelectorAll('button[data-pin]').forEach(b=>b.addEventListener('click',()=>{ const [mi,ii]=b.dataset.pin.split(':').map(Number); togglePin(mi,ii); }));
-    host.querySelectorAll('button[data-regmi]').forEach(b=>b.addEventListener('click',()=>{ const mi=+b.dataset.regmi; const plan=State.load(LS.plan); const prefs=readPrefs(); regenerateMeal(plan,mi,prefs); State.save(LS.plan,plan); renderPlanner(plan); }));
+/* ========== Pins/Swap ========== */
+function togglePin(mi,ii){ const plan=State.load(LS.plan); plan.meals[mi].items[ii].locked=!plan.meals[mi].items[ii].locked; State.save(LS.plan,plan); renderPlanner(plan); }
 
-    renderListDay(plan);
-  }
-
-  function showCalc(bmr,tdee,meta){ document.getElementById('calcBox').style.display='block'; document.getElementById('bmrOut').textContent=Math.round(bmr); document.getElementById('tdeeOut').textContent=Math.round(tdee); document.getElementById('targetOut').textContent=meta; }
-
-  /* ---------------- Pins ---------------- */
-  function togglePin(mi,ii){ const plan=State.load(LS.plan); const it=plan.meals[mi].items[ii]; it.locked=!it.locked; State.save(LS.plan,plan); renderPlanner(plan); }
-
-  /* ---------------- SWAP ---------------- */
-  let SWAP=null;
-  function openSwap(plan,mi,ii){
-    SWAP={plan,mi,ii};
-    const m=plan.meals[mi], it=m.items[ii];
-    document.getElementById('swapHint').innerHTML=`Equivalentes para <b>${it.family}</b> (prioriza estado <b>${it.state||'-'}</b>).`;
-    const prefs=readPrefs();
-    const list=pickPoolByFamily(it.family,prefs,it.state);
-    const box=document.getElementById('swapList'); box.innerHTML='';
-    list.slice(0,150).forEach(f=>{
+let SWAP=null;
+function openSwap(plan,mi,ii){
+  SWAP={plan,mi,ii};
+  const m=plan.meals[mi], it=m.items[ii];
+  swapHint.innerHTML=`Equivalentes para <b>${it.family}</b> (prioriza estado <b>${it.state||'-'}</b>).`;
+  const prefs=readPrefs();
+  let list=pickPoolByFamily(it.family,prefs,it.state);
+  if(!list.length){ list=Data.foods.filter(f=>familiesEquivalent(f.family,it.family)); }
+  const box=swapList; box.innerHTML='';
+  if(!list.length){
+    box.innerHTML = `<div class="text-slate-300">Nenhum equivalente encontrado para ${it.family}. Revise o JSON.</div>`;
+  }else{
+    list.slice(0,200).forEach(f=>{
       const id=`g_${f.id}`;
       const row=document.createElement('div'); row.className='bg-[#111827] border border-[color:var(--border)] rounded-lg p-2';
       row.innerHTML=`<div class='flex items-start justify-between gap-3'>
@@ -660,285 +563,176 @@
         </div></div>`;
       box.appendChild(row);
     });
-    document.getElementById('swapModal').style.display='flex';
-    box.querySelectorAll('button[data-use]').forEach(b=>b.addEventListener('click',()=>applySwap(+b.dataset.use,null)));
-    box.querySelectorAll('button[data-useg]').forEach(b=>b.addEventListener('click',()=>{ const fid=+b.dataset.useg; const v=document.getElementById('g_'+fid).value; applySwap(fid, v?+v:null); }));
+    box.querySelectorAll('button[data-use]').forEach(b=>b.addEventListener('click',()=>applySwap(String(b.dataset.use),null)));
+    box.querySelectorAll('button[data-useg]').forEach(b=>b.addEventListener('click',()=>{ const fid=String(b.dataset.useg); const v=document.getElementById('g_'+fid).value; applySwap(fid, v?+v:null); }));
   }
-  function closeSwap(){ document.getElementById('swapModal').style.display='none'; SWAP=null; }
-  document.getElementById('btnCloseSwap').addEventListener('click',closeSwap);
+  swapModal.style.display='flex';
+}
+function closeSwap(){ swapModal.style.display='none'; SWAP=null; }
+btnCloseSwap.addEventListener('click',closeSwap);
 
-  function applySwap(foodId, grams){
-    try{
-      if(!SWAP) return; const {plan,mi,ii}=SWAP;
-      const m=plan.meals[mi]; const tgt=m.target; const chosen=getFood(foodId); if(!chosen) return;
-      if(!grams||grams<=0){
-        const others=m.items.filter((_,k)=>k!==ii); const partial=sumMeal(others);
-        const remaining={kcal:Math.max(tgt.kcal-partial.kcal,0),P:Math.max(tgt.P-partial.P,0),C:Math.max(tgt.C-partial.C,0),G:Math.max(tgt.G-partial.G,0)};
-        grams=gramsForTargets(chosen,remaining);
+function applySwap(foodId, grams){
+  try{
+    if(!SWAP) return; const {plan,mi,ii}=SWAP;
+    const m=plan.meals[mi]; const tgt=m.target; const chosen=getFoodById(foodId); if(!chosen) return;
+    if(!grams||grams<=0){
+      const others=m.items.filter((_,k)=>k!==ii); const partial=sumMeal(others);
+      const remaining={kcal:Math.max(tgt.kcal-partial.kcal,0),P:Math.max(tgt.P-partial.P,0),C:Math.max(tgt.C-partial.C,0),G:Math.max(tgt.G-partial.G,0)};
+      grams=gramsForTargets(chosen,remaining);
+    }
+    const clamp=(f,g)=> familiesEquivalent(f.family,'Gordura')?Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax):Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax);
+    grams=Math.round(clamp(chosen,grams));
+    m.items[ii]={id:String(chosen.id),name:chosen.name,family:chosen.family,state:chosen.state,g:grams,locked:false};
+    enforceCompatibility(mealKind(m.name), m.items); adjustMealToTarget(m); adjustDayToMeta(plan);
+    State.save(LS.plan,plan); renderPlanner(plan); closeSwap();
+  }catch(err){ console.error('[applySwap]',err); alert('Erro ao trocar alimento. Revise a lista de alimentos.'); }
+}
+
+/* ========== Preferências/Perfil ========== */
+function readProfile(){
+  return {sexo:sx.value, idade:+age.value, altura_cm:+h.value, peso_kg:+w.value, atividade:act.value, objetivo:goal.value, fome:hunger.value, treino:train.value}
+}
+function readPrefs(){
+  const raw=State.load(LS.prefs)||{};
+  return {
+    style: raw.style||prefStyle.value,
+    time: raw.time||prefTime.value,
+    budget: raw.budget||prefBudget.value,
+    restrict: raw.restrict||prefRestrict.value,
+    avoid: raw.avoid|| (prefAvoid.value||'').split(',').map(s=>s.trim()).filter(Boolean),
+    pantry: raw.pantry|| (prefPantry.value||'').split(',').map(s=>s.trim()).filter(Boolean),
+    considerPantry: raw.considerPantry ?? togglePantry.checked,
+    tags_incluir: raw.tags_incluir||[],
+    var: raw.var||45
+  }
+}
+function savePrefs(){ State.save(LS.prefs,readPrefs()); }
+
+/* ========== Listas ========== */
+function aggregateItems(items){
+  const map=new Map();
+  items.forEach(it=>{ const f=getFoodById(it.id)||{name:it.name,state:it.state}; const key=f.name+'|'+(f.state||''); const prev=map.get(key)||0; map.set(key, prev+(it.g||0)); });
+  return Array.from(map.entries()).map(([k,v])=>{ const [name,state]=k.split('|'); return {name, state, g:Math.round(v)}; }).sort((a,b)=>a.name.localeCompare(b.name));
+}
+function renderListDay(plan){
+  const host=listDay; host.innerHTML='';
+  if(!plan||!plan.meals){ host.innerHTML=`<div class="bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4"><div class="text-slate-300 mb-2">Nenhum plano.</div><button class="btn" onclick="switchTab('plan')">Gerar plano</button></div>`; return; }
+  const all=[]; plan.meals.forEach(m=>m.items.forEach(it=>all.push(it))); const agg=aggregateItems(all);
+  const box=document.createElement('div'); box.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
+  box.innerHTML=`<div class='font-semibold mb-2'>Lista diária</div><div class='grid md:grid-cols-2 gap-2'>${agg.map(x=>`<div class='flex items-center justify-between bg-[#111827] rounded p-2'><div>${x.name} <span class='text-slate-400 text-xs'>${x.state||''}</span></div><div>${x.g} g</div></div>`).join('')}</div>`;
+  host.appendChild(box);
+}
+async function renderListWeek(){
+  const host=listWeek; host.innerHTML='';
+  const plan=State.load(LS.plan); if(!plan||!plan.meals){ host.innerHTML=`<div class="bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4"><div class="text-slate-300 mb-2">Nenhum plano.</div><button class="btn" onclick="switchTab('plan')">Gerar plano</button></div>`; return; }
+  const prefs=readPrefs(); const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0];
+  Overlay.show('Gerando semana…'); let allItems=[];
+  try{ for(let d=0; d<7; d++){ const tmp=buildPlan(plan.meta_kcal,preset,prefs); tmp.meals.forEach(m=>m.items.forEach(it=>allItems.push({...it}))); } }
+  catch(e){ console.error('[renderListWeek]',e); alert('Erro ao gerar lista semanal. Verifique os alimentos/presets.'); }
+  finally{ Overlay.hide(); }
+  const agg=aggregateItems(allItems);
+  const box=document.createElement('div'); box.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
+  box.innerHTML=`<div class='font-semibold mb-2'>Lista semanal (7 dias)</div><div class='grid md:grid-cols-2 gap-2'>${agg.map(x=>`<div class='flex items-center justify-between bg-[#111827] rounded p-2'><div>${x.name} <span class='text-slate-400 text-xs'>${x.state||''}</span></div><div>${x.g} g</div></div>`).join('')}</div>`;
+  host.appendChild(box);
+}
+
+/* ========== Export ========== */
+async function exportPNG(){
+  const node=plannerWrap;
+  try{
+    const canvas=await html2canvas(node,{backgroundColor:'#0a0f1c',scale:2,useCORS:true,allowTaint:true,logging:false});
+    const blob=await new Promise(res=>canvas.toBlob(res,'image/png')); if(blob){ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png'; a.click(); URL.revokeObjectURL(url); return; }
+    throw new Error('no-blob');
+  }catch(e){
+    try{ const dataUrl=await window.domtoimage.toPng(node,{bgcolor:'#0a0f1c',quality:1,style:{transform:'none',transformOrigin:'top left'}}); const a=document.createElement('a'); a.href=dataUrl; a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png'; a.click(); }
+    catch(e2){ alert('Falha ao gerar imagem'); console.error(e2); }
+  }
+}
+async function exportPDF(){
+  const node=plannerWrap; Overlay.show('Gerando PDF…');
+  try{
+    const canvas=await html2canvas(node,{backgroundColor:'#0a0f1c',scale:2,useCORS:true,allowTaint:true});
+    const img=canvas.toDataURL('image/png'); const {jsPDF}=window.jspdf; const pdf=new jsPDF({unit:'pt',format:'a4',compress:true});
+    const pageWidth=pdf.internal.pageSize.getWidth(); const pageHeight=pdf.internal.pageSize.getHeight(); const imgWidth=pageWidth-40; const imgHeight=canvas.height*(imgWidth/canvas.width);
+    if(imgHeight<=pageHeight-40){ pdf.addImage(img,'PNG',20,20,imgWidth,imgHeight); }
+    else{ let sY=0, sliceHeight=Math.floor(canvas.width*((pageHeight-40)/imgWidth));
+      while(sY<canvas.height){ const slice=document.createElement('canvas'); slice.width=canvas.width; slice.height=Math.min(sliceHeight,canvas.height-sY);
+        const ctx=slice.getContext('2d'); ctx.drawImage(canvas,0,sY,canvas.width,slice.height,0,0,canvas.width,slice.height);
+        const part=slice.toDataURL('image/png'); pdf.addImage(part,'PNG',20,20,imgWidth,(slice.height*(imgWidth/canvas.width)));
+        sY+=slice.height; if(sY<canvas.height) pdf.addPage();
       }
-      const clamp=(f,g)=> isFamily(f,'Gordura')?Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax):Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax);
-      grams=Math.round(clamp(chosen,grams));
-      m.items[ii]={id:chosen.id,name:chosen.name,family:chosen.family,state:chosen.state,g:grams,locked:false};
-      enforceCompatibility(mealKind(m.name), m.items); adjustMealToTarget(m); adjustDayToMeta(plan);
-      State.save(LS.plan,plan); renderPlanner(plan); closeSwap();
-    }catch(err){
-      console.error('[applySwap] erro:',err);
-      alert('Erro ao trocar alimento. Revise a lista de alimentos.');
     }
-  }
+    pdf.save('FitPlan_'+new Date().toISOString().slice(0,10)+'.pdf');
+  }catch(e){ alert('Falha ao gerar PDF'); console.error(e); }
+  Overlay.hide();
+}
 
-  /* ---------------- Preferências ---------------- */
-  function readProfile(){
-    return {
-      sexo:document.getElementById('sx').value,
-      idade:+document.getElementById('age').value,
-      altura_cm:+document.getElementById('h').value,
-      peso_kg:+document.getElementById('w').value,
-      atividade:document.getElementById('act').value,
-      objetivo:document.getElementById('goal').value,
-      fome:document.getElementById('hunger').value,
-      treino:document.getElementById('train').value
-    }
-  }
+/* ========== Tabs/handlers ========== */
+function switchTab(key){
+  const btns={plan:'tabPlan', day:'tabListDay', week:'tabListWeek', favs:'tabFavs'};
+  Object.values(btns).forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById(btns[key]).classList.add('active');
+  plannerWrap.style.display=(key==='plan')?'block':'none';
+  listDay.style.display=(key==='day')?'block':'none';
+  listWeek.style.display=(key==='week')?'block':'none';
+  favsBox.style.display=(key==='favs')?'block':'none';
+}
 
-  function readPrefs(){
-    const raw = State.load(LS.prefs) || {};
-    return {
-      style: raw.style||document.getElementById('prefStyle').value,
-      time: raw.time||document.getElementById('prefTime').value,
-      budget: raw.budget||document.getElementById('prefBudget').value,
-      restrict: raw.restrict||document.getElementById('prefRestrict').value,
-      avoid: raw.avoid|| (document.getElementById('prefAvoid').value||'').split(',').map(s=>s.trim()).filter(Boolean),
-      pantry: raw.pantry|| (document.getElementById('prefPantry').value||'').split(',').map(s=>s.trim()).filter(Boolean),
-      considerPantry: raw.considerPantry ?? document.getElementById('togglePantry').checked,
-      tags_incluir: raw.tags_incluir||[],
-      tags_evitar: raw.tags_evitar||[],
-      var: raw.var||45
-    }
-  }
-  function savePrefs(){ const obj=readPrefs(); State.save(LS.prefs,obj); }
+function ensurePlanOrWarn(){const plan=State.load(LS.plan); if(!plan||!plan.meals){ alert('Gere o plano primeiro.'); return null; } return plan;}
 
-  /* ---------------- Listas de compras ---------------- */
-  function aggregateItems(items){
-    const map=new Map();
-    items.forEach(it=>{
-      const f=getFood(it.id)||{name:it.name,state:it.state}; const key=f.name+'|'+(f.state||'');
-      const prev=map.get(key)||0; map.set(key, prev+(it.g||0));
-    });
-    return Array.from(map.entries()).map(([k,v])=>{
-      const [name,state]=k.split('|'); return {name, state, g:Math.round(v)};
-    }).sort((a,b)=>a.name.localeCompare(b.name));
-  }
+[1,2,3].forEach(i=>st(i).addEventListener('click',()=>showStep(i)));
+next1.addEventListener('click',()=>{ renderPresets(); showStep(2); });
+prev2.addEventListener('click',()=>showStep(1));
+next2.addEventListener('click',()=>showStep(3));
+prev3.addEventListener('click',()=>showStep(2));
 
-  function renderListDay(plan){
-    const host=document.getElementById('listDay'); host.innerHTML='';
-    if(!plan || !plan.meals){
-      host.innerHTML = `
-        <div class="bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4">
-          <div class="text-slate-300 mb-2">Nenhum plano encontrado.</div>
-          <button class="btn" onclick="switchTab('plan')">Gerar plano</button>
-        </div>`;
-    } else {
-      const all=[]; plan.meals.forEach(m=>m.items.forEach(it=>all.push(it)));
-      const agg=aggregateItems(all);
-      const box=document.createElement('div'); box.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
-      box.innerHTML=`<div class='font-semibold mb-2'>Lista diária</div>
-        <div class='grid md:grid-cols-2 gap-2'>
-          ${agg.map(x=>`<div class='flex items-center justify-between bg-[#111827] rounded p-2'><div>${x.name} <span class='text-slate-400 text-xs'>${x.state||''}</span></div><div>${x.g} g</div></div>`).join('')}
-        </div>`;
-      host.appendChild(box);
-    }
-  }
+btnCalc.addEventListener('click',()=>{ const p=readProfile(); const b=bmrMifflin(p.sexo,p.peso_kg,p.altura_cm,p.idade); const td=tdeeFrom(b,p.atividade); const meta=targetFrom(td,p.objetivo); showCalc(b,td,meta); });
+btnSaveProfile.addEventListener('click',()=>State.save(LS.profile,readProfile()));
+goal.addEventListener('change',renderPresets);
+hunger.addEventListener('change',()=>State.save(LS.profile,readProfile()));
+train.addEventListener('change',()=>State.save(LS.profile,readProfile()));
 
-  async function renderListWeek(){
-    const host=document.getElementById('listWeek'); host.innerHTML='';
-    const plan=State.load(LS.plan); if(!plan || !plan.meals){
-      host.innerHTML = `
-        <div class="bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4">
-          <div class="text-slate-300 mb-2">Nenhum plano encontrado.</div>
-          <button class="btn" onclick="switchTab('plan')">Gerar plano</button>
-        </div>`;
-      return;
-    }
-    const prefs=readPrefs(); const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0];
+tabPlan.addEventListener('click',()=>switchTab('plan'));
+tabListDay.addEventListener('click',()=>{ const plan=ensurePlanOrWarn(); if(!plan) return; renderListDay(plan); switchTab('day'); });
+tabListWeek.addEventListener('click',async ()=>{ const plan=ensurePlanOrWarn(); if(!plan) return; await renderListWeek(); switchTab('week'); });
+tabFavs.addEventListener('click',()=>{ renderFavs(); switchTab('favs'); });
 
-    Overlay.show('Gerando semana…');
-    let allItems=[];
-    try{
-      for(let d=0; d<7; d++){
-        const tmp=buildPlan(plan.meta_kcal,preset,prefs);
-        tmp.meals.forEach(m=>m.items.forEach(it=>allItems.push({...it})));
-      }
-    }catch(err){
-      console.error('[renderListWeek] erro:',err);
-      alert('Erro ao gerar lista semanal. Verifique os alimentos/presets.');
-    }finally{
-      Overlay.hide();
-    }
+btnExportPNG.addEventListener('click',exportPNG);
+btnExportPDF.addEventListener('click',exportPDF);
+btnSavePlan.addEventListener('click',()=>{ const plan=State.load(LS.plan); if(!plan) return; const blob=new Blob([JSON.stringify(plan,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='meu_plano.json'; a.click(); URL.revokeObjectURL(url); });
+importPlan.addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ const obj=JSON.parse(fr.result); State.save(LS.plan,obj); renderPlanner(obj); showStep(3);}catch{ alert('Arquivo inválido'); } }; fr.readAsText(f); });
+btnFav.addEventListener('click',()=>{ addFav(); alert('Plano salvo em Favoritos ✅') });
 
-    const agg=aggregateItems(allItems);
-    const box=document.createElement('div'); box.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
-    box.innerHTML=`<div class='font-semibold mb-2'>Lista semanal (7 dias)</div>
-      <div class='grid md:grid-cols-2 gap-2'>
-        ${agg.map(x=>`<div class='flex items-center justify-between bg-[#111827] rounded p-2'><div>${x.name} <span class='text-slate-400 text-xs'>${x.state||''}</span></div><div>${x.g} g</div></div>`).join('')}
-      </div>`;
-    host.appendChild(box);
-  }
+btnRegenDay.addEventListener('click',()=>{
+  const plan=ensurePlanOrWarn(); if(!plan) return;
+  try{ const prefs=readPrefs(); const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0]; regenerateDay(plan,preset,prefs); State.save(LS.plan,plan); renderPlanner(plan); }
+  catch(err){ console.error('[btnRegenDay]',err); alert('Não foi possível regerar o dia. Verifique os .json.'); Overlay.hide(); }
+});
 
-  /* ---------------- Favoritos ---------------- */
-  function loadFavs(){ return State.load(LS.favs)||[] }
-  function saveFavs(arr){ State.save(LS.favs, arr.slice(0,10)) }
+/* Favoritos */
+function loadFavs(){ return State.load(LS.favs)||[] }
+function saveFavs(a){ State.save(LS.favs,a.slice(0,10)) }
+function addFav(){ const plan=State.load(LS.plan); if(!plan) return; const favs=loadFavs(); favs.unshift({ts:Date.now(),plan}); saveFavs(favs); renderFavs(); }
+function renderFavs(){ const host=favsBox; host.innerHTML=''; const favs=loadFavs(); if(!favs.length){ host.innerHTML="<div class='text-slate-400'>Nenhum favorito ainda.</div>"; return; }
+  favs.forEach((f,i)=>{ const d=new Date(f.ts).toLocaleString(); const card=document.createElement('div'); card.className='bg-[#0f172a] rounded-xl p-3 border border-[color:var(--border)] flex items-center justify-between gap-2 mb-2';
+    card.innerHTML=`<div><div class='font-semibold'>Plano salvo</div><div class='text-slate-400 text-sm'>${d}</div></div>
+    <div class='flex gap-2'><button class='btn-ghost btn-xs' data-open='${i}'>Abrir</button><button class='btn-ghost btn-xs' data-del='${i}'>Excluir</button></div>`;
+    host.appendChild(card); });
+  host.querySelectorAll('button[data-open]').forEach(b=>b.addEventListener('click',()=>{ const idx=+b.dataset.open; const fav=loadFavs()[idx]; if(!fav) return; State.save(LS.plan,fav.plan); renderPlanner(fav.plan); switchTab('plan'); }));
+  host.querySelectorAll('button[data-del]').forEach(b=>b.addEventListener('click',()=>{ const idx=+b.dataset.del; const arr=loadFavs(); arr.splice(idx,1); saveFavs(arr); renderFavs(); }));
+}
 
-  function addFav(){ const plan=State.load(LS.plan); if(!plan) return; const favs=loadFavs(); favs.unshift({ts:Date.now(), plan}); saveFavs(favs); renderFavs(); }
-  function renderFavs(){
-    const host=document.getElementById('favsBox'); host.innerHTML='';
-    const favs=loadFavs();
-    if(!favs.length){ host.innerHTML="<div class='text-slate-400'>Nenhum favorito ainda.</div>"; return; }
-    favs.forEach((f,i)=>{
-      const d=new Date(f.ts).toLocaleString();
-      const card=document.createElement('div'); card.className='bg-[#0f172a] rounded-xl p-3 border border-[color:var(--border)] flex items-center justify-between gap-2 mb-2';
-      card.innerHTML=`<div><div class='font-semibold'>Plano salvo</div><div class='text-slate-400 text-sm'>${d}</div></div>
-      <div class='flex gap-2'><button class='btn-ghost btn-xs' data-open='${i}'>Abrir</button><button class='btn-ghost btn-xs' data-del='${i}'>Excluir</button></div>`;
-      host.appendChild(card);
-    });
-    host.querySelectorAll('button[data-open]').forEach(b=>b.addEventListener('click',()=>{
-      const idx=+b.dataset.open; const fav=loadFavs()[idx]; if(!fav) return;
-      State.save(LS.plan,fav.plan); renderPlanner(fav.plan); switchTab('plan');
-    }));
-    host.querySelectorAll('button[data-del]').forEach(b=>b.addEventListener('click',()=>{
-      const idx=+b.dataset.del; const arr=loadFavs(); arr.splice(idx,1); saveFavs(arr); renderFavs();
-    }));
-  }
+/* Boot */
+(async function boot(){
+  const prof=State.load(LS.profile);
+  if(prof){ sx.value=prof.sexo; age.value=prof.idade; h.value=prof.altura_cm; w.value=prof.peso_kg; act.value=prof.atividade; goal.value=prof.objetivo||'maint'; hunger.value=prof.fome||'none'; train.value=prof.treino||'none'; }
+  const files=await loadManifest(); await loadFoods(files); await loadPresets(); renderPresets();
+  const plan=State.load(LS.plan); if(plan){ renderPlanner(plan); showStep(3); }
+})();
 
-  /* ---------------- Export ---------------- */
-  async function exportPNG(){
-    const node = document.getElementById('plannerWrap');
-    try{
-      const canvas = await html2canvas(node, {
-        backgroundColor: '#0a0f1c',
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false
-      });
-      const blob = await new Promise(res=>canvas.toBlob(res, 'image/png'));
-      if(blob){
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href=url; a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png'; a.click(); URL.revokeObjectURL(url);
-        return;
-      }
-      throw new Error('no-blob');
-    }catch(e){
-      try{
-        const dataUrl = await window.domtoimage.toPng(node, {bgcolor:'#0a0f1c',quality:1,style:{transform:'none',transformOrigin:'top left'}});
-        const a = document.createElement('a'); a.href=dataUrl; a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png'; a.click();
-      }catch(e2){ alert('Falha ao gerar imagem'); console.error(e2); }
-    }
-  }
-
-  async function exportPDF(){
-    const node=document.getElementById('plannerWrap');
-    Overlay.show('Gerando PDF…');
-    try{
-      const canvas = await html2canvas(node,{backgroundColor:'#0a0f1c',scale:2,useCORS:true,allowTaint:true});
-      const img = canvas.toDataURL('image/png');
-      const {jsPDF}=window.jspdf;
-      const pdf=new jsPDF({unit:'pt',format:'a4',compress:true});
-      const pageWidth=pdf.internal.pageSize.getWidth();
-      const pageHeight=pdf.internal.pageSize.getHeight();
-      const imgWidth=pageWidth-40;
-      const imgHeight=canvas.height*(imgWidth/canvas.width);
-      if(imgHeight<=pageHeight-40){
-        pdf.addImage(img,'PNG',20,20,imgWidth,imgHeight);
-      }else{
-        let sY=0, sliceHeight = Math.floor(canvas.width*( (pageHeight-40)/imgWidth ));
-        while(sY<canvas.height){
-          const slice=document.createElement('canvas'); slice.width=canvas.width; slice.height=Math.min(sliceHeight, canvas.height-sY);
-          const ctx=slice.getContext('2d'); ctx.drawImage(canvas,0,sY,canvas.width,slice.height,0,0,canvas.width,slice.height);
-          const part=slice.toDataURL('image/png');
-          pdf.addImage(part,'PNG',20,20,imgWidth,(slice.height*(imgWidth/canvas.width)));
-          sY+=slice.height;
-          if(sY<canvas.height) pdf.addPage();
-        }
-      }
-      pdf.save('FitPlan_'+new Date().toISOString().slice(0,10)+'.pdf');
-    }catch(e){ alert('Falha ao gerar PDF'); console.error(e); }
-    Overlay.hide();
-  }
-
-  /* ---------------- Tabs ---------------- */
-  function switchTab(key){
-    const btns={plan:'tabPlan', day:'tabListDay', week:'tabListWeek', favs:'tabFavs'};
-    Object.values(btns).forEach(id=>document.getElementById(id).classList.remove('active'));
-    document.getElementById(btns[key]).classList.add('active');
-    document.getElementById('plannerWrap').style.display=(key==='plan')?'block':'none';
-    document.getElementById('listDay').style.display=(key==='day')?'block':'none';
-    document.getElementById('listWeek').style.display=(key==='week')?'block':'none';
-    document.getElementById('favsBox').style.display=(key==='favs')?'block':'none';
-  }
-
-  function ensurePlanOrWarn(){
-    const plan=State.load(LS.plan);
-    if(!plan || !plan.meals){ alert('Gere o plano primeiro (selecione um modelo e clique em "Selecionar").'); return null; }
-    return plan;
-  }
-
-  /* ---------------- Eventos ---------------- */
-  ;[1,2,3].forEach(i=>document.getElementById('st'+i).addEventListener('click',()=>showStep(i)));
-  document.getElementById('next1').addEventListener('click',()=>{ renderPresets(); showStep(2); });
-  document.getElementById('prev2').addEventListener('click',()=>showStep(1));
-  document.getElementById('next2').addEventListener('click',()=>showStep(3));
-  document.getElementById('prev3').addEventListener('click',()=>showStep(2));
-
-  document.getElementById('btnCalc').addEventListener('click',()=>{ const p=readProfile(); const b=bmrMifflin(p.sexo,p.peso_kg,p.altura_cm,p.idade); const td=tdeeFrom(b,p.atividade); const meta=targetFrom(td,p.objetivo); showCalc(b,td,meta); });
-  document.getElementById('btnSaveProfile').addEventListener('click',()=>State.save(LS.profile,readProfile()));
-  document.getElementById('goal').addEventListener('change', ()=>{ renderPresets(); });
-  document.getElementById('hunger').addEventListener('change', ()=>State.save(LS.profile,readProfile()));
-  document.getElementById('train').addEventListener('change', ()=>State.save(LS.profile,readProfile()));
-
-  document.getElementById('tabPlan').addEventListener('click',()=>switchTab('plan'));
-  document.getElementById('tabListDay').addEventListener('click',()=>{ const plan=ensurePlanOrWarn(); if(!plan) return; renderListDay(plan); switchTab('day'); });
-  document.getElementById('tabListWeek').addEventListener('click',async ()=>{ const plan=ensurePlanOrWarn(); if(!plan) return; await renderListWeek(); switchTab('week'); });
-  document.getElementById('tabFavs').addEventListener('click',()=>{ renderFavs(); switchTab('favs'); });
-
-  document.getElementById('btnExportPNG').addEventListener('click',exportPNG);
-  document.getElementById('btnExportPDF').addEventListener('click',exportPDF);
-  document.getElementById('btnSavePlan').addEventListener('click',()=>{ const plan=State.load(LS.plan); if(!plan) return; const blob=new Blob([JSON.stringify(plan,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='meu_plano.json'; a.click(); URL.revokeObjectURL(url); });
-  document.getElementById('importPlan').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ const obj=JSON.parse(fr.result); State.save(LS.plan,obj); renderPlanner(obj); showStep(3);}catch{ alert('Arquivo inválido'); } }; fr.readAsText(f); });
-
-  document.getElementById('btnFav').addEventListener('click',()=>{ addFav(); alert('Plano salvo em Favoritos ✅') });
-
-  document.getElementById('btnRegenDay').addEventListener('click', () => {
-    const plan = ensurePlanOrWarn();
-    if (!plan) return;
-    try {
-      const prefs  = readPrefs();
-      const preset = Data.presets.find(p => p.id === plan.preset_id) || Data.presets[0];
-      regenerateDay(plan, preset, prefs);
-      State.save(LS.plan, plan);
-      renderPlanner(plan);
-    } catch (err) {
-      console.error('[btnRegenDay] erro:', err);
-      alert('Não foi possível regerar o dia. Verifique o console e os arquivos .json.');
-      Overlay.hide();
-    }
-  });
-
-  /* ---------------- Boot ---------------- */
-  (async function boot(){
-    const prof=State.load(LS.profile);
-    if(prof){
-      document.getElementById('sx').value=prof.sexo; document.getElementById('age').value=prof.idade; document.getElementById('h').value=prof.altura_cm;
-      document.getElementById('w').value=prof.peso_kg; document.getElementById('act').value=prof.atividade; document.getElementById('goal').value=prof.objetivo||'maint';
-      document.getElementById('hunger').value=prof.fome||'none'; document.getElementById('train').value=prof.treino||'none';
-    }
-    const files=await loadManifest(); await loadFoods(files); await loadPresets(); renderPresets();
-    const plan=State.load(LS.plan); if(plan){ renderPlanner(plan); showStep(3); }
-  })();
-
-  /* ---------------- Rede de segurança global ---------------- */
-  window.addEventListener('error', () => { try { Overlay.hide(); } catch {} });
-  window.addEventListener('unhandledrejection', () => { try { Overlay.hide(); } catch {} });
-  </script>
+/* Rede de segurança */
+window.addEventListener('error',()=>{ try{Overlay.hide()}catch{} });
+window.addEventListener('unhandledrejection',()=>{ try{Overlay.hide()}catch{} });
+</script>
 </body>
 </html>
