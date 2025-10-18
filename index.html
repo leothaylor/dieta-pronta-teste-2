@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FitPlan Pro ⚡ | v7.1</title>
+  <title>FitPlan Pro ⚡ | v7.2</title>
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -34,7 +34,6 @@
     .tabs button{border-bottom:2px solid transparent;padding-bottom:.4rem}
     .tabs button.active{border-color:var(--green); color:var(--green2)}
     .no-transform{transform:none !important}
-    /* overlay */
     #overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:60}
     #overlay .box{background:#0b1220;border:1px solid var(--border);border-radius:1rem;padding:1rem 1.2rem;display:flex;gap:.6rem;align-items:center}
     .dot{width:.55rem;height:.55rem;border-radius:999px;background:var(--green);animation:b .9s infinite alternate}
@@ -69,10 +68,10 @@
       <h2 class="text-xl font-semibold mb-3">1) Seu Perfil</h2>
       <div class="grid lg:grid-cols-4 md:grid-cols-3 gap-4">
         <div><div class="label">Sexo</div>
-          <select id="sx" class="field" title="Usado no cálculo do metabolismo basal (Mifflin)."><option value="M">Masculino</option><option value="F">Feminino</option></select>
+          <select id="sx" class="field"><option value="M">Masculino</option><option value="F">Feminino</option></select>
         </div>
         <div><div class="label">Idade (anos)</div>
-          <input id="age" type="number" class="field" value="33" min="12" max="90" title="Entra no cálculo do BMR (Mifflin-St Jeor)."/>
+          <input id="age" type="number" class="field" value="33" min="12" max="90"/>
         </div>
         <div><div class="label">Altura (cm)</div>
           <input id="h" type="number" class="field" value="170" min="120" max="220"/>
@@ -81,7 +80,7 @@
           <input id="w" type="number" class="field" value="69" min="35" max="200"/>
         </div>
         <div><div class="label">Atividade</div>
-          <select id="act" class="field" title="Multiplicador de TDEE (sedentário → intensa).">
+          <select id="act" class="field">
             <option value="sedentario">Sedentário</option>
             <option value="leve">Leve (1–2x/sem)</option>
             <option value="moderada" selected>Moderada (3–4x/sem)</option>
@@ -89,14 +88,14 @@
           </select>
         </div>
         <div><div class="label">Objetivo</div>
-          <select id="goal" class="field" title="Define o saldo calórico: Secar (−15%), Manter (0), Ganhar (+8%).">
+          <select id="goal" class="field">
             <option value="cut" selected>Secar (−15%)</option>
             <option value="maint">Manter (±0%)</option>
             <option value="bulk">Ganhar (+8%)</option>
           </select>
         </div>
         <div><div class="label">Maior fome</div>
-          <select id="hunger" class="field" title="Damos um pequeno bônus de calorias nessa refeição.">
+          <select id="hunger" class="field">
             <option value="none" selected>Indiferente</option>
             <option value="cafe">Café</option>
             <option value="almoco">Almoço</option>
@@ -105,19 +104,19 @@
           </select>
         </div>
         <div><div class="label">Treino</div>
-          <select id="train" class="field" title="Distribuímos calorias a favor da refeição do treino (+12%) e vizinhas (+6%).">
+          <select id="train" class="field">
             <option value="none" selected>Sem treino</option>
-            <option value="cafe">Treino: manhã (↗ café)</option>
-            <option value="almoco">Treino: meio-dia (↗ almoço)</option>
-            <option value="lanche">Treino: tarde (↗ lanche)</option>
-            <option value="jantar">Treino: noite (↗ jantar)</option>
+            <option value="cafe">Treino: manhã</option>
+            <option value="almoco">Treino: meio-dia</option>
+            <option value="lanche">Treino: tarde</option>
+            <option value="jantar">Treino: noite</option>
           </select>
         </div>
       </div>
 
       <div class="mt-4 flex gap-2">
         <button id="btnCalc" class="btn">Calcular TDEE & Meta</button>
-        <button id="btnSaveProfile" class="btn-ghost" title="Grava dados básicos do passo 1.">Salvar Perfil</button>
+        <button id="btnSaveProfile" class="btn-ghost">Salvar Perfil</button>
       </div>
 
       <div id="calcBox" class="hidden mt-4 bg-[#0f172a] rounded-xl p-4 border border-[color:var(--border)]">
@@ -139,11 +138,10 @@
       <h2 class="text-xl font-semibold mb-1">2) Modelo & Preferências</h2>
       <p id="goalInfo" class="text-emerald-300 text-xs mb-3"></p>
 
-      <!-- preferências compactas -->
       <div class="grid md:grid-cols-4 gap-3 mb-4">
         <div>
           <div class="label">Estilo</div>
-          <select id="prefStyle" class="field" title="Natural prioriza in natura; Prático prioriza preparos simples/marmita.">
+          <select id="prefStyle" class="field">
             <option value="indiferente" selected>Indiferente</option>
             <option value="natural">Natural</option>
             <option value="pratico">Prático</option>
@@ -151,7 +149,7 @@
         </div>
         <div>
           <div class="label">Tempo</div>
-          <select id="prefTime" class="field" title="Rápido foca itens ≤10 min de preparo.">
+          <select id="prefTime" class="field">
             <option value="indiferente" selected>Indiferente</option>
             <option value="rapido">Rápido</option>
             <option value="normal">Normal</option>
@@ -159,7 +157,7 @@
         </div>
         <div>
           <div class="label">Orçamento</div>
-          <select id="prefBudget" class="field" title="Baixo custo prioriza opções econômicas.">
+          <select id="prefBudget" class="field">
             <option value="indiferente" selected>Indiferente</option>
             <option value="baixo">Baixo</option>
             <option value="medio">Médio</option>
@@ -167,7 +165,7 @@
         </div>
         <div>
           <div class="label">Restrições</div>
-          <select id="prefRestrict" class="field" title="Filtra alimentos incompatíveis.">
+          <select id="prefRestrict" class="field">
             <option value="nenhuma" selected>Nenhuma</option>
             <option value="sem-lactose">Sem lactose</option>
             <option value="sem-gluten">Sem glúten</option>
@@ -199,13 +197,13 @@
       </div>
     </section>
 
-    <!-- 3) Plano + abas (Plano / Lista diária / Lista semanal / Favoritos) -->
+    <!-- 3) Plano + abas -->
     <section id="s3" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <div class="flex items-center justify-between gap-2 flex-wrap">
         <h2 class="text-xl font-semibold">3) Seu Plano</h2>
         <div class="flex gap-2 flex-wrap">
-          <button id="btnRegenDay" class="btn-ghost" title="Gera o dia inteiro mantendo itens fixados.">Regerar dia</button>
-          <button id="btnFav" class="btn-ghost" title="Salva plano atual em Favoritos.">Favoritar</button>
+          <button id="btnRegenDay" class="btn-ghost">Regerar dia</button>
+          <button id="btnFav" class="btn-ghost">Favoritar</button>
           <button id="btnExportPNG" class="btn">Exportar PNG</button>
           <button id="btnExportPDF" class="btn-ghost">Exportar PDF</button>
           <button id="btnSavePlan" class="btn-ghost">Salvar JSON</button>
@@ -273,7 +271,6 @@
         const j=await r.json(); if(Array.isArray(j)) acc.push(...j);
       }catch(e){console.warn('Falha ao carregar',f,e)}
     }
-    // saneamento básico p/ robustez
     const seen=new Set();
     Data.foods=acc
       .filter(x=>x && typeof x.id!=='undefined')
@@ -314,12 +311,10 @@
   function isPork(f){const n=sf(f.name); return /porco|bacon|lombo|su[ií]no/.test(n)}
   function isAnimal(f){const n=sf(f.name); return /frango|carne|boi|bovino|peixe|atum|sardinha|su[ií]no|porco|ovo/.test(n)}
 
-  /* score de escolha respeitando preferências */
   function pickPoolByFamily(family,prefs,preferState){
     let list=Data.foods.filter(f=>sf(f.family)===sf(family));
     if(!list.length) return [];
 
-    // Restrições
     list=list.filter(f=>{
       if(prefs.restrict==='sem-lactose' && isDairy(f)) return false;
       if(prefs.restrict==='sem-gluten' && hasTag(f,'gluten')) return false;
@@ -329,11 +324,9 @@
       return true;
     });
 
-    // Evitar palavras
     const avoid=(prefs.avoid||[]).map(sf);
     if(avoid.length) list=list.filter(f=>!avoid.some(w=>sf(f.name).includes(w)));
 
-    // Estilo
     const style=prefs.style||'indiferente';
     const preferNatural = style==='natural';
     const preferPratico = style==='pratico';
@@ -341,32 +334,23 @@
     const fastWanted = prefs.time==='rapido';
     const cheapWanted = prefs.budget==='baixo';
 
-    // Dispensa/hábitos
     const pantrySet=new Set((prefs.pantry||[]).map(sf));
     const considerPantry=!!prefs.considerPantry;
 
-    // Tags a priorizar
     const inc=new Set((prefs.tags_incluir||[]).map(sf));
-
     const varF=(+prefs.var||45)/100;
 
     const score=f=>{
       const tags=(f.tags||[]).map(sf);
       let s=1;
-
-      // Priorizações
       if(inc.size) s+=0.2*tags.filter(t=>inc.has(t)).length;
       if(preferState && f.state===preferState) s+=0.25;
       if(fastWanted && f.prep_min!=null && f.prep_min<=10) s+=0.25;
       if(cheapWanted && tags.includes('baixo-custo')) s+=0.2;
       if(preferNatural && sf(f.state).includes('in natura')) s+=0.25;
       if(preferPratico  && (sf(f.state).includes('industrializado')||tags.includes('marmita'))) s+=0.2;
-
       if(considerPantry && (pantrySet.has(sf(f.name)))) s+=0.35;
-
-      // Penaliza repetição
       if(Memory.has(f.id)) s-= (0.35+0.3*varF);
-
       return Math.max(0.05,s);
     };
 
@@ -392,18 +376,17 @@
   function mealKind(name){const n=sf(name); if(n.includes('café')) return 'cafe'; if(n.includes('almoço')||n.includes('almoco')) return 'almoco'; if(n.includes('jantar')) return 'jantar'; return 'lanche'}
 
   function enforceCompatibility(kind, items){
-    if(kind==='lanche'){ // lanches sem feijão
+    if(kind==='lanche'){
       for(let i=0;i<items.length;i++){ const f=getFood(items[i].id); if(f && isBean(f)){ items.splice(i,1); break; } }
       return items;
     }
-    // almoço/jantar
     let hasBean=-1, fishIdx=-1, dairyIdx=-1;
     items.forEach((it,idx)=>{ const f=getFood(it.id); if(!f) return; if(isBean(f)) hasBean=idx; if(isFishOrTuna(f)) fishIdx=idx; if(isDairy(f)) dairyIdx=idx; });
-    if(hasBean>-1 && fishIdx>-1){ // troca feijão por carbo base
+    if(hasBean>-1 && fishIdx>-1){
       const prefs=readPrefs(); const pool=pickPoolByFamily('Carbo',prefs,null);
       const rice= pool.find(x=>sf(x.name).includes('arroz')) || pool[0]; if(rice){ items[hasBean]={id:rice.id,name:rice.name,family:'Carbo',state:rice.state,g:items[hasBean].g,locked:false}; }
     }
-    if(hasBean>-1 && dairyIdx>-1){ // troca laticínio por proteína não láctea
+    if(hasBean>-1 && dairyIdx>-1){
       const prefs=readPrefs(); const pool=pickPoolByFamily('Proteína',prefs,null);
       const fr= pool.find(x=>!isDairy(x)) || pool[0]; if(fr){ items[dairyIdx]={id:fr.id,name:fr.name,family:'Proteína',state:fr.state,g:items[dairyIdx].g,locked:false}; }
     }
@@ -411,38 +394,29 @@
   }
 
   /* ---------------- Plano ---------------- */
-  function normalizedFractions(preset, hunger, train){
-    // base
+  function mealTargetsByPreset(preset,hunger,train){
     const meals=preset.meals||[]; let fracs=meals.map(m=>m.kcal_frac||0.25);
-
     const idxMap={cafe:meals.findIndex(m=>mealKind(m.name)==='cafe'),
                   almoco:meals.findIndex(m=>mealKind(m.name)==='almoco'),
                   lanche:meals.findIndex(m=>mealKind(m.name)==='lanche'),
                   jantar:meals.findIndex(m=>mealKind(m.name)==='jantar')};
-
-    // fome: +8% na refeição escolhida
     if(hunger!=='none' && idxMap[hunger]>-1) fracs[idxMap[hunger]]+=0.08;
-
-    // treino: +12% na refeição do treino e +6% nas vizinhas (aproximação simples)
     if(train!=='none' && idxMap[train]>-1){
       fracs[idxMap[train]]+=0.12;
-      // vizinho anterior e posterior (quando existirem)
       const ids=Object.values(idxMap).filter(i=>i>-1).sort((a,b)=>a-b);
       const pos=ids.indexOf(idxMap[train]);
       if(ids[pos-1]!=null) fracs[ids[pos-1]]+=0.06;
       if(ids[pos+1]!=null) fracs[ids[pos+1]]+=0.06;
     }
-
-    // normaliza para somar 1
     const s=fracs.reduce((a,b)=>a+b,0)||1;
-    fracs=fracs.map(x=>x/s);
-    return fracs;
+    return fracs.map(x=>x/s);
   }
 
   function buildPlan(meta,preset,prefs){
     const plan={meta_kcal:meta,preset_id:preset.id,meals:[]};
     Memory.clear();
-    const fracs = normalizedFractions(preset, (readProfile().fome||'none'), (readProfile().treino||'none'));
+    const prof=readProfile();
+    const fracs = mealTargetsByPreset(preset, prof.fome||'none', prof.treino||'none');
 
     (preset.meals||[]).forEach((m,idx)=>{
       const kcalMeal= meta*fracs[idx];
@@ -496,33 +470,68 @@
     it.g=Math.round(clampG(f,(it.g||0)+delta)); return plan;
   }
 
-  function regenerateDay(plan,preset,prefs){
+  /* ---------------- Regeneração (com try/finally) ---------------- */
+  function regenerateDay(plan, preset, prefs){
     Overlay.show('Gerando variedade…');
-    Memory.clear();
-    for(const m of plan.meals){
-      const kind=mealKind(m.name); const tgt=m.target; const newItems=[];
-      for(const it of m.items){
-        if(it.locked){ newItems.push(it); Memory.mark(it.id); continue; }
-        const pool=pickPoolByFamily(it.family,prefs,it.state); if(!pool.length){ newItems.push(it); continue; }
-        const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt);
-        newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);
+    try {
+      Memory.clear();
+      for (const m of plan.meals) {
+        const kind = mealKind(m.name);
+        const tgt  = m.target;
+        const newItems = [];
+        for (const it of m.items) {
+          if (it.locked) { newItems.push(it); Memory.mark(it.id); continue; }
+          const pool = pickPoolByFamily(it.family, prefs, it.state);
+          if (!pool || !pool.length) { newItems.push(it); continue; }
+          const chosen = weightedPick(pool, x => x.__w || 1);
+          const grams  = gramsForTargets(chosen, tgt);
+          newItems.push({ id: chosen.id, name: chosen.name, family: it.family, state: chosen.state, g: grams, locked: false });
+          Memory.mark(chosen.id);
+        }
+        enforceCompatibility(kind, newItems);
+        m.items = newItems;
+        adjustMealToTarget(m);
       }
-      enforceCompatibility(kind,newItems); m.items=newItems; adjustMealToTarget(m);
+      adjustDayToMeta(plan);
+      return plan;
+    } catch (err) {
+      console.error('[regenerateDay] erro:', err);
+      alert('Ops! Ocorreu um erro ao regerar o dia. Verifique se os alimentos estão válidos no JSON.');
+      return plan;
+    } finally {
+      Overlay.hide();
     }
-    adjustDayToMeta(plan); Overlay.hide(); return plan;
   }
 
-  function regenerateMeal(plan,mi,prefs){
+  function regenerateMeal(plan, mi, prefs){
     Overlay.show('Trocando refeição…');
-    const m=plan.meals[mi]; Memory.clear();
-    const tgt=m.target; const kind=mealKind(m.name); const newItems=[];
-    for(const it of m.items){
-      if(it.locked){ newItems.push(it); Memory.mark(it.id); continue; }
-      const pool=pickPoolByFamily(it.family,prefs,it.state); if(!pool.length){ newItems.push(it); continue; }
-      const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt);
-      newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);
+    try {
+      const m   = plan.meals[mi];
+      const tgt = m.target;
+      const kind= mealKind(m.name);
+      const newItems = [];
+      Memory.clear();
+      for (const it of m.items) {
+        if (it.locked) { newItems.push(it); Memory.mark(it.id); continue; }
+        const pool = pickPoolByFamily(it.family, prefs, it.state);
+        if (!pool || !pool.length) { newItems.push(it); continue; }
+        const chosen = weightedPick(pool, x => x.__w || 1);
+        const grams  = gramsForTargets(chosen, tgt);
+        newItems.push({ id: chosen.id, name: chosen.name, family: it.family, state: chosen.state, g: grams, locked: false });
+        Memory.mark(chosen.id);
+      }
+      enforceCompatibility(kind, newItems);
+      m.items = newItems;
+      adjustMealToTarget(m);
+      adjustDayToMeta(plan);
+      return plan;
+    } catch (err) {
+      console.error('[regenerateMeal] erro:', err);
+      alert('Erro ao regerar a refeição. Veja os dados dos alimentos no JSON.');
+      return plan;
+    } finally {
+      Overlay.hide();
     }
-    enforceCompatibility(kind,newItems); m.items=newItems; adjustMealToTarget(m); adjustDayToMeta(plan); Overlay.hide(); return plan;
   }
 
   /* ---------------- Presets filtrados ---------------- */
@@ -578,7 +587,7 @@
       const prof=readProfile(); const bmr=bmrMifflin(prof.sexo,prof.peso_kg,prof.altura_cm,prof.idade);
       const td=tdeeFrom(bmr,prof.atividade); const meta=targetFrom(td,prof.objetivo);
       showCalc(bmr,td,meta);
-      savePrefs(); // garante prefs atuais
+      savePrefs();
       const prefs=readPrefs();
       const plan=buildPlan(meta,p,prefs); State.save(LS.plan,plan); renderPlanner(plan); showStep(3);
     }));
@@ -617,12 +626,10 @@
       host.appendChild(card);
     });
 
-    // Ações dos cards
     host.querySelectorAll('button[data-swap]').forEach(b=>b.addEventListener('click',()=>{ const [mi,ii]=b.dataset.swap.split(':').map(Number); openSwap(State.load(LS.plan),mi,ii); }));
     host.querySelectorAll('button[data-pin]').forEach(b=>b.addEventListener('click',()=>{ const [mi,ii]=b.dataset.pin.split(':').map(Number); togglePin(mi,ii); }));
     host.querySelectorAll('button[data-regmi]').forEach(b=>b.addEventListener('click',()=>{ const mi=+b.dataset.regmi; const plan=State.load(LS.plan); const prefs=readPrefs(); regenerateMeal(plan,mi,prefs); State.save(LS.plan,plan); renderPlanner(plan); }));
 
-    // Atualiza listas
     renderListDay(plan);
   }
 
@@ -661,18 +668,23 @@
   document.getElementById('btnCloseSwap').addEventListener('click',closeSwap);
 
   function applySwap(foodId, grams){
-    if(!SWAP) return; const {plan,mi,ii}=SWAP;
-    const m=plan.meals[mi]; const tgt=m.target; const chosen=getFood(foodId); if(!chosen) return;
-    if(!grams||grams<=0){
-      const others=m.items.filter((_,k)=>k!==ii); const partial=sumMeal(others);
-      const remaining={kcal:Math.max(tgt.kcal-partial.kcal,0),P:Math.max(tgt.P-partial.P,0),C:Math.max(tgt.C-partial.C,0),G:Math.max(tgt.G-partial.G,0)};
-      grams=gramsForTargets(chosen,remaining);
+    try{
+      if(!SWAP) return; const {plan,mi,ii}=SWAP;
+      const m=plan.meals[mi]; const tgt=m.target; const chosen=getFood(foodId); if(!chosen) return;
+      if(!grams||grams<=0){
+        const others=m.items.filter((_,k)=>k!==ii); const partial=sumMeal(others);
+        const remaining={kcal:Math.max(tgt.kcal-partial.kcal,0),P:Math.max(tgt.P-partial.P,0),C:Math.max(tgt.C-partial.C,0),G:Math.max(tgt.G-partial.G,0)};
+        grams=gramsForTargets(chosen,remaining);
+      }
+      const clamp=(f,g)=> isFamily(f,'Gordura')?Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax):Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax);
+      grams=Math.round(clamp(chosen,grams));
+      m.items[ii]={id:chosen.id,name:chosen.name,family:chosen.family,state:chosen.state,g:grams,locked:false};
+      enforceCompatibility(mealKind(m.name), m.items); adjustMealToTarget(m); adjustDayToMeta(plan);
+      State.save(LS.plan,plan); renderPlanner(plan); closeSwap();
+    }catch(err){
+      console.error('[applySwap] erro:',err);
+      alert('Erro ao trocar alimento. Revise a lista de alimentos.');
     }
-    const clamp=(f,g)=> isFamily(f,'Gordura')?Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax):Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax);
-    grams=Math.round(clamp(chosen,grams));
-    m.items[ii]={id:chosen.id,name:chosen.name,family:chosen.family,state:chosen.state,g:grams,locked:false};
-    enforceCompatibility(mealKind(m.name), m.items); adjustMealToTarget(m); adjustDayToMeta(plan);
-    State.save(LS.plan,plan); renderPlanner(plan); closeSwap();
   }
 
   /* ---------------- Preferências ---------------- */
@@ -704,14 +716,10 @@
       var: raw.var||45
     }
   }
-  function savePrefs(){
-    const obj=readPrefs();
-    State.save(LS.prefs,obj);
-  }
+  function savePrefs(){ const obj=readPrefs(); State.save(LS.prefs,obj); }
 
   /* ---------------- Listas de compras ---------------- */
   function aggregateItems(items){
-    // soma por (name + state) para ficar legível na compra
     const map=new Map();
     items.forEach(it=>{
       const f=getFood(it.id)||{name:it.name,state:it.state}; const key=f.name+'|'+(f.state||'');
@@ -730,16 +738,16 @@
           <div class="text-slate-300 mb-2">Nenhum plano encontrado.</div>
           <button class="btn" onclick="switchTab('plan')">Gerar plano</button>
         </div>`;
-      return;
+    } else {
+      const all=[]; plan.meals.forEach(m=>m.items.forEach(it=>all.push(it)));
+      const agg=aggregateItems(all);
+      const box=document.createElement('div'); box.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
+      box.innerHTML=`<div class='font-semibold mb-2'>Lista diária</div>
+        <div class='grid md:grid-cols-2 gap-2'>
+          ${agg.map(x=>`<div class='flex items-center justify-between bg-[#111827] rounded p-2'><div>${x.name} <span class='text-slate-400 text-xs'>${x.state||''}</span></div><div>${x.g} g</div></div>`).join('')}
+        </div>`;
+      host.appendChild(box);
     }
-    const all=[]; plan.meals.forEach(m=>m.items.forEach(it=>all.push(it)));
-    const agg=aggregateItems(all);
-    const box=document.createElement('div'); box.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
-    box.innerHTML=`<div class='font-semibold mb-2'>Lista diária</div>
-      <div class='grid md:grid-cols-2 gap-2'>
-        ${agg.map(x=>`<div class='flex items-center justify-between bg-[#111827] rounded p-2'><div>${x.name} <span class='text-slate-400 text-xs'>${x.state||''}</span></div><div>${x.g} g</div></div>`).join('')}
-      </div>`;
-    host.appendChild(box);
   }
 
   async function renderListWeek(){
@@ -755,13 +763,18 @@
     const prefs=readPrefs(); const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0];
 
     Overlay.show('Gerando semana…');
-    const allItems=[];
-    // gera 7 dias variados (ignora pins para variedade global)
-    for(let d=0; d<7; d++){
-      const tmp=buildPlan(plan.meta_kcal,preset,prefs);
-      tmp.meals.forEach(m=>m.items.forEach(it=>allItems.push({...it})));
+    let allItems=[];
+    try{
+      for(let d=0; d<7; d++){
+        const tmp=buildPlan(plan.meta_kcal,preset,prefs);
+        tmp.meals.forEach(m=>m.items.forEach(it=>allItems.push({...it})));
+      }
+    }catch(err){
+      console.error('[renderListWeek] erro:',err);
+      alert('Erro ao gerar lista semanal. Verifique os alimentos/presets.');
+    }finally{
+      Overlay.hide();
     }
-    Overlay.hide();
 
     const agg=aggregateItems(allItems);
     const box=document.createElement('div'); box.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
@@ -776,13 +789,7 @@
   function loadFavs(){ return State.load(LS.favs)||[] }
   function saveFavs(arr){ State.save(LS.favs, arr.slice(0,10)) }
 
-  function addFav(){
-    const plan=State.load(LS.plan); if(!plan) return;
-    const favs=loadFavs();
-    favs.unshift({ts:Date.now(), plan});
-    saveFavs(favs);
-    renderFavs();
-  }
+  function addFav(){ const plan=State.load(LS.plan); if(!plan) return; const favs=loadFavs(); favs.unshift({ts:Date.now(), plan}); saveFavs(favs); renderFavs(); }
   function renderFavs(){
     const host=document.getElementById('favsBox'); host.innerHTML='';
     const favs=loadFavs();
@@ -841,11 +848,9 @@
       const pageHeight=pdf.internal.pageSize.getHeight();
       const imgWidth=pageWidth-40;
       const imgHeight=canvas.height*(imgWidth/canvas.width);
-      let y=20;
       if(imgHeight<=pageHeight-40){
         pdf.addImage(img,'PNG',20,20,imgWidth,imgHeight);
       }else{
-        // paginar verticalmente
         let sY=0, sliceHeight = Math.floor(canvas.width*( (pageHeight-40)/imgWidth ));
         while(sY<canvas.height){
           const slice=document.createElement('canvas'); slice.width=canvas.width; slice.height=Math.min(sliceHeight, canvas.height-sY);
@@ -891,23 +896,33 @@
   document.getElementById('hunger').addEventListener('change', ()=>State.save(LS.profile,readProfile()));
   document.getElementById('train').addEventListener('change', ()=>State.save(LS.profile,readProfile()));
 
-  // tabs
   document.getElementById('tabPlan').addEventListener('click',()=>switchTab('plan'));
   document.getElementById('tabListDay').addEventListener('click',()=>{ const plan=ensurePlanOrWarn(); if(!plan) return; renderListDay(plan); switchTab('day'); });
   document.getElementById('tabListWeek').addEventListener('click',async ()=>{ const plan=ensurePlanOrWarn(); if(!plan) return; await renderListWeek(); switchTab('week'); });
   document.getElementById('tabFavs').addEventListener('click',()=>{ renderFavs(); switchTab('favs'); });
 
-  // export & save
   document.getElementById('btnExportPNG').addEventListener('click',exportPNG);
   document.getElementById('btnExportPDF').addEventListener('click',exportPDF);
   document.getElementById('btnSavePlan').addEventListener('click',()=>{ const plan=State.load(LS.plan); if(!plan) return; const blob=new Blob([JSON.stringify(plan,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='meu_plano.json'; a.click(); URL.revokeObjectURL(url); });
   document.getElementById('importPlan').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ const obj=JSON.parse(fr.result); State.save(LS.plan,obj); renderPlanner(obj); showStep(3);}catch{ alert('Arquivo inválido'); } }; fr.readAsText(f); });
 
-  // favoritos
   document.getElementById('btnFav').addEventListener('click',()=>{ addFav(); alert('Plano salvo em Favoritos ✅') });
 
-  // regenerar
-  document.getElementById('btnRegenDay').addEventListener('click',()=>{ const plan=ensurePlanOrWarn(); if(!plan) return; const prefs=readPrefs(); const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0]; regenerateDay(plan,preset,prefs); State.save(LS.plan,plan); renderPlanner(plan); });
+  document.getElementById('btnRegenDay').addEventListener('click', () => {
+    const plan = ensurePlanOrWarn();
+    if (!plan) return;
+    try {
+      const prefs  = readPrefs();
+      const preset = Data.presets.find(p => p.id === plan.preset_id) || Data.presets[0];
+      regenerateDay(plan, preset, prefs);
+      State.save(LS.plan, plan);
+      renderPlanner(plan);
+    } catch (err) {
+      console.error('[btnRegenDay] erro:', err);
+      alert('Não foi possível regerar o dia. Verifique o console e os arquivos .json.');
+      Overlay.hide();
+    }
+  });
 
   /* ---------------- Boot ---------------- */
   (async function boot(){
@@ -920,6 +935,10 @@
     const files=await loadManifest(); await loadFoods(files); await loadPresets(); renderPresets();
     const plan=State.load(LS.plan); if(plan){ renderPlanner(plan); showStep(3); }
   })();
+
+  /* ---------------- Rede de segurança global ---------------- */
+  window.addEventListener('error', () => { try { Overlay.hide(); } catch {} });
+  window.addEventListener('unhandledrejection', () => { try { Overlay.hide(); } catch {} });
   </script>
 </body>
 </html>
