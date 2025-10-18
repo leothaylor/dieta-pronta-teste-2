@@ -5,95 +5,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>FitPlan Pro ⚡ | dieta-pronta-teste-2</title>
 
-  <!-- Tailwind CDN (ok usar CDN; nenhum arquivo extra no repo) -->
+  <!-- Tailwind CDN (utilitários) -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#0f172a',   // slate-900
-            card: '#0b1220',      // dark card
-            accent: '#22c55e',    // green-500
-            accent2: '#86efac',   // green-200
-            soft: '#1f2937'       // slate-800
-          }
-        }
-      }
-    }
-  </script>
 
-  <!-- html2canvas para exportar PNG -->
+  <!-- html2canvas (Exportar PNG) -->
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
+  <!-- Estilo próprio (SEM @apply — somente CSS puro para funcionar com CDN) -->
   <style>
-    html, body { background: #0a0f1c; color: #e5e7eb; }
-    .shadow-soft { box-shadow: 0 10px 30px rgba(0,0,0,0.30); }
-    .kcal-badge { color:#86efac; }
-    .btn { @apply px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition; }
-    .btn-ghost { @apply px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-medium; }
-    .tag { @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-slate-800 text-slate-200 mr-2 mb-1; }
-    .input { @apply w-full px-3 py-2 rounded-xl bg-slate-800 text-slate-100 outline-none border border-slate-700 focus:border-emerald-500; }
-    .select { @apply w-full px-3 py-2 rounded-xl bg-slate-800 text-slate-100 outline-none border border-slate-700 focus:border-emerald-500; }
-    .range { accent-color: #10b981; }
-    .divider { @apply h-px bg-slate-800 my-4; }
-    .link { color:#86efac; text-decoration: underline; }
-    .klabel { @apply text-xs text-slate-400; }
+    :root{
+      --bg:#0a0f1c; --card:#0b1220; --soft:#111827; --muted:#9ca3af;
+      --text:#e5e7eb; --text-strong:#f8fafc; --green:#10b981; --green-soft:#86efac;
+      --border:#374151; --border-strong:#475569;
+    }
+    html,body{background:var(--bg);color:var(--text);}
+    .shadow-soft{box-shadow:0 10px 30px rgba(0,0,0,.28);}
+    .kcal-badge{color:var(--green-soft);}
+
+    /* BOTÕES */
+    .btn{padding:.5rem 1rem;border-radius:.75rem;background:var(--green);color:white;font-weight:600;transition:.15s;}
+    .btn:hover{filter:brightness(1.08);}
+    .btn-ghost{padding:.5rem .9rem;border-radius:.75rem;background:#1f2937;color:#e5e7eb;border:1px solid var(--border);font-weight:600;transition:.15s;}
+    .btn-ghost:hover{background:#273449;border-color:var(--border-strong);}
+    .btn-xs{padding:.35rem .6rem;border-radius:.6rem;font-size:.8rem}
+
+    /* INPUTS / SELECTS */
+    .field{width:100%;padding:.55rem .75rem;border-radius:.75rem;background:#1f2937;color:#e5e7eb;border:1px solid var(--border);outline:none;}
+    .field:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(16,185,129,.15);}
+    .label{font-size:.8rem;color:#a5b4fc;color:#9ca3af}
+    /* TAGs */
+    .tag{display:inline-flex;align-items:center;border-radius:999px;padding:.15rem .5rem;font-size:.75rem;background:#1f2937;color:#e5e7eb;border:1px solid var(--border);margin-right:.35rem;margin-bottom:.35rem}
+    /* STEP */
+    .step{background:#1f2937;color:#cbd5e1;border-radius:.8rem;padding:.5rem 0;text-align:center;border:1px solid var(--border)}
+    .step.active{background:#065f46;color:white;border-color:#0ea5a4}
+    .divider{height:1px;background:#1f2937;margin:1rem 0}
+    a.link{color:var(--green-soft);text-decoration:underline;}
   </style>
 </head>
 
 <body class="min-h-screen">
   <header class="max-w-5xl mx-auto px-4 pt-8 pb-4">
     <h1 class="text-3xl md:text-4xl font-bold">FitPlan Pro ⚡</h1>
-    <p class="text-slate-300">Gere sua dieta realista em 5 passos — **apenas index.html + .json**.</p>
+    <p class="text-slate-300">Gere sua dieta realista em 5 passos — <b>apenas index.html + .json</b>.</p>
   </header>
 
   <main class="max-w-5xl mx-auto px-4 space-y-6 pb-24">
 
-    <!-- Stepper -->
-    <div class="flex items-center gap-2">
-      <div id="step1" class="flex-1 text-center py-2 rounded-xl bg-slate-800">1</div>
-      <div id="step2" class="flex-1 text-center py-2 rounded-xl bg-slate-800">2</div>
-      <div id="step3" class="flex-1 text-center py-2 rounded-xl bg-slate-800">3</div>
-      <div id="step4" class="flex-1 text-center py-2 rounded-xl bg-slate-800">4</div>
-      <div id="step5" class="flex-1 text-center py-2 rounded-xl bg-emerald-700 text-white">5</div>
-    </div>
+    <!-- STEPPER: navegação por âncora -->
+    <nav class="grid grid-cols-5 gap-2">
+      <a href="#user-setup"    id="st1" class="step">1</a>
+      <a href="#preset-picker" id="st2" class="step">2</a>
+      <a href="#filters"       id="st3" class="step">3</a>
+      <a href="#plannerWrap"   id="st4" class="step">4</a>
+      <a href="#plannerWrap"   id="st5" class="step">5</a>
+    </nav>
 
-    <!-- Perfil / Cálculo -->
-    <section id="user-setup" class="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
+    <!-- 1) PERFIL -->
+    <section id="user-setup" class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <h2 class="text-xl font-semibold mb-3">1) Seu Perfil</h2>
       <div class="grid md:grid-cols-3 gap-4">
-        <div>
-          <label class="klabel">Sexo</label>
-          <select id="sx" class="select">
+        <div><div class="label">Sexo</div>
+          <select id="sx" class="field">
             <option value="M">Masculino</option>
             <option value="F">Feminino</option>
           </select>
         </div>
-        <div>
-          <label class="klabel">Idade (anos)</label>
-          <input id="age" type="number" min="12" max="90" class="input" value="33" />
-        </div>
-        <div>
-          <label class="klabel">Altura (cm)</label>
-          <input id="h" type="number" min="120" max="220" class="input" value="170" />
-        </div>
-        <div>
-          <label class="klabel">Peso (kg)</label>
-          <input id="w" type="number" min="35" max="180" class="input" value="73" />
-        </div>
-        <div>
-          <label class="klabel">Atividade</label>
-          <select id="act" class="select">
+        <div><div class="label">Idade (anos)</div><input id="age" type="number" min="12" max="90" class="field" value="33"/></div>
+        <div><div class="label">Altura (cm)</div><input id="h" type="number" min="120" max="220" class="field" value="170"/></div>
+        <div><div class="label">Peso (kg)</div><input id="w" type="number" min="35" max="180" class="field" value="73"/></div>
+        <div><div class="label">Atividade</div>
+          <select id="act" class="field">
             <option value="sedentario">Sedentário</option>
             <option value="leve">Leve (1–2x/sem)</option>
             <option value="moderada" selected>Moderada (3–4x/sem)</option>
             <option value="intensa">Intensa (5–7x/sem)</option>
           </select>
         </div>
-        <div>
-          <label class="klabel">Objetivo</label>
-          <select id="goal" class="select">
+        <div><div class="label">Objetivo</div>
+          <select id="goal" class="field">
             <option value="cut">Cut (-15%)</option>
             <option value="maint" selected>Manutenção</option>
             <option value="bulk">Bulk (+8%)</option>
@@ -105,26 +94,26 @@
         <button id="btnSaveProfile" class="btn-ghost">Salvar Perfil</button>
       </div>
 
-      <div id="calc-summary" class="mt-4 hidden bg-slate-900 rounded-xl p-4">
+      <div id="calc-summary" class="mt-4 hidden bg-[#0f172a] rounded-xl p-4 border border-[color:var(--border)]">
         <div class="grid md:grid-cols-3 gap-3">
-          <div><div class="klabel">BMR (Mifflin)</div><div id="bmrOut" class="text-emerald-300 text-xl">—</div></div>
-          <div><div class="klabel">TDEE</div><div id="tdeeOut" class="text-emerald-300 text-xl">—</div></div>
-          <div><div class="klabel">Meta diária</div><div id="targetOut" class="text-emerald-300 text-xl">—</div></div>
+          <div><div class="label">BMR (Mifflin)</div><div id="bmrOut" class="text-emerald-300 text-xl">—</div></div>
+          <div><div class="label">TDEE</div><div id="tdeeOut" class="text-emerald-300 text-xl">—</div></div>
+          <div><div class="label">Meta diária</div><div id="targetOut" class="text-emerald-300 text-xl">—</div></div>
         </div>
         <p class="text-slate-400 text-sm mt-2">Dica cardio pessoal: Z2 ≈ <b>145 bpm</b>.</p>
       </div>
     </section>
 
-    <!-- Presets -->
-    <section id="preset-picker" class="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
+    <!-- 2) PRESETS -->
+    <section id="preset-picker" class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <h2 class="text-xl font-semibold mb-3">2) Escolha um modelo (presets elásticos)</h2>
       <div id="presetList" class="grid md:grid-cols-2 gap-3"></div>
     </section>
 
-    <!-- Filtros -->
-    <section id="filters" class="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
+    <!-- 3) FILTROS -->
+    <section id="filters" class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <h2 class="text-xl font-semibold mb-3">3) Filtros rápidos</h2>
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap">
         <label class="tag"><input class="mr-1" type="checkbox" value="pf" /> pf</label>
         <label class="tag"><input class="mr-1" type="checkbox" value="marmita" /> marmita</label>
         <label class="tag"><input class="mr-1" type="checkbox" value="caseiro" /> caseiro</label>
@@ -144,8 +133,8 @@
       </div>
     </section>
 
-    <!-- Planner -->
-    <section id="plannerWrap" class="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
+    <!-- 4/5) PLANNER -->
+    <section id="plannerWrap" class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-semibold">4) Seu Plano Gerado</h2>
         <div class="flex gap-2">
@@ -157,226 +146,77 @@
           </label>
         </div>
       </div>
-
       <div id="planner" class="mt-4 space-y-4"></div>
       <div class="divider"></div>
-      <p class="text-slate-400 text-sm">
-        Nota: Proteínas pesadas <b>cruas</b>; Carbos <b>cozidos</b>. Macros por 100 g no estado indicado.
-      </p>
+      <p class="text-slate-400 text-sm">Nota: Proteínas pesadas <b>cruas</b>; Carbos <b>cozidos</b>. Macros por 100 g no estado indicado.</p>
     </section>
 
-    <!-- Modal SWAP -->
+    <!-- MODAL SWAP (com grams exatos) -->
     <div id="swapModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
-      <div class="bg-card rounded-2xl p-4 md:p-6 max-w-2xl w-full shadow-soft">
+      <div class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 max-w-2xl w-full shadow-soft border border-[color:var(--border)]">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold">Trocar alimento</h3>
           <button id="btnCloseSwap" class="btn-ghost">Fechar</button>
         </div>
         <p id="swapHint" class="text-slate-400 text-sm mt-1"></p>
-        <div id="swapList" class="mt-3 max-h-[50vh] overflow-auto space-y-2"></div>
+        <div id="swapList" class="mt-3 max-h-[55vh] overflow-auto space-y-2"></div>
       </div>
     </div>
-
   </main>
 
-  <!-- ======================== LOGICA / FUNCOES ======================== -->
+  <!-- ============ LÓGICA ============ -->
   <script>
-  // -------------------- AppState (localStorage) --------------------
-  const LS_KEYS = {
-    profile: 'dpt2_profile',
-    prefs: 'dpt2_prefs',
-    plan: 'dpt2_plan'
-  };
-  const AppState = {
-    saveProfile(p){ localStorage.setItem(LS_KEYS.profile, JSON.stringify(p)); },
-    loadProfile(){ try{ return JSON.parse(localStorage.getItem(LS_KEYS.profile)||'null'); }catch{ return null; } },
-    savePrefs(p){ localStorage.setItem(LS_KEYS.prefs, JSON.stringify(p)); },
-    loadPrefs(){ try{ return JSON.parse(localStorage.getItem(LS_KEYS.prefs)||'{"tags_incluir":[],"tags_evitar":[],"equivalentes_estado":true}'); }catch{ return {"tags_incluir":[],"tags_evitar":[],"equivalentes_estado":true}; } },
-    savePlan(p){ localStorage.setItem(LS_KEYS.plan, JSON.stringify(p)); },
-    loadPlan(){ try{ return JSON.parse(localStorage.getItem(LS_KEYS.plan)||'null'); }catch{ return null; } }
+  // ------- Estado (localStorage) -------
+  const LS_KEYS={profile:'dpt2_profile',prefs:'dpt2_prefs',plan:'dpt2_plan'};
+  const AppState={
+    saveProfile:p=>localStorage.setItem(LS_KEYS.profile,JSON.stringify(p)),
+    loadProfile:()=>{try{return JSON.parse(localStorage.getItem(LS_KEYS.profile)||'null')}catch{return null}},
+    savePrefs:p=>localStorage.setItem(LS_KEYS.prefs,JSON.stringify(p)),
+    loadPrefs:()=>{try{return JSON.parse(localStorage.getItem(LS_KEYS.prefs)||'{"tags_incluir":[],"tags_evitar":[],"equivalentes_estado":true}')}catch{return {"tags_incluir":[],"tags_evitar":[],"equivalentes_estado":true}}},
+    savePlan:p=>localStorage.setItem(LS_KEYS.plan,JSON.stringify(p)),
+    loadPlan:()=>{try{return JSON.parse(localStorage.getItem(LS_KEYS.plan)||'null')}catch{return null}}
   };
 
-  // -------------------- DataLoader --------------------
-  const Data = { foods: [], presets: [], manifestVersion: 0 };
-  async function loadManifest(){
-    const res = await fetch('data/foods_manifest.json'); const j = await res.json();
-    Data.manifestVersion = j.version||1;
-    return j.files||[];
-  }
-  async function loadFoods(files){
-    const all = [];
-    for(const f of files){
-      try{
-        const r = await fetch('data/'+f+'?v='+Data.manifestVersion);
-        const j = await r.json();
-        if(Array.isArray(j)) all.push(...j);
-      }catch(e){ console.warn('Falha ao carregar', f, e); }
-    }
-    // IDs únicos e normalização simples
-    const seen = new Set();
-    Data.foods = all.filter(it=>{
-      if(!it || seen.has(it.id)) return false;
-      seen.add(it.id);
-      return true;
-    });
-  }
-  async function loadPresets(){
-    const res = await fetch('data/presets.json?v='+Data.manifestVersion);
-    const j = await res.json();
-    Data.presets = j.presets||[];
-  }
+  // ------- Dados -------
+  const Data={foods:[],presets:[],manifestVersion:0};
+  async function loadManifest(){const r=await fetch('data/foods_manifest.json');const j=await r.json();Data.manifestVersion=j.version||1;return j.files||[]}
+  async function loadFoods(files){const all=[];for(const f of files){try{const r=await fetch('data/'+f+'?v='+Data.manifestVersion);const j=await r.json();if(Array.isArray(j))all.push(...j)}catch(e){console.warn('Falha ao carregar',f)}}const seen=new Set();Data.foods=all.filter(it=>it&&!seen.has(it.id)&&(seen.add(it.id),true))}
+  async function loadPresets(){const r=await fetch('data/presets.json?v='+Data.manifestVersion);const j=await r.json();Data.presets=j.presets||[]}
 
-  // -------------------- Cálculos --------------------
-  function bmrMifflin(sexo, peso, altura, idade){
-    return sexo==='M' ? (10*peso + 6.25*altura - 5*idade + 5)
-                      : (10*peso + 6.25*altura - 5*idade - 161);
-  }
-  function tdee(bmr, atividade){
-    const map = { sedentario:1.2, leve:1.375, moderada:1.55, intensa:1.725 };
-    return bmr * (map[atividade]||1.55);
-  }
-  function targetKcal(tdee, goal){
-    if(goal==='cut') return Math.round(tdee*0.85);
-    if(goal==='bulk') return Math.round(tdee*1.08);
-    return Math.round(tdee);
-  }
+  // ------- Cálculo -------
+  function bmrMifflin(sexo,peso,alt,idade){return sexo==='M'?(10*peso+6.25*alt-5*idade+5):(10*peso+6.25*alt-5*idade-161)}
+  function tdee(bmr,act){const m={sedentario:1.2,leve:1.375,moderada:1.55,intensa:1.725};return bmr*(m[act]||1.55)}
+  function targetKcal(tdee,goal){if(goal==='cut')return Math.round(tdee*0.85);if(goal==='bulk')return Math.round(tdee*1.08);return Math.round(tdee)}
 
-  // -------------------- Generator --------------------
-  const CAPS = { solidMin:30, solidMax:250, oilMin:5, oilMax:20 };
-  function macrosPer100(item){ return {kcal:item.kcal, P:item.P, C:item.C, G:item.G}; }
+  // ------- Geração -------
+  const CAPS={solidMin:30,solidMax:250,oilMin:5,oilMax:20};
+  function pickFromFamily(family,prefs){const inc=new Set(prefs.tags_incluir||[]);let list=Data.foods.filter(f=>f.family===family);if(inc.size){list=list.sort((a,b)=>((b.tags||[]).filter(t=>inc.has(t)).length)-((a.tags||[]).filter(t=>inc.has(t)).length))}return list}
+  function mealTargets(kcal,ratio){const kcalP=kcal*(ratio.P||0),kcalC=kcal*(ratio.C||0),kcalG=kcal*(ratio.G||0);return{kcal:Math.round(kcal),P:+(kcalP/4).toFixed(1),C:+(kcalC/4).toFixed(1),G:+(kcalG/9).toFixed(1)}}
+  function gramsForTargets(item,t){const p=item.P||0,c=item.C||0,g=item.G||0;let basis=p?'P':(c?'C':'G');if(t.P>=t.C&&t.P>=t.G&&p)basis='P';else if(t.C>=t.P&&t.C>=t.G&&c)basis='C';else if(g)basis='G';const per100=(basis==='P'?p:(basis==='C'?c:g));if(per100<=0)return 0;let grams=(t[basis]/per100)*100;if(item.family==='Gordura')grams=Math.min(Math.max(grams,CAPS.oilMin),CAPS.oilMax);else grams=Math.min(Math.max(grams,CAPS.solidMin),CAPS.solidMax);return Math.round(grams)}
+  function buildPlan(meta,preset,prefs){const plan={meta_kcal:meta,preset_id:preset.id,meals:[]};for(const m of preset.meals){const kcalMeal=meta*(m.kcal_frac||0.25);const tgt=mealTargets(kcalMeal,m.macro_ratio||{P:.3,C:.45,G:.25});const items=[];for(const fam of m.families){const pool=pickFromFamily(fam,prefs);if(!pool.length)continue;const chosen=pool[0];const grams=gramsForTargets(chosen,tgt);items.push({id:chosen.id,name:chosen.name,family:fam,state:chosen.state,g:grams})}plan.meals.push({id:m.id,name:m.name,target:tgt,items})}return plan}
+  function computeMealKcal(items){let kcal=0,P=0,C=0,G=0;for(const it of items){const f=Data.foods.find(x=>x.id===it.id);if(!f)continue;const k=(it.g||0)/100;kcal+=(f.kcal||0)*k;P+=(f.P||0)*k;C+=(f.C||0)*k;G+=(f.G||0)*k}return{kcal:Math.round(kcal),P:+P.toFixed(1),C:+C.toFixed(1),G:+G.toFixed(1)}}
 
-  function pickFromFamily(family, prefs){
-    // filtro simples por tags incluídas (se marcadas) e ordenar por presença de tags e estado comum
-    const inc = new Set(prefs.tags_incluir||[]);
-    let list = Data.foods.filter(f=>f.family===family);
-    if(inc.size){
-      list = list.sort((a,b)=>{
-        const ai = (a.tags||[]).filter(t=>inc.has(t)).length;
-        const bi = (b.tags||[]).filter(t=>inc.has(t)).length;
-        return bi-ai;
-      });
-    }
-    return list;
-  }
+  // ------- Render -------
+  function renderPresets(){const wrap=document.getElementById('presetList');wrap.innerHTML='';Data.presets.forEach(p=>{const meals=(p.meals||[]).map(m=>m.name).join(' · ');const el=document.createElement('div');el.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';el.innerHTML=`<div class="flex items-start justify-between gap-3"><div><div class="font-semibold">${p.name}</div><div class="text-slate-400 text-sm">${meals}</div></div><button class="btn" data-pid="${p.id}">Selecionar</button></div>`;wrap.appendChild(el)});wrap.querySelectorAll('button[data-pid]').forEach(b=>b.addEventListener('click',()=>{const p=Data.presets.find(x=>x.id===b.dataset.pid);const profile=readProfileUI();const bmr=bmrMifflin(profile.sexo,profile.peso_kg,profile.altura_cm,profile.idade);const td=tdee(bmr,profile.atividade);const meta=targetKcal(td,profile.objetivo);showCalc(bmr,td,meta);const prefs=AppState.loadPrefs();const plan=buildPlan(meta,p,prefs);AppState.savePlan(plan);renderPlanner(plan);setActiveStep(4);location.hash='#plannerWrap';}))}
 
-  function gramsForTargets(item, target){
-    // converte alvo de macros (g) para gramas de alimento usando P/C/G por 100 g do item,
-    // estratégia simples: prioriza macro maior do alvo (P>C>G)
-    const p = item.P||0, c=item.C||0, g=item.G||0;
-    let basis = p? 'P' : (c? 'C' : 'G');
-    if(target.P>=target.C && target.P>=target.G && p) basis='P';
-    else if(target.C>=target.P && target.C>=target.G && c) basis='C';
-    else if(g) basis='G';
-    const per100 = (basis==='P'?p:(basis==='C'?c:g));
-    if(per100<=0) return 0;
-    let grams = (target[basis] / per100) * 100;
-    // caps
-    if(item.family==='Gordura') grams = Math.min(Math.max(grams, CAPS.oilMin), CAPS.oilMax);
-    else grams = Math.min(Math.max(grams, CAPS.solidMin), CAPS.solidMax);
-    return Math.round(grams);
-  }
-
-  function mealTargets(kcalMeal, ratio){
-    // ratio: {P,C,G} soma = 1
-    const kcalP = kcalMeal * (ratio.P||0);
-    const kcalC = kcalMeal * (ratio.C||0);
-    const kcalG = kcalMeal * (ratio.G||0);
-    return {
-      kcal: Math.round(kcalMeal),
-      P: +(kcalP/4).toFixed(1),
-      C: +(kcalC/4).toFixed(1),
-      G: +(kcalG/9).toFixed(1)
-    };
-  }
-
-  function buildPlan(metaKcal, preset, prefs){
-    const plan = { meta_kcal: metaKcal, preset_id: preset.id, meals: [] };
-    for(const m of preset.meals){
-      const kcalMeal = metaKcal * (m.kcal_frac||0.25);
-      const tgt = mealTargets(kcalMeal, m.macro_ratio||{P:.3,C:.45,G:.25});
-      const items = [];
-      for(const fam of m.families){
-        const pool = pickFromFamily(fam, prefs);
-        if(!pool.length) continue;
-        // escolher top do pool
-        const chosen = pool[0];
-        const grams = gramsForTargets(chosen, tgt);
-        items.push({ id: chosen.id, name: chosen.name, family: fam, state: chosen.state, g: grams });
-      }
-      plan.meals.push({ id:m.id, name:m.name, target:tgt, items });
-    }
-    return plan;
-  }
-
-  function computeMealKcal(items){
-    let kcal=0, P=0, C=0, G=0;
-    for(const it of items){
-      const food = Data.foods.find(f=>f.id===it.id); if(!food) continue;
-      const factor = (it.g||0)/100;
-      kcal += (food.kcal||0)*factor; P += (food.P||0)*factor; C += (food.C||0)*factor; G += (food.G||0)*factor;
-    }
-    return { kcal: Math.round(kcal), P:+P.toFixed(1), C:+C.toFixed(1), G:+G.toFixed(1) };
-  }
-
-  // -------------------- Render --------------------
-  function renderPresets(){
-    const wrap = document.getElementById('presetList'); wrap.innerHTML='';
-    Data.presets.forEach(p=>{
-      const el = document.createElement('div');
-      el.className='bg-slate-900 rounded-xl p-4';
-      const meals = (p.meals||[]).map(m=>m.name).join(' · ');
-      el.innerHTML = `
-        <div class="flex items-start justify-between gap-3">
-          <div>
-            <div class="font-semibold">${p.name}</div>
-            <div class="text-slate-400 text-sm">${meals}</div>
-          </div>
-          <button class="btn" data-pid="${p.id}">Selecionar</button>
-        </div>`;
-      wrap.appendChild(el);
-    });
-    wrap.querySelectorAll('button[data-pid]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const p = Data.presets.find(x=>x.id===btn.dataset.pid);
-        const profile = readProfileUI();
-        const bmr = bmrMifflin(profile.sexo, profile.peso_kg, profile.altura_cm, profile.idade);
-        const td = tdee(bmr, profile.atividade);
-        const meta = targetKcal(td, profile.objetivo);
-        showCalc(bmr, td, meta);
-        const prefs = AppState.loadPrefs();
-        const plan = buildPlan(meta, p, prefs);
-        AppState.savePlan(plan);
-        renderPlanner(plan);
-      });
-    });
-  }
+  function pctDev(v,t){if(!t)return 0;return Math.round(((v-t)/t)*100)}
+  function devBadge(p){return (Math.abs(p)<=2?'±2%':(p>0?('+'+p+'%'):(p+'%')))}
 
   function renderPlanner(plan){
-    const host = document.getElementById('planner'); host.innerHTML='';
-    if(!plan || !plan.meals) return;
-    const total = plan.meals.reduce((acc,m)=>{
-      const s = computeMealKcal(m.items);
-      acc.kcal+=s.kcal; acc.P+=s.P; acc.C+=s.C; acc.G+=s.G; return acc;
-    }, {kcal:0,P:0,C:0,G:0});
-    const meta = plan.meta_kcal;
-    const tol = Math.abs(total.kcal - meta)/meta;
-    const tolBadge = tol<=0.02 ? `<span class="text-emerald-400">🟢 dentro do alvo (±2%)</span>` :
-                                 `<span class="text-amber-300">🟠 fora do alvo (${Math.round(tol*100)}%)</span>`;
-
-    const head = document.createElement('div');
-    head.className='bg-slate-900 rounded-xl p-3 flex items-center justify-between';
-    head.innerHTML = `
-      <div class="text-sm md:text-base">Meta: <b>${meta}</b> kcal · Total: <b>${total.kcal}</b> kcal
-        <span class="ml-2">${tolBadge}</span></div>
-      <div class="text-slate-400 text-sm">P:${total.P.toFixed(0)}g · C:${total.C.toFixed(0)}g · G:${total.G.toFixed(0)}g</div>`;
+    const host=document.getElementById('planner');host.innerHTML='';
+    if(!plan||!plan.meals)return;
+    const total=plan.meals.reduce((a,m)=>{const s=computeMealKcal(m.items);a.kcal+=s.kcal;a.P+=s.P;a.C+=s.C;a.G+=s.G;return a},{kcal:0,P:0,C:0,G:0});
+    const meta=plan.meta_kcal;const tol=Math.abs(total.kcal-meta)/meta;
+    const tolBadge=tol<=0.02?`<span class="text-emerald-400">🟢 dentro do alvo (±2%)</span>`:`<span class="text-amber-300">🟠 fora do alvo (${Math.round(tol*100)}%)</span>`;
+    const head=document.createElement('div');head.className='bg-[#0f172a] rounded-xl p-3 flex items-center justify-between border border-[color:var(--border)]';
+    head.innerHTML=`<div class="text-sm md:text-base">Meta: <b>${meta}</b> kcal · Total: <b>${total.kcal}</b> kcal <span class="ml-2">${tolBadge}</span></div><div class="text-slate-400 text-sm">P:${total.P.toFixed(0)}g · C:${total.C.toFixed(0)}g · G:${total.G.toFixed(0)}g</div>`;
     host.appendChild(head);
 
     plan.meals.forEach((m,mi)=>{
-      const sum = computeMealKcal(m.items);
-      const row = document.createElement('div');
-      row.className='bg-slate-900 rounded-xl p-4';
-      const devP = pctDev(sum.P, m.target.P), devC=pctDev(sum.C, m.target.C), devG=pctDev(sum.G, m.target.G);
-      row.innerHTML = `
+      const sum=computeMealKcal(m.items);
+      const row=document.createElement('div');row.className='bg-[#0f172a] rounded-xl p-4 border border-[color:var(--border)]';
+      const devP=pctDev(sum.P,m.target.P),devC=pctDev(sum.C,m.target.C),devG=pctDev(sum.G,m.target.G);
+      row.innerHTML=`
         <div class="flex items-center justify-between">
           <div class="font-semibold">${m.name}</div>
           <div class="kcal-badge font-semibold">${sum.kcal} kcal</div>
@@ -385,17 +225,17 @@
           Alvo: P ${m.target.P}g (${devBadge(devP)}) · C ${m.target.C}g (${devBadge(devC)}) · G ${m.target.G}g (${devBadge(devG)})
         </div>
         <div class="mt-3 space-y-2">
-          ${m.items.map((it, ii)=>{
-            const f = Data.foods.find(x=>x.id===it.id) || {};
+          ${m.items.map((it,ii)=>{
+            const f=Data.foods.find(x=>x.id===it.id)||{};
             return `
-            <div class="flex items-center justify-between bg-slate-800 rounded-lg p-2">
+            <div class="flex items-center justify-between bg-[#111827] rounded-lg p-2 border border-[color:var(--border)]">
               <div>
                 <div class="font-medium">${f.name||it.name}</div>
                 <div class="text-slate-400 text-xs">Família: ${it.family} · Estado: ${it.state||'-'}</div>
               </div>
               <div class="flex items-center gap-3">
                 <div class="text-sm">${it.g} g</div>
-                <button class="btn-ghost text-xs" data-swap="${mi}:${ii}">Trocar</button>
+                <button class="btn-ghost btn-xs" data-swap="${mi}:${ii}">Trocar</button>
               </div>
             </div>`;
           }).join('')}
@@ -403,181 +243,115 @@
       host.appendChild(row);
     });
 
-    // bind swap
-    host.querySelectorAll('button[data-swap]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const [mi,ii] = btn.dataset.swap.split(':').map(Number);
-        openSwap(plan, mi, ii);
-      });
-    });
+    host.querySelectorAll('button[data-swap]').forEach(b=>b.addEventListener('click',()=>{const [mi,ii]=b.dataset.swap.split(':').map(Number);openSwap(plan,mi,ii)}));
   }
 
-  function pctDev(v, t){ if(!t) return 0; return Math.round(((v - t)/t)*100); }
-  function devBadge(p){ return (Math.abs(p)<=2? '±2%' : (p>0? '+'+p+'%' : p+'%')); }
-
-  function showCalc(bmr, tdeeVal, meta){
+  function showCalc(bmr,tdeeVal,meta){
     document.getElementById('calc-summary').classList.remove('hidden');
-    document.getElementById('bmrOut').textContent = Math.round(bmr);
-    document.getElementById('tdeeOut').textContent = Math.round(tdeeVal);
-    document.getElementById('targetOut').textContent = meta;
+    document.getElementById('bmrOut').textContent=Math.round(bmr);
+    document.getElementById('tdeeOut').textContent=Math.round(tdeeVal);
+    document.getElementById('targetOut').textContent=meta;
   }
 
-  // -------------------- Swap --------------------
-  let SWAP_CTX = null;
-  function openSwap(plan, mealIdx, itemIdx){
-    SWAP_CTX = { plan, mealIdx, itemIdx };
-    const m = plan.meals[mealIdx]; const it = m.items[itemIdx];
-    const hint = `Equivalentes para família <b>${it.family}</b> (prioriza mesmo estado: <b>${it.state||'-'}</b>).`;
-    document.getElementById('swapHint').innerHTML = hint;
+  // ------- SWAP (com grams manuais) -------
+  let SWAP_CTX=null;
+  function openSwap(plan,mealIdx,itemIdx){
+    SWAP_CTX={plan,mealIdx,itemIdx};
+    const m=plan.meals[mealIdx]; const it=m.items[itemIdx];
+    document.getElementById('swapHint').innerHTML=`Equivalentes para família <b>${it.family}</b> (prioriza mesmo estado: <b>${it.state||'-'}</b>).`;
+    const list=pickFromFamily(it.family,AppState.loadPrefs());
+    list.sort((a,b)=>((b.state===it.state)?1:0)-((a.state===it.state)?1:0));
 
-    const list = pickFromFamily(it.family, AppState.loadPrefs());
-    // ordenar por estado igual primeiro
-    list.sort((a,b)=>{
-      const ae = (a.state===it.state)?1:0, be=(b.state===it.state)?1:0;
-      return be-ae;
-    });
-
-    const box = document.getElementById('swapList'); box.innerHTML='';
-    list.slice(0,100).forEach(f=>{
-      const el = document.createElement('div');
-      el.className='bg-slate-800 rounded-lg p-2 flex items-center justify-between';
-      el.innerHTML = `
-        <div>
-          <div class="font-medium">${f.name}</div>
-          <div class="text-slate-400 text-xs">Estado: ${f.state||'-'} · 100 g → P ${f.P||0}g · C ${f.C||0}g · G ${f.G||0}g</div>
-        </div>
-        <button class="btn text-xs" data-choose="${f.id}">Usar</button>`;
+    const box=document.getElementById('swapList'); box.innerHTML='';
+    list.slice(0,120).forEach(f=>{
+      const el=document.createElement('div'); el.className='bg-[#111827] border border-[color:var(--border)] rounded-lg p-2';
+      const id=`g_${f.id}`;
+      el.innerHTML=`
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div class="font-medium">${f.name}</div>
+            <div class="text-slate-400 text-xs">Estado: ${f.state||'-'} · 100 g → P ${f.P||0}g · C ${f.C||0}g · G ${f.G||0}g</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <input id="${id}" type="number" min="1" max="1000" placeholder="g" class="field w-28" />
+            <button class="btn-ghost btn-xs" data-use="${f.id}">Usar</button>
+            <button class="btn btn-xs" data-useg="${f.id}">Usar c/gramas</button>
+          </div>
+        </div>`;
       box.appendChild(el);
     });
 
     document.getElementById('swapModal').classList.remove('hidden');
-    box.querySelectorAll('button[data-choose]').forEach(b=>{
-      b.addEventListener('click', ()=>{
-        const foodId = +b.dataset.choose;
-        applySwap(foodId);
-      });
-    });
+    box.querySelectorAll('button[data-use]').forEach(b=>b.addEventListener('click',()=>applySwap(+b.dataset.use,null)));
+    box.querySelectorAll('button[data-useg]').forEach(b=>b.addEventListener('click',()=>{
+      const fid=+b.dataset.useg; const g=document.getElementById('g_'+fid).value;
+      applySwap(fid, g?+g:null);
+    }));
   }
-  function applySwap(foodId){
-    if(!SWAP_CTX) return;
-    const { plan, mealIdx, itemIdx } = SWAP_CTX;
-    const m = plan.meals[mealIdx];
-    const tgt = m.target;
-    const chosen = Data.foods.find(f=>f.id===foodId); if(!chosen) return;
+  function applySwap(foodId, gramsManual){
+    if(!SWAP_CTX)return;
+    const {plan,mealIdx,itemIdx}=SWAP_CTX;
+    const m=plan.meals[mealIdx]; const tgt=m.target;
+    const chosen=Data.foods.find(f=>f.id===foodId); if(!chosen)return;
 
-    // recalcular porção do item trocado olhando o alvo da refeição e os demais itens
-    const others = m.items.filter((_,i)=>i!==itemIdx);
-    const partial = computeMealKcal(others);
-    const remaining = {
-      kcal: Math.max(tgt.kcal - partial.kcal, 0),
-      P: Math.max(tgt.P - partial.P, 0),
-      C: Math.max(tgt.C - partial.C, 0),
-      G: Math.max(tgt.G - partial.G, 0)
-    };
-    const grams = gramsForTargets(chosen, remaining);
-    m.items[itemIdx] = { id: chosen.id, name: chosen.name, family: chosen.family, state: chosen.state, g: grams };
-
-    AppState.savePlan(plan);
-    renderPlanner(plan);
-    closeSwap();
-  }
-  function closeSwap(){
-    document.getElementById('swapModal').classList.add('hidden');
-    SWAP_CTX = null;
-  }
-
-  // -------------------- UI helpers --------------------
-  function readProfileUI(){
-    return {
-      sexo: document.getElementById('sx').value,
-      idade: +document.getElementById('age').value,
-      altura_cm: +document.getElementById('h').value,
-      peso_kg: +document.getElementById('w').value,
-      atividade: document.getElementById('act').value,
-      objetivo: document.getElementById('goal').value
-    };
-  }
-
-  function gatherFilters(){
-    const boxes = document.querySelectorAll('#filters input[type=checkbox]');
-    const inc=[]; boxes.forEach(b=>{ if(b.checked) inc.push(b.value); });
-    return { tags_incluir: inc, tags_evitar: [], equivalentes_estado: true };
-  }
-
-  // -------------------- Export/Import --------------------
-  async function exportPNG(){
-    const el = document.getElementById('plannerWrap');
-    const canvas = await html2canvas(el, { backgroundColor: '#0a0f1c', scale: 2, useCORS: true });
-    const url = canvas.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = url;
-    const now = new Date(); const ts = now.toISOString().slice(0,10);
-    a.download = `FitPlan_${ts}.png`;
-    a.click();
-  }
-  function exportPlanJSON(){
-    const plan = AppState.loadPlan(); if(!plan) return;
-    const blob = new Blob([JSON.stringify(plan,null,2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download='meu_plano.json'; a.click();
-    URL.revokeObjectURL(url);
-  }
-  function importPlanJSON(file){
-    const fr = new FileReader();
-    fr.onload = () => {
-      try{
-        const obj = JSON.parse(fr.result);
-        AppState.savePlan(obj);
-        renderPlanner(obj);
-      }catch(e){ alert('Arquivo inválido'); }
-    };
-    fr.readAsText(file);
-  }
-
-  // -------------------- Bind inicial --------------------
-  document.getElementById('btnCalc').addEventListener('click', ()=>{
-    const p = readProfileUI();
-    const b = bmrMifflin(p.sexo, p.peso_kg, p.altura_cm, p.idade);
-    const td = tdee(b, p.atividade);
-    const meta = targetKcal(td, p.objetivo);
-    showCalc(b, td, meta);
-  });
-  document.getElementById('btnSaveProfile').addEventListener('click', ()=>{
-    const p = readProfileUI(); AppState.saveProfile(p);
-  });
-  document.getElementById('btnApplyFilters').addEventListener('click', ()=>{
-    const prefs = gatherFilters(); AppState.savePrefs(prefs);
-    const plan = AppState.loadPlan(); if(plan) renderPlanner(plan);
-  });
-  document.getElementById('btnClearFilters').addEventListener('click', ()=>{
-    document.querySelectorAll('#filters input[type=checkbox]').forEach(b=>b.checked=false);
-    const prefs = gatherFilters(); AppState.savePrefs(prefs);
-    const plan = AppState.loadPlan(); if(plan) renderPlanner(plan);
-  });
-  document.getElementById('btnExportPNG').addEventListener('click', exportPNG);
-  document.getElementById('btnSavePlan').addEventListener('click', exportPlanJSON);
-  document.getElementById('importPlan').addEventListener('change', (e)=>{ if(e.target.files[0]) importPlanJSON(e.target.files[0]); });
-  document.getElementById('btnCloseSwap').addEventListener('click', closeSwap);
-
-  // -------------------- Boot --------------------
-  (async function boot(){
-    const prof = AppState.loadProfile();
-    if(prof){
-      document.getElementById('sx').value = prof.sexo;
-      document.getElementById('age').value = prof.idade;
-      document.getElementById('h').value = prof.altura_cm;
-      document.getElementById('w').value = prof.peso_kg;
-      document.getElementById('act').value = prof.atividade;
-      document.getElementById('goal').value = prof.objetivo;
+    let grams=gramsManual;
+    if(!grams||grams<=0){
+      const others=m.items.filter((_,i)=>i!==itemIdx);
+      const partial=computeMealKcal(others);
+      const remaining={kcal:Math.max(tgt.kcal-partial.kcal,0),P:Math.max(tgt.P-partial.P,0),C:Math.max(tgt.C-partial.C,0),G:Math.max(tgt.G-partial.G,0)};
+      grams=gramsForTargets(chosen,remaining);
     }
-    const files = await loadManifest();
-    await loadFoods(files);
-    await loadPresets();
-    renderPresets();
+    // aplicar caps mesmo para manual
+    grams = Math.round(grams);
+    if(chosen.family==='Gordura'){grams=Math.min(Math.max(grams,CAPS.oilMin),CAPS.oilMax)}
+    else {grams=Math.min(Math.max(grams,CAPS.solidMin),CAPS.solidMax)}
 
-    const plan = AppState.loadPlan();
-    if(plan) renderPlanner(plan);
+    m.items[itemIdx]={id:chosen.id,name:chosen.name,family:chosen.family,state:chosen.state,g:grams};
+    AppState.savePlan(plan); renderPlanner(plan); closeSwap();
+  }
+  function closeSwap(){document.getElementById('swapModal').classList.add('hidden'); SWAP_CTX=null;}
+
+  // ------- Filtros / Export -------
+  function readProfileUI(){return{sexo:document.getElementById('sx').value,idade:+document.getElementById('age').value,altura_cm:+document.getElementById('h').value,peso_kg:+document.getElementById('w').value,atividade:document.getElementById('act').value,objetivo:document.getElementById('goal').value}}
+  function gatherFilters(){const boxes=document.querySelectorAll('#filters input[type=checkbox]');const inc=[];boxes.forEach(b=>b.checked&&inc.push(b.value));return{tags_incluir:inc,tags_evitar:[],equivalentes_estado:true}}
+  async function exportPNG(){const el=document.getElementById('plannerWrap');const canvas=await html2canvas(el,{backgroundColor: '#0a0f1c',scale:2,useCORS:true});const url=canvas.toDataURL('image/png');const a=document.createElement('a');a.href=url;a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png';a.click()}
+
+  // ------- Stepper ativo (começa no 1) -------
+  function setActiveStep(n){[1,2,3,4,5].forEach(i=>document.getElementById('st'+i).classList.toggle('active',i===n))}
+  setActiveStep(1);
+
+  // ------- Binds -------
+  document.getElementById('btnCalc').addEventListener('click',()=>{
+    const p=readProfileUI();const b=bmrMifflin(p.sexo,p.peso_kg,p.altura_cm,p.idade);const td=tdee(b,p.atividade);const meta=targetKcal(td,p.objetivo);showCalc(b,td,meta);setActiveStep(2);location.hash='#preset-picker';
+  });
+  document.getElementById('btnSaveProfile').addEventListener('click',()=>{AppState.saveProfile(readProfileUI())});
+  document.getElementById('btnApplyFilters').addEventListener('click',()=>{AppState.savePrefs(gatherFilters());const plan=AppState.loadPlan();if(plan)renderPlanner(plan)});
+  document.getElementById('btnClearFilters').addEventListener('click',()=>{document.querySelectorAll('#filters input[type=checkbox]').forEach(b=>b.checked=false);AppState.savePrefs(gatherFilters());const plan=AppState.loadPlan();if(plan)renderPlanner(plan)});
+  document.getElementById('btnExportPNG').addEventListener('click',exportPNG);
+  document.getElementById('btnSavePlan').addEventListener('click',()=>{
+    const plan=AppState.loadPlan(); if(!plan) return;
+    const blob=new Blob([JSON.stringify(plan,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='meu_plano.json'; a.click(); URL.revokeObjectURL(url);
+  });
+  document.getElementById('importPlan').addEventListener('change',e=>{
+    if(!e.target.files[0])return; const fr=new FileReader();
+    fr.onload=()=>{try{const obj=JSON.parse(fr.result);AppState.savePlan(obj);renderPlanner(obj);setActiveStep(4);location.hash='#plannerWrap';}catch{alert('Arquivo inválido')}};
+    fr.readAsText(e.target.files[0]);
+  });
+  document.getElementById('btnCloseSwap').addEventListener('click',closeSwap);
+
+  // Clique no stepper apenas marca ativo (navegação é por âncora)
+  [1,2,3,4,5].forEach(i=>document.getElementById('st'+i).addEventListener('click',()=>setActiveStep(i)));
+
+  // ------- Boot -------
+  (async function boot(){
+    const prof=AppState.loadProfile(); if(prof){
+      document.getElementById('sx').value=prof.sexo; document.getElementById('age').value=prof.idade;
+      document.getElementById('h').value=prof.altura_cm; document.getElementById('w').value=prof.peso_kg;
+      document.getElementById('act').value=prof.atividade; document.getElementById('goal').value=prof.objetivo;
+    }
+    const files=await loadManifest(); await loadFoods(files); await loadPresets(); renderPresets();
+    const plan=AppState.loadPlan(); if(plan){renderPlanner(plan); setActiveStep(4);}
   })();
   </script>
 </body>
