@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FitPlan Pro ⚡ | v7</title>
+  <title>FitPlan Pro ⚡ | v7.1</title>
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -265,7 +265,28 @@
 
   const Data={foods:[],presets:[],manifestVersion:0};
   async function loadManifest(){const r=await fetch('data/foods_manifest.json'); const j=await r.json(); Data.manifestVersion=j.version||1; return j.files||[]}
-  async function loadFoods(files){const acc=[]; for(const f of files){ try{ const r=await fetch('data/'+f+'?v='+Data.manifestVersion); const j=await r.json(); Array.isArray(j)&&acc.push(...j);}catch(e){console.warn('Falha ao carregar',f,e)} } const seen=new Set(); Data.foods=acc.filter(x=>x && !seen.has(x.id) && seen.add(x.id)===true || x)}
+  async function loadFoods(files){
+    const acc=[];
+    for(const f of files){
+      try{
+        const r=await fetch('data/'+f+'?v='+Data.manifestVersion);
+        const j=await r.json(); if(Array.isArray(j)) acc.push(...j);
+      }catch(e){console.warn('Falha ao carregar',f,e)}
+    }
+    // saneamento básico p/ robustez
+    const seen=new Set();
+    Data.foods=acc
+      .filter(x=>x && typeof x.id!=='undefined')
+      .map(x=>({
+        id:x.id,
+        name:String(x.name||'Item'),
+        family:String(x.family||'Misto'),
+        state:x.state||'',
+        kcal:+x.kcal||0, P:+x.P||0, C:+x.C||0, G:+x.G||0,
+        tags:Array.isArray(x.tags)?x.tags:[]
+      }))
+      .filter(x=>!seen.has(x.id) && seen.add(x.id)===true);
+  }
   async function loadPresets(){ const r=await fetch('data/presets.json?v='+Data.manifestVersion); const j=await r.json(); Data.presets=j.presets||[] }
 
   /* ---------------- Cálculo ---------------- */
@@ -703,6 +724,14 @@
 
   function renderListDay(plan){
     const host=document.getElementById('listDay'); host.innerHTML='';
+    if(!plan || !plan.meals){
+      host.innerHTML = `
+        <div class="bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4">
+          <div class="text-slate-300 mb-2">Nenhum plano encontrado.</div>
+          <button class="btn" onclick="switchTab('plan')">Gerar plano</button>
+        </div>`;
+      return;
+    }
     const all=[]; plan.meals.forEach(m=>m.items.forEach(it=>all.push(it)));
     const agg=aggregateItems(all);
     const box=document.createElement('div'); box.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
@@ -715,12 +744,19 @@
 
   async function renderListWeek(){
     const host=document.getElementById('listWeek'); host.innerHTML='';
-    const plan=State.load(LS.plan); if(!plan) return;
+    const plan=State.load(LS.plan); if(!plan || !plan.meals){
+      host.innerHTML = `
+        <div class="bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4">
+          <div class="text-slate-300 mb-2">Nenhum plano encontrado.</div>
+          <button class="btn" onclick="switchTab('plan')">Gerar plano</button>
+        </div>`;
+      return;
+    }
     const prefs=readPrefs(); const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0];
 
     Overlay.show('Gerando semana…');
     const allItems=[];
-    // gera 7 dias variados (respeitando pins? — aqui ignoramos pins para variedade global)
+    // gera 7 dias variados (ignora pins para variedade global)
     for(let d=0; d<7; d++){
       const tmp=buildPlan(plan.meta_kcal,preset,prefs);
       tmp.meals.forEach(m=>m.items.forEach(it=>allItems.push({...it})));
@@ -836,6 +872,12 @@
     document.getElementById('favsBox').style.display=(key==='favs')?'block':'none';
   }
 
+  function ensurePlanOrWarn(){
+    const plan=State.load(LS.plan);
+    if(!plan || !plan.meals){ alert('Gere o plano primeiro (selecione um modelo e clique em "Selecionar").'); return null; }
+    return plan;
+  }
+
   /* ---------------- Eventos ---------------- */
   ;[1,2,3].forEach(i=>document.getElementById('st'+i).addEventListener('click',()=>showStep(i)));
   document.getElementById('next1').addEventListener('click',()=>{ renderPresets(); showStep(2); });
@@ -851,8 +893,8 @@
 
   // tabs
   document.getElementById('tabPlan').addEventListener('click',()=>switchTab('plan'));
-  document.getElementById('tabListDay').addEventListener('click',()=>{ renderListDay(State.load(LS.plan)); switchTab('day'); });
-  document.getElementById('tabListWeek').addEventListener('click',async ()=>{ await renderListWeek(); switchTab('week'); });
+  document.getElementById('tabListDay').addEventListener('click',()=>{ const plan=ensurePlanOrWarn(); if(!plan) return; renderListDay(plan); switchTab('day'); });
+  document.getElementById('tabListWeek').addEventListener('click',async ()=>{ const plan=ensurePlanOrWarn(); if(!plan) return; await renderListWeek(); switchTab('week'); });
   document.getElementById('tabFavs').addEventListener('click',()=>{ renderFavs(); switchTab('favs'); });
 
   // export & save
@@ -865,7 +907,7 @@
   document.getElementById('btnFav').addEventListener('click',()=>{ addFav(); alert('Plano salvo em Favoritos ✅') });
 
   // regenerar
-  document.getElementById('btnRegenDay').addEventListener('click',()=>{ const plan=State.load(LS.plan); if(!plan) return; const prefs=readPrefs(); const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0]; regenerateDay(plan,preset,prefs); State.save(LS.plan,plan); renderPlanner(plan); });
+  document.getElementById('btnRegenDay').addEventListener('click',()=>{ const plan=ensurePlanOrWarn(); if(!plan) return; const prefs=readPrefs(); const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0]; regenerateDay(plan,preset,prefs); State.save(LS.plan,plan); renderPlanner(plan); });
 
   /* ---------------- Boot ---------------- */
   (async function boot(){
