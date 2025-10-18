@@ -3,13 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FitPlan Pro ⚡ | v4</title>
+  <title>FitPlan Pro ⚡ | v5</title>
 
   <!-- Tailwind (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- html2canvas para exportação -->
-  <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <!-- Plano B de exportação (fallback) -->
+
+  <!-- Export PNG – biblioteca estável para GH Pages -->
   <script defer src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.2.0/dist/dom-to-image-more.min.js"></script>
 
   <style>
@@ -103,7 +102,8 @@
     <!-- Slide 2: Presets -->
     <section id="s2" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <h2 class="text-xl font-semibold mb-3">2) Escolha um modelo (presets elásticos)</h2>
-      <p class="text-slate-300 text-sm mb-2">Cada modelo é um <b>estilo</b> de montagem. Você pode trocar alimentos e gramaturas depois. Veja abaixo para quem cada modelo é indicado.</p>
+      <p id="goalInfo" class="text-emerald-300 text-xs mb-3"></p>
+      <p class="text-slate-300 text-sm mb-2">Cada modelo é um <b>estilo</b> de montagem. Você pode trocar alimentos e gramaturas depois.</p>
       <div id="presetList" class="grid md:grid-cols-2 gap-3"></div>
       <div class="mt-6 flex items-center justify-between"><button id="prev2" class="btn-ghost">Voltar</button><button id="next2" class="btn">Próximo</button></div>
     </section>
@@ -170,7 +170,14 @@
 
   <script>
   /* =================== Núcleo =================== */
-  const slides=["s1","s2","s3","s4","s5"]; let step=1; const showStep=n=>{step=Math.min(5,Math.max(1,n));slides.forEach((id,i)=>{const el=document.getElementById(id); if(el) el.style.display=(i===step-1?'block':'none')}); [1,2,3,4,5].forEach(i=>document.getElementById('st'+i).classList.toggle('active',i===step)); window.scrollTo({top:0,behavior:'smooth'})};
+  const slides=["s1","s2","s3","s4","s5"]; let step=1;
+  const showStep=n=>{
+    step=Math.min(5,Math.max(1,n));
+    slides.forEach((id,i)=>{const el=document.getElementById(id); if(el) el.style.display=(i===step-1?'block':'none')});
+    [1,2,3,4,5].forEach(i=>document.getElementById('st'+i).classList.toggle('active',i===step));
+    if(step===2) renderPresets(); // garante filtro atualizado ao abrir passo 2
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
   showStep(1);
 
   const LS={profile:'fp_profile',prefs:'fp_prefs',plan:'fp_plan'};
@@ -308,11 +315,11 @@
   /* ===== Presets filtrados pelo objetivo ===== */
   function isPresetAllowedForGoal(preset, goal){
     const name = String(preset.name||'').toLowerCase();
-    if(goal === 'cut'){
-      return !(name.includes('bulk') || name.includes('ganho') || name.includes('superávit') || name.includes('superavit'));
-    }
-    if(goal === 'bulk'){ return true; }
-    return true; // manutenção
+    const isCutLike  = /cut|secar|defini[cç][aã]o|low[- ]?carb/.test(name);
+    const isBulkLike = /bulk|ganho|super[aá]vit|superavit|hipercal[oó]rico|hipercalorico/.test(name);
+    if (goal === 'cut')  return !isBulkLike;
+    if (goal === 'bulk') return !isCutLike;
+    return true;
   }
 
   /* ===== Render ===== */
@@ -323,6 +330,16 @@
     const box=document.getElementById('presetList'); box.innerHTML='';
     const prof = readProfile();
     const filtered = (Data.presets||[]).filter(p => isPresetAllowedForGoal(p, prof.objetivo));
+
+    const gi = document.getElementById('goalInfo');
+    if (gi) {
+      gi.textContent = prof.objetivo==='cut'
+        ? 'Filtrando modelos para SECAR (sem modelos de ganho).'
+        : prof.objetivo==='bulk'
+          ? 'Filtrando modelos para GANHAR (sem modelos de corte/low-carb).'
+          : 'Mostrando todos os modelos (objetivo: manter).';
+    }
+
     (filtered.length ? filtered : Data.presets).forEach(p=>{
       const meals=(p.meals||[]).map(m=>m.name).join(' · ');
       const desc=p.description||'Variedade elástica com trocas simples.';
@@ -343,6 +360,7 @@
       </div>`;
       box.appendChild(el);
     });
+
     box.querySelectorAll('button[data-pid]').forEach(b=>b.addEventListener('click',()=>{
       const p=Data.presets.find(x=>x.id===b.dataset.pid);
       const prof=readProfile(); const bmr=bmrMifflin(prof.sexo,prof.peso_kg,prof.altura_cm,prof.idade);
@@ -407,67 +425,38 @@
   function gatherFilters(){ const inc=[]; document.querySelectorAll('#s3 input[type=checkbox]').forEach(b=>b.checked&&inc.push(b.value)); const prefs=State.load(LS.prefs)||{tags_incluir:[],tags_evitar:[],var:45}; return {tags_incluir:inc, tags_evitar:prefs.tags_evitar||[], equivalentes_estado:true, var:prefs.var||45}; }
 
   async function exportPNG(){
+    const node = document.getElementById('plannerWrap');
     try{
-      const box = document.getElementById('plannerWrap');
-      const canvas = await html2canvas(box, {
-        backgroundColor: '#0a0f1c',
-        scale: 1.3,
-        useCORS: true,
-        foreignObjectRendering: true,
-        windowWidth: document.documentElement.clientWidth,
-        removeContainer: true,
-        logging: false
-      });
-
-      const downloadBlob = (blob) => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'FitPlan_' + new Date().toISOString().slice(0,10) + '.png';
-        a.click();
-        URL.revokeObjectURL(url);
+      const scale = 2;
+      const style = {
+        transform: `scale(${scale})`,
+        transformOrigin: 'top left',
+        width: node.scrollWidth + 'px',
+        height: node.scrollHeight + 'px',
+        backgroundColor: '#0a0f1c'
       };
-
-      canvas.toBlob(async (blob)=>{
-        if(blob){ downloadBlob(blob); return; }
-        try{
-          const dataURL = canvas.toDataURL('image/png');
-          const bstr = atob(dataURL.split(',')[1]);
-          let n = bstr.length; const u8arr = new Uint8Array(n);
-          while(n--){ u8arr[n] = bstr.charCodeAt(n); }
-          const blob2 = new Blob([u8arr], {type:'image/png'});
-          downloadBlob(blob2);
-        }catch(e2){
-          // Plano B: dom-to-image
-          try{
-            const blob3 = await window.domtoimage.toBlob(box, {bgcolor:'#0a0f1c',quality:1,style:{'transform':'scale(1)','transform-origin':'top left'}});
-            downloadBlob(blob3);
-          }catch(e3){
-            alert('Falha ao gerar imagem');
-            console.error('exportPNG falhou (todas tentativas)', e3);
-          }
-        }
-      }, 'image/png');
+      const dataUrl = await window.domtoimage.toPng(node, {
+        bgcolor: '#0a0f1c',
+        quality: 1,
+        style
+      });
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = 'FitPlan_' + new Date().toISOString().slice(0,10) + '.png';
+      a.click();
     }catch(e){
-      try{ // Plano B direto
-        const box = document.getElementById('plannerWrap');
-        const blob = await window.domtoimage.toBlob(box, {bgcolor:'#0a0f1c',quality:1});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href=url; a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png'; a.click(); URL.revokeObjectURL(url);
-      }catch(e2){
-        alert('Falha ao gerar imagem');
-        console.error('exportPNG erro', e2);
-      }
+      alert('Falha ao gerar imagem');
+      console.error('exportPNG (dom-to-image) erro', e);
     }
   }
 
   /* ===== Eventos ===== */
   ;[1,2,3,4,5].forEach(i=>document.getElementById('st'+i).addEventListener('click',()=>showStep(i)));
-  document.getElementById('next1').addEventListener('click',()=>showStep(2));
+  document.getElementById('next1').addEventListener('click',()=>{ renderPresets(); showStep(2); }); // garante filtro
   document.getElementById('prev2').addEventListener('click',()=>showStep(1));
-  // Pular o passo 3 por padrão
+  // Pular o passo 3 por padrão:
   document.getElementById('next2').addEventListener('click',()=>showStep(4));
-  // Se quiser manter o 3, troque a linha acima por showStep(3)
+  // Se quiser manter o 3, troque a linha acima por: showStep(3)
   document.getElementById('prev3').addEventListener('click',()=>showStep(2));
   document.getElementById('next3').addEventListener('click',()=>showStep(4));
   document.getElementById('prev4').addEventListener('click',()=>showStep(3));
@@ -479,6 +468,8 @@
   document.getElementById('btnApplyFilters').addEventListener('click',()=>{ const prefs=gatherFilters(); State.save(LS.prefs,prefs); const plan=State.load(LS.plan); if(plan) renderPlanner(plan); });
   document.getElementById('btnClearFilters').addEventListener('click',()=>{ document.querySelectorAll('#s3 input[type=checkbox]').forEach(b=>b.checked=false); const prefs=State.load(LS.prefs)||{}; prefs.tags_incluir=[]; State.save(LS.prefs,prefs); const plan=State.load(LS.plan); if(plan) renderPlanner(plan); });
   document.getElementById('varSlider').addEventListener('input',e=>{ document.getElementById('varOut').textContent=e.target.value+'%'; const prefs=State.load(LS.prefs)||{tags_incluir:[],tags_evitar:[]}; prefs.var=+e.target.value; State.save(LS.prefs,prefs); });
+
+  document.getElementById('goal').addEventListener('change', ()=>{ renderPresets(); }); // re-filtra ao trocar objetivo
 
   document.getElementById('btnExportPNG').addEventListener('click',exportPNG);
   document.getElementById('btnExportPNG2').addEventListener('click',exportPNG);
