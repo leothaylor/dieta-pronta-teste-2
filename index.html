@@ -5,40 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>FitPlan Pro ⚡ | dieta-pronta-teste-2</title>
 
-  <!-- Tailwind CDN (utilitários) -->
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
   <!-- html2canvas (Exportar PNG) -->
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-  <!-- Estilo próprio (SEM @apply — somente CSS puro para funcionar com CDN) -->
+  <!-- Estilo (CSS puro; alto contraste) -->
   <style>
     :root{
       --bg:#0a0f1c; --card:#0b1220; --soft:#111827; --muted:#9ca3af;
-      --text:#e5e7eb; --text-strong:#f8fafc; --green:#10b981; --green-soft:#86efac;
+      --text:#e5e7eb; --green:#10b981; --green-soft:#86efac;
       --border:#374151; --border-strong:#475569;
     }
     html,body{background:var(--bg);color:var(--text);}
     .shadow-soft{box-shadow:0 10px 30px rgba(0,0,0,.28);}
     .kcal-badge{color:var(--green-soft);}
-
-    /* BOTÕES */
-    .btn{padding:.5rem 1rem;border-radius:.75rem;background:var(--green);color:white;font-weight:600;transition:.15s;}
+    .btn{padding:.55rem 1rem;border-radius:.75rem;background:var(--green);color:white;font-weight:700;transition:.15s;}
     .btn:hover{filter:brightness(1.08);}
-    .btn-ghost{padding:.5rem .9rem;border-radius:.75rem;background:#1f2937;color:#e5e7eb;border:1px solid var(--border);font-weight:600;transition:.15s;}
+    .btn-ghost{padding:.55rem .95rem;border-radius:.75rem;background:#1f2937;color:#e5e7eb;border:1px solid var(--border);font-weight:700;transition:.15s;}
     .btn-ghost:hover{background:#273449;border-color:var(--border-strong);}
     .btn-xs{padding:.35rem .6rem;border-radius:.6rem;font-size:.8rem}
-
-    /* INPUTS / SELECTS */
-    .field{width:100%;padding:.55rem .75rem;border-radius:.75rem;background:#1f2937;color:#e5e7eb;border:1px solid var(--border);outline:none;}
+    .btn[disabled]{opacity:.6;filter:saturate(.7);cursor:not-allowed}
+    .field{width:100%;padding:.6rem .75rem;border-radius:.75rem;background:#1f2937;color:#e5e7eb;border:1px solid var(--border);outline:none;}
     .field:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(16,185,129,.15);}
-    .label{font-size:.8rem;color:#a5b4fc;color:#9ca3af}
-    /* TAGs */
+    .label{font-size:.8rem;color:#9ca3af}
     .tag{display:inline-flex;align-items:center;border-radius:999px;padding:.15rem .5rem;font-size:.75rem;background:#1f2937;color:#e5e7eb;border:1px solid var(--border);margin-right:.35rem;margin-bottom:.35rem}
-    /* STEP */
-    .step{background:#1f2937;color:#cbd5e1;border-radius:.8rem;padding:.5rem 0;text-align:center;border:1px solid var(--border)}
+    .step{background:#1f2937;color:#cbd5e1;border-radius:.8rem;padding:.55rem 0;text-align:center;border:1px solid var(--border)}
     .step.active{background:#065f46;color:white;border-color:#0ea5a4}
     .divider{height:1px;background:#1f2937;margin:1rem 0}
+    .slide{display:none}
+    .slide.show{display:block}
     a.link{color:var(--green-soft);text-decoration:underline;}
   </style>
 </head>
@@ -51,17 +47,17 @@
 
   <main class="max-w-5xl mx-auto px-4 space-y-6 pb-24">
 
-    <!-- STEPPER: navegação por âncora -->
-    <nav class="grid grid-cols-5 gap-2">
-      <a href="#user-setup"    id="st1" class="step">1</a>
-      <a href="#preset-picker" id="st2" class="step">2</a>
-      <a href="#filters"       id="st3" class="step">3</a>
-      <a href="#plannerWrap"   id="st4" class="step">4</a>
-      <a href="#plannerWrap"   id="st5" class="step">5</a>
+    <!-- STEPPER -->
+    <nav class="grid grid-cols-5 gap-2 sticky top-0 z-10">
+      <button id="st1" class="step">1</button>
+      <button id="st2" class="step">2</button>
+      <button id="st3" class="step">3</button>
+      <button id="st4" class="step">4</button>
+      <button id="st5" class="step">5</button>
     </nav>
 
-    <!-- 1) PERFIL -->
-    <section id="user-setup" class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
+    <!-- SLIDE 1: PERFIL -->
+    <section id="slide1" class="slide show bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <h2 class="text-xl font-semibold mb-3">1) Seu Perfil</h2>
       <div class="grid md:grid-cols-3 gap-4">
         <div><div class="label">Sexo</div>
@@ -89,6 +85,7 @@
           </select>
         </div>
       </div>
+
       <div class="mt-4 flex gap-2">
         <button id="btnCalc" class="btn">Calcular TDEE & Meta</button>
         <button id="btnSaveProfile" class="btn-ghost">Salvar Perfil</button>
@@ -102,16 +99,26 @@
         </div>
         <p class="text-slate-400 text-sm mt-2">Dica cardio pessoal: Z2 ≈ <b>145 bpm</b>.</p>
       </div>
+
+      <div class="mt-6 flex items-center justify-between">
+        <button class="btn-ghost" disabled>Voltar</button>
+        <button id="next1" class="btn">Próximo</button>
+      </div>
     </section>
 
-    <!-- 2) PRESETS -->
-    <section id="preset-picker" class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
+    <!-- SLIDE 2: PRESETS -->
+    <section id="slide2" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <h2 class="text-xl font-semibold mb-3">2) Escolha um modelo (presets elásticos)</h2>
       <div id="presetList" class="grid md:grid-cols-2 gap-3"></div>
+
+      <div class="mt-6 flex items-center justify-between">
+        <button id="prev2" class="btn-ghost">Voltar</button>
+        <button id="next2" class="btn">Próximo</button>
+      </div>
     </section>
 
-    <!-- 3) FILTROS -->
-    <section id="filters" class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
+    <!-- SLIDE 3: FILTROS -->
+    <section id="slide3" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <h2 class="text-xl font-semibold mb-3">3) Filtros rápidos</h2>
       <div class="flex flex-wrap">
         <label class="tag"><input class="mr-1" type="checkbox" value="pf" /> pf</label>
@@ -131,10 +138,15 @@
         <button id="btnApplyFilters" class="btn-ghost">Aplicar filtros</button>
         <button id="btnClearFilters" class="btn-ghost">Limpar</button>
       </div>
+
+      <div class="mt-6 flex items-center justify-between">
+        <button id="prev3" class="btn-ghost">Voltar</button>
+        <button id="next3" class="btn">Próximo</button>
+      </div>
     </section>
 
-    <!-- 4/5) PLANNER -->
-    <section id="plannerWrap" class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
+    <!-- SLIDE 4/5: PLANNER -->
+    <section id="slide4" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-semibold">4) Seu Plano Gerado</h2>
         <div class="flex gap-2">
@@ -149,9 +161,28 @@
       <div id="planner" class="mt-4 space-y-4"></div>
       <div class="divider"></div>
       <p class="text-slate-400 text-sm">Nota: Proteínas pesadas <b>cruas</b>; Carbos <b>cozidos</b>. Macros por 100 g no estado indicado.</p>
+
+      <div class="mt-6 flex items-center justify-between">
+        <button id="prev4" class="btn-ghost">Voltar</button>
+        <button id="next4" class="btn">Próximo</button>
+      </div>
     </section>
 
-    <!-- MODAL SWAP (com grams exatos) -->
+    <!-- SLIDE 5: RESUMO/EXPORT -->
+    <section id="slide5" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
+      <h2 class="text-xl font-semibold mb-3">5) Resumo & Exportação</h2>
+      <p class="text-slate-300 mb-3">Revise o total diário, faça trocas se quiser (volte ao passo 4) e **exporte** seu plano em PNG ou **salve** o arquivo JSON para recuperar depois.</p>
+      <div class="flex gap-2">
+        <button id="btnExportPNG2" class="btn">Exportar PNG</button>
+        <button id="btnSavePlan2" class="btn-ghost">Salvar Plano</button>
+      </div>
+      <div class="mt-6 flex items-center justify-between">
+        <button id="prev5" class="btn-ghost">Voltar</button>
+        <button class="btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">Finalizar ↑</button>
+      </div>
+    </section>
+
+    <!-- MODAL SWAP (com gramatura manual) -->
     <div id="swapModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
       <div class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 max-w-2xl w-full shadow-soft border border-[color:var(--border)]">
         <div class="flex items-center justify-between">
@@ -166,6 +197,21 @@
 
   <!-- ============ LÓGICA ============ -->
   <script>
+  // ------- Slides / Stepper -------
+  const slides = ['slide1','slide2','slide3','slide4','slide5'];
+  let currentStep = 1;
+  function showStep(n){
+    currentStep = Math.min(Math.max(n,1),5);
+    slides.forEach((id,idx)=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(idx === currentStep-1){ el.classList.add('show'); } else { el.classList.remove('show'); }
+    });
+    [1,2,3,4,5].forEach(i=>document.getElementById('st'+i).classList.toggle('active', i===currentStep));
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  showStep(1);
+
   // ------- Estado (localStorage) -------
   const LS_KEYS={profile:'dpt2_profile',prefs:'dpt2_prefs',plan:'dpt2_plan'};
   const AppState={
@@ -197,7 +243,29 @@
   function computeMealKcal(items){let kcal=0,P=0,C=0,G=0;for(const it of items){const f=Data.foods.find(x=>x.id===it.id);if(!f)continue;const k=(it.g||0)/100;kcal+=(f.kcal||0)*k;P+=(f.P||0)*k;C+=(f.C||0)*k;G+=(f.G||0)*k}return{kcal:Math.round(kcal),P:+P.toFixed(1),C:+C.toFixed(1),G:+G.toFixed(1)}}
 
   // ------- Render -------
-  function renderPresets(){const wrap=document.getElementById('presetList');wrap.innerHTML='';Data.presets.forEach(p=>{const meals=(p.meals||[]).map(m=>m.name).join(' · ');const el=document.createElement('div');el.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';el.innerHTML=`<div class="flex items-start justify-between gap-3"><div><div class="font-semibold">${p.name}</div><div class="text-slate-400 text-sm">${meals}</div></div><button class="btn" data-pid="${p.id}">Selecionar</button></div>`;wrap.appendChild(el)});wrap.querySelectorAll('button[data-pid]').forEach(b=>b.addEventListener('click',()=>{const p=Data.presets.find(x=>x.id===b.dataset.pid);const profile=readProfileUI();const bmr=bmrMifflin(profile.sexo,profile.peso_kg,profile.altura_cm,profile.idade);const td=tdee(bmr,profile.atividade);const meta=targetKcal(td,profile.objetivo);showCalc(bmr,td,meta);const prefs=AppState.loadPrefs();const plan=buildPlan(meta,p,prefs);AppState.savePlan(plan);renderPlanner(plan);setActiveStep(4);location.hash='#plannerWrap';}))}
+  function renderPresets(){
+    const wrap=document.getElementById('presetList');wrap.innerHTML='';
+    Data.presets.forEach(p=>{
+      const meals=(p.meals||[]).map(m=>m.name).join(' · ');
+      const el=document.createElement('div');
+      el.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
+      el.innerHTML=`<div class="flex items-start justify-between gap-3"><div><div class="font-semibold">${p.name}</div><div class="text-slate-400 text-sm">${meals}</div></div><button class="btn" data-pid="${p.id}">Selecionar</button></div>`;
+      wrap.appendChild(el);
+    });
+    wrap.querySelectorAll('button[data-pid]').forEach(b=>b.addEventListener('click',()=>{
+      const p=Data.presets.find(x=>x.id===b.dataset.pid);
+      const profile=readProfileUI();
+      const bmr=bmrMifflin(profile.sexo,profile.peso_kg,profile.altura_cm,profile.idade);
+      const td=tdee(bmr,profile.atividade);
+      const meta=targetKcal(td,profile.objetivo);
+      showCalc(bmr,td,meta);
+      const prefs=AppState.loadPrefs();
+      const plan=buildPlan(meta,p,prefs);
+      AppState.savePlan(plan);
+      renderPlanner(plan);
+      showStep(4); // vai direto para o planner após escolher preset
+    }));
+  }
 
   function pctDev(v,t){if(!t)return 0;return Math.round(((v-t)/t)*100)}
   function devBadge(p){return (Math.abs(p)<=2?'±2%':(p>0?('+'+p+'%'):(p+'%')))}
@@ -253,7 +321,7 @@
     document.getElementById('targetOut').textContent=meta;
   }
 
-  // ------- SWAP (com grams manuais) -------
+  // ------- SWAP (gramatura manual opcional) -------
   let SWAP_CTX=null;
   function openSwap(plan,mealIdx,itemIdx){
     SWAP_CTX={plan,mealIdx,itemIdx};
@@ -284,8 +352,7 @@
     document.getElementById('swapModal').classList.remove('hidden');
     box.querySelectorAll('button[data-use]').forEach(b=>b.addEventListener('click',()=>applySwap(+b.dataset.use,null)));
     box.querySelectorAll('button[data-useg]').forEach(b=>b.addEventListener('click',()=>{
-      const fid=+b.dataset.useg; const g=document.getElementById('g_'+fid).value;
-      applySwap(fid, g?+g:null);
+      const fid=+b.dataset.useg; const g=document.getElementById('g_'+fid).value; applySwap(fid, g?+g:null);
     }));
   }
   function applySwap(foodId, gramsManual){
@@ -301,47 +368,57 @@
       const remaining={kcal:Math.max(tgt.kcal-partial.kcal,0),P:Math.max(tgt.P-partial.P,0),C:Math.max(tgt.C-partial.C,0),G:Math.max(tgt.G-partial.G,0)};
       grams=gramsForTargets(chosen,remaining);
     }
-    // aplicar caps mesmo para manual
-    grams = Math.round(grams);
     if(chosen.family==='Gordura'){grams=Math.min(Math.max(grams,CAPS.oilMin),CAPS.oilMax)}
     else {grams=Math.min(Math.max(grams,CAPS.solidMin),CAPS.solidMax)}
-
-    m.items[itemIdx]={id:chosen.id,name:chosen.name,family:chosen.family,state:chosen.state,g:grams};
+    m.items[itemIdx]={id:chosen.id,name:chosen.name,family:chosen.family,state:chosen.state,g:Math.round(grams)};
     AppState.savePlan(plan); renderPlanner(plan); closeSwap();
   }
   function closeSwap(){document.getElementById('swapModal').classList.add('hidden'); SWAP_CTX=null;}
 
-  // ------- Filtros / Export -------
+  // ------- Utilitários -------
   function readProfileUI(){return{sexo:document.getElementById('sx').value,idade:+document.getElementById('age').value,altura_cm:+document.getElementById('h').value,peso_kg:+document.getElementById('w').value,atividade:document.getElementById('act').value,objetivo:document.getElementById('goal').value}}
-  function gatherFilters(){const boxes=document.querySelectorAll('#filters input[type=checkbox]');const inc=[];boxes.forEach(b=>b.checked&&inc.push(b.value));return{tags_incluir:inc,tags_evitar:[],equivalentes_estado:true}}
-  async function exportPNG(){const el=document.getElementById('plannerWrap');const canvas=await html2canvas(el,{backgroundColor: '#0a0f1c',scale:2,useCORS:true});const url=canvas.toDataURL('image/png');const a=document.createElement('a');a.href=url;a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png';a.click()}
+  function gatherFilters(){const boxes=document.querySelectorAll('#slide3 input[type=checkbox]');const inc=[];boxes.forEach(b=>b.checked&&inc.push(b.value));return{tags_incluir:inc,tags_evitar:[],equivalentes_estado:true}}
+  async function exportPNG(){const el=document.getElementById('slide4');const canvas=await html2canvas(el,{backgroundColor:'#0a0f1c',scale:2,useCORS:true});const url=canvas.toDataURL('image/png');const a=document.createElement('a');a.href=url;a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png';a.click()}
 
-  // ------- Stepper ativo (começa no 1) -------
-  function setActiveStep(n){[1,2,3,4,5].forEach(i=>document.getElementById('st'+i).classList.toggle('active',i===n))}
-  setActiveStep(1);
+  // ------- Binds: navegação & ações -------
+  // Stepper (clique nos números)
+  [1,2,3,4,5].forEach(i=>document.getElementById('st'+i).addEventListener('click',()=>showStep(i)));
 
-  // ------- Binds -------
+  // Botões Próximo/Voltar
+  document.getElementById('next1').addEventListener('click',()=>showStep(2));
+  document.getElementById('prev2').addEventListener('click',()=>showStep(1));
+  document.getElementById('next2').addEventListener('click',()=>showStep(3));
+  document.getElementById('prev3').addEventListener('click',()=>showStep(2));
+  document.getElementById('next3').addEventListener('click',()=>showStep(4));
+  document.getElementById('prev4').addEventListener('click',()=>showStep(3));
+  document.getElementById('next4').addEventListener('click',()=>showStep(5));
+  document.getElementById('prev5').addEventListener('click',()=>showStep(4));
+
+  // Cálculo / Perfil
   document.getElementById('btnCalc').addEventListener('click',()=>{
-    const p=readProfileUI();const b=bmrMifflin(p.sexo,p.peso_kg,p.altura_cm,p.idade);const td=tdee(b,p.atividade);const meta=targetKcal(td,p.objetivo);showCalc(b,td,meta);setActiveStep(2);location.hash='#preset-picker';
+    const p=readProfileUI();const b=bmrMifflin(p.sexo,p.peso_kg,p.altura_cm,p.idade);const td=tdee(b,p.atividade);const meta=targetKcal(td,p.objetivo);showCalc(b,td,meta);
   });
   document.getElementById('btnSaveProfile').addEventListener('click',()=>{AppState.saveProfile(readProfileUI())});
+
+  // Filtros
   document.getElementById('btnApplyFilters').addEventListener('click',()=>{AppState.savePrefs(gatherFilters());const plan=AppState.loadPlan();if(plan)renderPlanner(plan)});
-  document.getElementById('btnClearFilters').addEventListener('click',()=>{document.querySelectorAll('#filters input[type=checkbox]').forEach(b=>b.checked=false);AppState.savePrefs(gatherFilters());const plan=AppState.loadPlan();if(plan)renderPlanner(plan)});
+  document.getElementById('btnClearFilters').addEventListener('click',()=>{document.querySelectorAll('#slide3 input[type=checkbox]').forEach(b=>b.checked=false);AppState.savePrefs(gatherFilters());const plan=AppState.loadPlan();if(plan)renderPlanner(plan)});
+
+  // Export / Import / Save
   document.getElementById('btnExportPNG').addEventListener('click',exportPNG);
   document.getElementById('btnSavePlan').addEventListener('click',()=>{
     const plan=AppState.loadPlan(); if(!plan) return;
     const blob=new Blob([JSON.stringify(plan,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='meu_plano.json'; a.click(); URL.revokeObjectURL(url);
   });
+  document.getElementById('btnExportPNG2').addEventListener('click',exportPNG);
+  document.getElementById('btnSavePlan2').addEventListener('click',()=>document.getElementById('btnSavePlan').click());
   document.getElementById('importPlan').addEventListener('change',e=>{
     if(!e.target.files[0])return; const fr=new FileReader();
-    fr.onload=()=>{try{const obj=JSON.parse(fr.result);AppState.savePlan(obj);renderPlanner(obj);setActiveStep(4);location.hash='#plannerWrap';}catch{alert('Arquivo inválido')}};
+    fr.onload=()=>{try{const obj=JSON.parse(fr.result);AppState.savePlan(obj);renderPlanner(obj);showStep(4);}catch{alert('Arquivo inválido')}};
     fr.readAsText(e.target.files[0]);
   });
   document.getElementById('btnCloseSwap').addEventListener('click',closeSwap);
-
-  // Clique no stepper apenas marca ativo (navegação é por âncora)
-  [1,2,3,4,5].forEach(i=>document.getElementById('st'+i).addEventListener('click',()=>setActiveStep(i)));
 
   // ------- Boot -------
   (async function boot(){
@@ -351,7 +428,7 @@
       document.getElementById('act').value=prof.atividade; document.getElementById('goal').value=prof.objetivo;
     }
     const files=await loadManifest(); await loadFoods(files); await loadPresets(); renderPresets();
-    const plan=AppState.loadPlan(); if(plan){renderPlanner(plan); setActiveStep(4);}
+    const plan=AppState.loadPlan(); if(plan){renderPlanner(plan); showStep(4);} // se já existir plano salvo, abre no 4
   })();
   </script>
 </body>
