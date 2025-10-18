@@ -1,1227 +1,584 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitPlan Pro - Gerador de Dieta Inteligente</title>
-    <!-- Carrega Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Configuração de fontes e cores do Tailwind -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-dark': '#1e293b',
-                        'secondary-dark': '#0f172a',
-                        'accent': '#4ade80', // Verde vibrante
-                        'accent-light': '#86efad',
-                        'text-light': '#f8fafc',
-                        'text-muted': '#94a3b8',
-                        'danger': '#ef4444', // Vermelho para avisos
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
-    <!-- Carrega bibliotecas para Exportação (PNG/PDF) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FitPlan Pro ⚡ | dieta-pronta-teste-2</title>
 
-    <style>
-        body {
-            background-color: #0f172a; /* secondary-dark */
-            color: #f8fafc; /* text-light */
-            font-family: 'Inter', sans-serif;
+  <!-- Tailwind CDN (ok usar CDN; nenhum arquivo extra no repo) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0f172a',   // slate-900
+            card: '#0b1220',      // dark card
+            accent: '#22c55e',    // green-500
+            accent2: '#86efac',   // green-200
+            soft: '#1f2937'       // slate-800
+          }
         }
-        .card {
-            background-color: #1e293b; /* primary-dark */
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
-            border: 1px solid #334155;
-        }
-        .stepper-active {
-            background-color: #4ade80;
-            color: #0f172a;
-            font-weight: 700;
-        }
-        .stepper-done {
-            background-color: #334155;
-            color: #f8fafc;
-        }
-        .input-dark, select.input-dark {
-            background-color: #0f172a;
-            border-color: #334155;
-            color: #f8fafc;
-        }
-        .tab-active {
-            border-bottom: 3px solid #4ade80;
-            color: #4ade80;
-            font-weight: 600;
-        }
-        .tooltip-icon {
-            cursor: pointer;
-            color: #94a3b8;
-            margin-left: 4px;
-        }
-        .loading-spinner {
-            border: 4px solid rgba(248, 250, 252, 0.1);
-            border-top: 4px solid #4ade80;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+      }
+    }
+  </script>
+
+  <!-- html2canvas para exportar PNG -->
+  <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <style>
+    html, body { background: #0a0f1c; color: #e5e7eb; }
+    .shadow-soft { box-shadow: 0 10px 30px rgba(0,0,0,0.30); }
+    .kcal-badge { color:#86efac; }
+    .btn { @apply px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition; }
+    .btn-ghost { @apply px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-medium; }
+    .tag { @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-slate-800 text-slate-200 mr-2 mb-1; }
+    .input { @apply w-full px-3 py-2 rounded-xl bg-slate-800 text-slate-100 outline-none border border-slate-700 focus:border-emerald-500; }
+    .select { @apply w-full px-3 py-2 rounded-xl bg-slate-800 text-slate-100 outline-none border border-slate-700 focus:border-emerald-500; }
+    .range { accent-color: #10b981; }
+    .divider { @apply h-px bg-slate-800 my-4; }
+    .link { color:#86efac; text-decoration: underline; }
+    .klabel { @apply text-xs text-slate-400; }
+  </style>
 </head>
-<body class="min-h-screen p-4 sm:p-8">
 
-    <div class="max-w-4xl mx-auto">
-        <!-- Título e Introdução -->
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-extrabold text-accent">FitPlan Pro ⚡</h1>
-            <p class="text-text-muted mt-1">Gere sua dieta realista em 5 passos.</p>
-        </header>
+<body class="min-h-screen">
+  <header class="max-w-5xl mx-auto px-4 pt-8 pb-4">
+    <h1 class="text-3xl md:text-4xl font-bold">FitPlan Pro ⚡</h1>
+    <p class="text-slate-300">Gere sua dieta realista em 5 passos — **apenas index.html + .json**.</p>
+  </header>
 
-        <!-- Stepper (Navegação) -->
-        <div id="stepper" class="flex justify-between items-center mb-8 bg-primary-dark p-3 rounded-xl shadow-lg">
-            <!-- Os passos serão renderizados pelo JS -->
+  <main class="max-w-5xl mx-auto px-4 space-y-6 pb-24">
+
+    <!-- Stepper -->
+    <div class="flex items-center gap-2">
+      <div id="step1" class="flex-1 text-center py-2 rounded-xl bg-slate-800">1</div>
+      <div id="step2" class="flex-1 text-center py-2 rounded-xl bg-slate-800">2</div>
+      <div id="step3" class="flex-1 text-center py-2 rounded-xl bg-slate-800">3</div>
+      <div id="step4" class="flex-1 text-center py-2 rounded-xl bg-slate-800">4</div>
+      <div id="step5" class="flex-1 text-center py-2 rounded-xl bg-emerald-700 text-white">5</div>
+    </div>
+
+    <!-- Perfil / Cálculo -->
+    <section id="user-setup" class="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
+      <h2 class="text-xl font-semibold mb-3">1) Seu Perfil</h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div>
+          <label class="klabel">Sexo</label>
+          <select id="sx" class="select">
+            <option value="M">Masculino</option>
+            <option value="F">Feminino</option>
+          </select>
         </div>
-
-        <!-- Conteúdo Principal (Formulário ou Plano) -->
-        <main id="app-content">
-            <!-- O conteúdo será renderizado pelo JS -->
-        </main>
-
-        <!-- Seção de Mensagens (para feedback e erros) -->
-        <div id="message-area" class="mt-4 p-3 rounded-lg text-center hidden"></div>
-    </div>
-
-    <!-- Modal de Mensagem (Troca Inviável, Sucesso, etc.) -->
-    <div id="app-modal" class="fixed inset-0 bg-secondary-dark bg-opacity-80 hidden items-center justify-center z-50">
-        <div class="card w-full max-w-sm mx-4 p-6">
-            <h3 id="modal-title" class="text-xl font-bold mb-3 text-accent"></h3>
-            <p id="modal-content" class="text-text-light mb-5"></p>
-            <button onclick="hideModal()" class="w-full bg-accent text-secondary-dark font-bold py-2 px-4 rounded-lg hover:bg-accent-light transition duration-200">
-                Entendi
-            </button>
+        <div>
+          <label class="klabel">Idade (anos)</label>
+          <input id="age" type="number" min="12" max="90" class="input" value="33" />
         </div>
+        <div>
+          <label class="klabel">Altura (cm)</label>
+          <input id="h" type="number" min="120" max="220" class="input" value="170" />
+        </div>
+        <div>
+          <label class="klabel">Peso (kg)</label>
+          <input id="w" type="number" min="35" max="180" class="input" value="73" />
+        </div>
+        <div>
+          <label class="klabel">Atividade</label>
+          <select id="act" class="select">
+            <option value="sedentario">Sedentário</option>
+            <option value="leve">Leve (1–2x/sem)</option>
+            <option value="moderada" selected>Moderada (3–4x/sem)</option>
+            <option value="intensa">Intensa (5–7x/sem)</option>
+          </select>
+        </div>
+        <div>
+          <label class="klabel">Objetivo</label>
+          <select id="goal" class="select">
+            <option value="cut">Cut (-15%)</option>
+            <option value="maint" selected>Manutenção</option>
+            <option value="bulk">Bulk (+8%)</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-4 flex gap-2">
+        <button id="btnCalc" class="btn">Calcular TDEE & Meta</button>
+        <button id="btnSaveProfile" class="btn-ghost">Salvar Perfil</button>
+      </div>
+
+      <div id="calc-summary" class="mt-4 hidden bg-slate-900 rounded-xl p-4">
+        <div class="grid md:grid-cols-3 gap-3">
+          <div><div class="klabel">BMR (Mifflin)</div><div id="bmrOut" class="text-emerald-300 text-xl">—</div></div>
+          <div><div class="klabel">TDEE</div><div id="tdeeOut" class="text-emerald-300 text-xl">—</div></div>
+          <div><div class="klabel">Meta diária</div><div id="targetOut" class="text-emerald-300 text-xl">—</div></div>
+        </div>
+        <p class="text-slate-400 text-sm mt-2">Dica cardio pessoal: Z2 ≈ <b>145 bpm</b>.</p>
+      </div>
+    </section>
+
+    <!-- Presets -->
+    <section id="preset-picker" class="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
+      <h2 class="text-xl font-semibold mb-3">2) Escolha um modelo (presets elásticos)</h2>
+      <div id="presetList" class="grid md:grid-cols-2 gap-3"></div>
+    </section>
+
+    <!-- Filtros -->
+    <section id="filters" class="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
+      <h2 class="text-xl font-semibold mb-3">3) Filtros rápidos</h2>
+      <div class="flex flex-wrap gap-2">
+        <label class="tag"><input class="mr-1" type="checkbox" value="pf" /> pf</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="marmita" /> marmita</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="caseiro" /> caseiro</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="rápido" /> rápido</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="baixo-custo" /> baixo-custo</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="integral" /> integral</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="alto-proteína" /> alto-proteína</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="low-carb" /> low-carb</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="vegetariano" /> vegetariano</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="vegano" /> vegano</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="sem-gluten" /> sem-gluten</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="sem-lactose" /> sem-lactose</label>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <button id="btnApplyFilters" class="btn-ghost">Aplicar filtros</button>
+        <button id="btnClearFilters" class="btn-ghost">Limpar</button>
+      </div>
+    </section>
+
+    <!-- Planner -->
+    <section id="plannerWrap" class="bg-card rounded-2xl p-4 md:p-6 shadow-soft">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-semibold">4) Seu Plano Gerado</h2>
+        <div class="flex gap-2">
+          <button id="btnExportPNG" class="btn">Exportar PNG</button>
+          <button id="btnSavePlan" class="btn-ghost">Salvar Plano</button>
+          <label class="btn-ghost cursor-pointer">
+            Importar Plano
+            <input id="importPlan" type="file" accept="application/json" class="hidden" />
+          </label>
+        </div>
+      </div>
+
+      <div id="planner" class="mt-4 space-y-4"></div>
+      <div class="divider"></div>
+      <p class="text-slate-400 text-sm">
+        Nota: Proteínas pesadas <b>cruas</b>; Carbos <b>cozidos</b>. Macros por 100 g no estado indicado.
+      </p>
+    </section>
+
+    <!-- Modal SWAP -->
+    <div id="swapModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
+      <div class="bg-card rounded-2xl p-4 md:p-6 max-w-2xl w-full shadow-soft">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold">Trocar alimento</h3>
+          <button id="btnCloseSwap" class="btn-ghost">Fechar</button>
+        </div>
+        <p id="swapHint" class="text-slate-400 text-sm mt-1"></p>
+        <div id="swapList" class="mt-3 max-h-[50vh] overflow-auto space-y-2"></div>
+      </div>
     </div>
-    
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" class="fixed inset-0 bg-secondary-dark bg-opacity-90 hidden flex-col items-center justify-center z-50">
-        <div class="loading-spinner"></div>
-        <p id="loading-message" class="text-text-light mt-4 text-lg font-medium">Processando dados...</p>
-    </div>
 
-    <!-- Scripts do Aplicativo -->
-    <script>
-        // Variáveis Globais de Configuração
-        const APP_ID = 'fitplan-pro-v1';
-        const STEPS = [
-            { name: "Objetivo", key: 'goal' },
-            { name: "Dados Físicos", key: 'body' },
-            { name: "Rotina/Treino", key: 'routine' },
-            { name: "Preferências", key: 'prefs' },
-            { name: "Dispensa (Opcional)", key: 'pantry' },
-        ];
-
-        // Mapeamento de Fatores
-        const TDEE_MULTIPLIERS = {
-            'sedentario': 1.2, 'leve': 1.375, 'moderado': 1.55, 'ativo': 1.725, 'atleta': 1.9,
-        };
-        const BUDGET_MAP = { 'baixo': 1, 'medio': 2, 'alto': 3 };
-        const TIME_MAP = { 'lt_15': 1, '15_30': 2, 'gt_30': 3 };
-
-        // Regras de Distribuição Calórica (4 Refeições Padrão)
-        const CALORIE_DISTRIBUTION_BASE = [
-            { name: 'Café da Manhã', basePct: 25, type: 'pre-morning' },
-            { name: 'Almoço', basePct: 35, type: 'mid-day' },
-            { name: 'Lanche da Tarde', basePct: 15, type: 'post-mid-day' },
-            { name: 'Jantar', basePct: 25, type: 'night' },
-        ];
-        
-        // Estado Global do App
-        let appState = {
-            currentStep: 0,
-            isPlanGenerated: false,
-            profile: {}, // Armazena as respostas do formulário
-            generatedPlan: null,
-            favorites: [],
-        };
-
-        // --- CATALOGO DE ALIMENTOS SIMPLIFICADO (FOOD BANK BR) ---
-        // Adicionado: priceLevel (1=Baixo, 3=Alto) e prepTime (1=Rápido, 3=Longo)
-        const FOOD_CATALOG = {
-            // [kcal, protein, fat, carb, tags, friendlyUnit]
-            'protein': [
-                { name: 'Peito de Frango (Grelhado)', k: 165, p: 31, g: 3.6, c: 0, tags: ['pf', 'marmita', 'carne'], unit: 'g', portionMin: 120, portionMax: 230, unitText: 'filé/palma', priceLevel: 2, prepTime: 2 },
-                { name: 'Ovos (Cozidos)', k: 155, p: 13, g: 11, c: 1.1, tags: ['cafe', 'pratico'], unit: 'g', portionMin: 100, portionMax: 200, unitText: '2-4 ovos', priceLevel: 1, prepTime: 1 },
-                { name: 'Iogurte Natural (2% gordura)', k: 60, p: 4, g: 2, c: 5, tags: ['cafe', 'pratico', 'lactose'], unit: 'ml', portionMin: 150, portionMax: 300, unitText: 'copo', priceLevel: 2, prepTime: 1 },
-                { name: 'Atum Enlatado (Água)', k: 116, p: 25, g: 1, c: 0, tags: ['pratico'], unit: 'g', portionMin: 80, portionMax: 150, unitText: 'lata', priceLevel: 2, prepTime: 1 },
-                { name: 'Bife Patinho (Grelhado)', k: 131, p: 22, g: 4, c: 0, tags: ['pf', 'carne'], unit: 'g', portionMin: 120, portionMax: 230, unitText: 'bife', priceLevel: 3, prepTime: 2 },
-                // Adicional para Veg
-                { name: 'Tofu (Extra Firme)', k: 76, p: 8, g: 4.8, c: 1.9, tags: ['pf', 'marmita', 'vegan', 'natural'], unit: 'g', portionMin: 100, portionMax: 250, unitText: 'pedaço', priceLevel: 2, prepTime: 2 },
-            ],
-            'carb': [
-                { name: 'Arroz Branco', k: 130, p: 2.7, g: 0.3, c: 28, tags: ['pf', 'gluten-free'], unit: 'g', portionMin: 100, portionMax: 260, unitText: 'colher (grande)', priceLevel: 1, prepTime: 2 },
-                { name: 'Arroz Integral', k: 112, p: 2.6, g: 1, c: 24, tags: ['pf', 'natural', 'gluten-free'], unit: 'g', portionMin: 100, portionMax: 260, unitText: 'colher (grande)', priceLevel: 1, prepTime: 3 },
-                { name: 'Batata Doce (Cozida)', k: 76, p: 1.6, g: 0.1, c: 17, tags: ['marmita', 'natural', 'gluten-free'], unit: 'g', portionMin: 100, portionMax: 250, unitText: 'pedaço médio', priceLevel: 1, prepTime: 3 },
-                { name: 'Pão Integral', k: 250, p: 10, g: 4, c: 45, tags: ['cafe', 'pratico', 'gluten'], unit: 'g', portionMin: 50, portionMax: 100, unitText: '2 fatias', priceLevel: 2, prepTime: 1 },
-                { name: 'Macarrão Integral', k: 150, p: 5, g: 1, c: 30, tags: ['pratico', 'gluten'], unit: 'g', portionMin: 100, portionMax: 200, unitText: 'xícara (cozido)', priceLevel: 2, prepTime: 2 },
-                { name: 'Aveia em Flocos', k: 389, p: 17, g: 7, c: 66, tags: ['cafe', 'natural'], unit: 'g', portionMin: 30, portionMax: 80, unitText: 'colher (sopa)', priceLevel: 1, prepTime: 1 },
-            ],
-            'fat': [
-                { name: 'Azeite Extra Virgem', k: 884, p: 0, g: 100, c: 0, tags: [], unit: 'ml', portionMin: 3, portionMax: 12, unitText: 'colher (chá/sopa)', priceLevel: 2, prepTime: 1 },
-                { name: 'Pasta de Amendoim', k: 588, p: 25, g: 50, c: 20, tags: ['pratico'], unit: 'g', portionMin: 15, portionMax: 40, unitText: 'colher (sopa)', priceLevel: 2, prepTime: 1 },
-                { name: 'Queijo Muçarela', k: 300, p: 22, g: 22, c: 1, tags: ['cafe', 'lactose'], unit: 'g', portionMin: 30, portionMax: 60, unitText: '1 fatia', priceLevel: 2, prepTime: 1 },
-            ],
-            'fruit': [
-                { name: 'Banana', k: 89, p: 1.1, g: 0.3, c: 23, tags: ['cafe', 'natural'], unit: 'g', portionMin: 80, portionMax: 150, unitText: '1 unidade', priceLevel: 1, prepTime: 1 },
-                { name: 'Maçã', k: 52, p: 0.3, g: 0.2, c: 14, tags: ['cafe', 'natural'], unit: 'g', portionMin: 100, portionMax: 200, unitText: '1 unidade', priceLevel: 1, prepTime: 1 },
-                { name: 'Feijão Carioca', k: 76, p: 5, g: 0.5, c: 14, tags: ['pf', 'natural', 'gluten-free'], unit: 'g', portionMin: 100, portionMax: 200, unitText: 'concha', priceLevel: 1, prepTime: 3 },
-            ],
-        };
-
-        // --- TEMPLATES DE REFEIÇÕES (BR) ---
-        const MEAL_TEMPLATES = {
-            'Café da Manhã': [
-                { id: 'CM1', name: '(1) Pão + Proteína + Fruta', familyRatios: { P: 40, C: 45, G: 15 }, items: [{ type: 'carb', tag: 'Pão' }, { type: 'protein', tag: 'cafe' }, { type: 'fruit' }] },
-                { id: 'CM2', name: '(2) Iogurte + Aveia + Fruta', familyRatios: { P: 35, C: 50, G: 15 }, items: [{ type: 'protein', tag: 'Iogurte' }, { type: 'carb', tag: 'Aveia' }, { type: 'fruit' }] },
-                { id: 'CM3', name: '(3) Ovos + Raiz + Fruta', familyRatios: { P: 45, C: 40, G: 15 }, items: [{ type: 'protein', tag: 'Ovo' }, { type: 'carb', tag: 'Raiz' }, { type: 'fruit' }] },
-            ],
-            'Almoço/Jantar': [
-                { id: 'PF1', name: '(A) PF Brasileiro Clássico', familyRatios: { P: 40, C: 40, G: 20 }, items: [{ type: 'protein', tag: 'pf' }, { type: 'carb', tag: 'Arroz' }, { type: 'fruit', tag: 'Feijão' }, { type: 'fat', tag: 'Azeite' }] },
-                { id: 'MR2', name: '(B) Marmita Simples (Raiz)', familyRatios: { P: 45, C: 35, G: 20 }, items: [{ type: 'protein', tag: 'marmita' }, { type: 'carb', tag: 'Raiz' }, { type: 'fat', tag: 'Azeite' }] },
-                { id: 'MS3', name: '(D) Massa Fit', familyRatios: { P: 35, C: 45, G: 20 }, items: [{ type: 'carb', tag: 'Macarrão' }, { type: 'protein', tag: 'marmita' }, { type: 'fat', tag: 'Azeite' }] },
-            ],
-            'Lanche da Tarde': [
-                { id: 'LT1', name: '(L1) Pão + Pasta', familyRatios: { P: 30, C: 40, G: 30 }, items: [{ type: 'carb', tag: 'Pão' }, { type: 'fat', tag: 'Pasta' }] },
-                { id: 'LT2', name: '(L2) Iogurte + Fruta', familyRatios: { P: 45, C: 45, G: 10 }, items: [{ type: 'protein', tag: 'Iogurte' }, { type: 'fruit' }] },
-            ]
-        };
-        // --- FUNÇÕES UTILITÁRIAS ---
-
-        /**
-         * Exibe o overlay de carregamento.
-         * @param {string} message Mensagem a ser exibida.
-         */
-        function showLoading(message = "Processando dados...") {
-            document.getElementById('loading-message').textContent = message;
-            document.getElementById('loading-overlay').classList.remove('hidden');
-            document.getElementById('loading-overlay').classList.add('flex');
-        }
-
-        /**
-         * Esconde o overlay de carregamento.
-         */
-        function hideLoading() {
-            document.getElementById('loading-overlay').classList.add('hidden');
-            document.getElementById('loading-overlay').classList.remove('flex');
-        }
-
-        // Exibe o modal
-        function showModal(title, content) {
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-content').textContent = content;
-            document.getElementById('app-modal').classList.remove('hidden');
-            document.getElementById('app-modal').classList.add('flex');
-        }
-
-        // Esconde o modal
-        function hideModal() {
-            document.getElementById('app-modal').classList.add('hidden');
-            document.getElementById('app-modal').classList.remove('flex');
-        }
-
-        // Exibe mensagem de feedback
-        function showMessage(text, isError = false) {
-            const messageArea = document.getElementById('message-area');
-            messageArea.textContent = text;
-            messageArea.classList.remove('hidden', 'bg-red-500', 'bg-accent-light', 'text-secondary-dark');
-            if (isError) {
-                messageArea.classList.add('bg-danger');
-                messageArea.classList.remove('bg-accent-light', 'text-secondary-dark');
-            } else {
-                messageArea.classList.add('bg-accent-light', 'text-secondary-dark');
-                messageArea.classList.remove('bg-danger');
-            }
-        }
-
-        // Armazena o estado no localStorage
-        function saveState(key, data) {
-            try {
-                localStorage.setItem(`${APP_ID}-${key}`, JSON.stringify(data));
-                return true;
-            } catch (e) {
-                console.error("Erro ao salvar estado local:", e);
-                return false;
-            }
-        }
-
-        // Carrega o estado do localStorage
-        function loadState(key) {
-            try {
-                const data = localStorage.getItem(`${APP_ID}-${key}`);
-                return data ? JSON.parse(data) : null;
-            } catch (e) {
-                console.error("Erro ao carregar estado local:", e);
-                return null;
-            }
-        }
-
-        // --- FUNÇÕES DE CÁLCULO CORE ---
-
-        /**
-         * Mifflin-St Jeor para BMR
-         */
-        function calculateBMR(sex, weight, height, age) {
-            if (sex === 'masculino') return (10 * weight) + (6.25 * height) - (5 * age) + 5;
-            if (sex === 'feminino') return (10 * weight) + (6.25 * height) - (5 * age) - 161;
-            return 0;
-        }
-
-        /**
-         * Calcula o Gasto Energético Diário Total (TDEE)
-         */
-        function calculateTDEE(bmr, activity, intensity, sleep) {
-            let tdee = bmr * (TDEE_MULTIPLIERS[activity] || 1.2);
-            if (intensity === 'alta') tdee *= 1.05;
-            if (intensity === 'baixa') tdee *= 0.97;
-            if (sleep === 'menos_6h') tdee *= 0.97;
-            return Math.round(tdee);
-        }
-
-        /**
-         * Calcula a Meta Calórica Diária
-         */
-        function calculateCaloricGoal(tdee, objective) {
-            switch (objective) {
-                case 'perder_gordura': return Math.round(tdee * 0.85); // Cut: TDEE -15%
-                case 'ganhar_massa': return Math.round(tdee * 1.08); // Bulk: TDEE +8%
-                case 'recomposicao': default: return tdee; // Manutenção
-            }
-        }
-
-        /**
-         * Filtra alimentos por restrições e lista de evitar.
-         * @returns {Array<Object>} Candidatos compatíveis.
-         */
-        function filterFood(family, restrictions, avoidList) {
-            let candidates = FOOD_CATALOG[family] || [];
-            const isGlutenFree = restrictions.includes('sem_gluten');
-            const isLactoseFree = restrictions.includes('sem_lactose');
-            const isVeg = restrictions.includes('vegetariano');
-            const isVegan = restrictions.includes('vegan');
-
-            return candidates.filter(food => {
-                if (isGlutenFree && food.tags.includes('gluten')) return false;
-                if (isLactoseFree && food.tags.includes('lactose')) return false;
-                // Veganos/Vegetarianos: Excluem carnes, mas permitem frutas e vegetais
-                if ((isVegan || isVeg) && food.tags.includes('carne')) return false; 
-                if (isVegan && !food.tags.includes('vegan') && food.family !== 'fruit') return false; 
-                
-                if (avoidList.some(keyword => food.name.toLowerCase().includes(keyword.toLowerCase()))) return false;
-                return true;
-            });
-        }
-        
-        /**
-         * [CORE NEW LOGIC] Calcula o score de um template de refeição com base nas preferências e dispensa.
-         * @param {Object} template - Template da refeição (CM1, PF1, etc.).
-         * @param {Object} profile - Perfil do usuário.
-         * @returns {number} Score de adequação.
-         */
-        function calculateTemplateScore(template, profile) {
-            let score = 100; // Base Score
-            const { style, time, budget, restrictions, useDispensa, dispensa, costumo, avoidList } = profile;
-            
-            // Mapeamento de perfis numéricos
-            const targetBudget = BUDGET_MAP[budget];
-            const targetTime = TIME_MAP[time];
-            
-            let foodList = [];
-            
-            // 1. Penalização por Incompatibilidade de Alimentos (Restrições)
-            for (const item of template.items) {
-                const candidates = filterFood(item.type, restrictions, avoidList);
-                if (candidates.length === 0) {
-                    score -= 50; // Penalidade forte se faltar um item essencial
-                } else {
-                    // Seleciona o primeiro candidato compatível para análise de score
-                    foodList.push(candidates[0]);
-                }
-            }
-
-            // Se a penalidade for muito alta, retornar score baixo para descarte
-            if (score <= 50) return score;
-
-            // 2. Pontuação Baseada em Preferências (Estilo, Tempo, Orçamento)
-            
-            foodList.forEach(food => {
-                // A. Estilo (Natural vs Prático)
-                if (style === 'natural' && food.tags.includes('natural')) score += 5;
-                if (style === 'pratico' && food.tags.includes('pratico')) score += 5;
-                if (style === 'natural' && food.tags.includes('pratico')) score -= 5; // Penaliza prático se o estilo for natural
-
-                // B. Orçamento e Tempo 
-                if (food.priceLevel <= targetBudget) score += 3;
-                if (food.priceLevel > targetBudget) score -= 5; // Penaliza caro
-                
-                if (food.prepTime <= targetTime) score += 3; // Rápido é bom
-                if (food.prepTime > targetTime) score -= 5; // Penaliza longo
-                
-                // C. PRIORIZAÇÃO (Dispensa/Hábitos) - Ponto 4 do plano
-                if (useDispensa) {
-                    const foodNameLower = food.name.toLowerCase();
-                    const dispensaLower = dispensa.map(s => s.toLowerCase());
-                    const costumoLower = costumo.map(s => s.toLowerCase());
-
-                    // Bônus se o alimento estiver em casa
-                    if (dispensaLower.some(item => foodNameLower.includes(item))) score += 10;
-                    // Bônus se for um hábito real
-                    if (costumoLower.some(item => foodNameLower.includes(item))) score += 5;
-                }
-            });
-            
-            // 3. Desempate pelo Objetivo (Cut/Bulk)
-            // Cut (Perder Gordura): Favorece Proteína e desfavorece Carbo muito alto.
-            if (profile.objective === 'perder_gordura' && template.familyRatios.C > 45) score -= 5; 
-            // Bulk (Ganhar Massa): Favorece Carbo alto e densidade calórica.
-            if (profile.objective === 'ganhar_massa' && template.familyRatios.C > 40) score += 5; 
-
-            return score;
-        }
-
-
-        /**
-         * Motor de Geração de Refeições (Daily Plan)
-         */
-        function generateDailyPlan(profile) {
-            const { sex, weight, height, age, activity, intensity, sleep, objective, numMeals, restrictions, avoidList, trainingTime, hungerTime } = profile;
-
-            // 1. Cálculos de TDEE e Meta Calórica
-            const bmr = calculateBMR(sex, weight, height, age);
-            const tdee = calculateTDEE(bmr, activity, intensity, sleep);
-            const goalKcal = calculateCaloricGoal(tdee, objective);
-
-            if (goalKcal <= 0) {
-                 showModal("Erro de Cálculo", "Não foi possível calcular sua meta calórica. Verifique os dados físicos.");
-                 return null;
-            }
-
-            // 2. Distribuição Calórica Dinâmica (Ponto 2 do plano)
-            const mealSlots = [];
-            let currentDistribution = CALORIE_DISTRIBUTION_BASE.slice(0, numMeals);
-            
-            // --- Mapeamento de Índices ---
-            let trainingIndex = -1;
-            if (profile.training === 'sim' && trainingTime) {
-                if (trainingTime === 'manha' && numMeals >= 3) trainingIndex = 0; // CM
-                if (trainingTime === 'tarde' && numMeals >= 4) trainingIndex = 1; // ALMOÇO
-                if (trainingTime === 'noite' && numMeals >= 4) trainingIndex = currentDistribution.length - 1; // JANTA
-            }
-            
-            let hungerIndex = -1;
-            if (hungerTime === 'manha') hungerIndex = 0;
-            if (hungerTime === 'tarde' && numMeals >= 4) hungerIndex = 2; // Lanche da Tarde
-            if (hungerTime === 'noite' && numMeals >= 4) hungerIndex = currentDistribution.length - 1;
-
-            // Aplicar ajustes
-            currentDistribution.forEach((slot, index) => {
-                let adjustment = 0;
-                
-                // Ajuste de Treino: +12% no treino; +6% na anterior/seguinte
-                if (index === trainingIndex) {
-                    adjustment += 12; 
-                } else if (index === trainingIndex - 1 || index === trainingIndex + 1) {
-                    adjustment += 6; 
-                }
-                
-                // Ajuste de Fome: +8%
-                if (index === hungerIndex) {
-                    adjustment += 8; 
-                }
-                
-                slot.targetPct = slot.basePct + adjustment;
-                mealSlots.push(slot);
-            });
-            
-            // Normaliza e calcula Kcal alvo (Clamp implícito na normalização)
-            const sumPct = mealSlots.reduce((sum, slot) => sum + slot.targetPct, 0);
-            mealSlots.forEach(slot => {
-                slot.targetPct = (slot.targetPct / sumPct); // Normaliza para 1.0 (100%)
-                slot.targetKcal = Math.round(goalKcal * slot.targetPct);
-            });
-
-            // 3. Seleção de Templates por Score (Ponto 1 do plano)
-            const dailyPlan = { goalKcal, bmr, tdee, meals: [] };
-            
-            for (const mealSlot of mealSlots) {
-                const mealKcal = mealSlot.targetKcal;
-                let templateType = mealSlot.name.includes('Café') ? 'Café da Manhã' : (mealSlot.name.includes('Lanche') ? 'Lanche da Tarde' : 'Almoço/Jantar');
-
-                const templates = MEAL_TEMPLATES[templateType];
-                let bestTemplate = null;
-                let maxScore = -Infinity;
-
-                templates.forEach(template => {
-                    const score = calculateTemplateScore(template, profile);
-                    if (score > maxScore) {
-                        maxScore = score;
-                        bestTemplate = template;
-                    }
-                });
-                
-                if (!bestTemplate) {
-                     showModal("Erro de Geração", `Não foi possível encontrar um template compatível para ${mealSlot.name}. Tente relaxar algumas restrições.`);
-                     return null;
-                }
-
-                const meal = {
-                    name: mealSlot.name,
-                    template: bestTemplate.name,
-                    kcal: mealKcal,
-                    items: [],
-                    totalKcal: 0,
-                    score: maxScore,
-                    variants: [] 
-                };
-
-                // 4. Seleção de Alimentos e Porções com Hard Caps (Ponto 3 do plano)
-                let totalKcalGenerated = 0;
-                let initialItems = [];
-
-                for (const item of bestTemplate.items) {
-                    const family = item.type;
-                    const foodCandidates = filterFood(family, restrictions, avoidList);
-                    
-                    if (foodCandidates.length === 0) continue;
-
-                    // Seleção Inteligente do Alimento: Pega o alimento mais compatível com as preferências (Orçamento/Tempo/Estilo)
-                    // Simplificação: o primeiro alimento no array filtrado é usado, assumindo que ele já é o "melhor" para aquela família/tag.
-                    const selectedFood = foodCandidates[0]; 
-
-                    // Porção inicial arbitrária dentro do range (média) para base de cálculo
-                    const basePortionGrams = Math.round((selectedFood.portionMin + selectedFood.portionMax) / 2);
-                    
-                    let kcalItem = (basePortionGrams / 100) * selectedFood.k;
-                    totalKcalGenerated += kcalItem;
-
-                    initialItems.push({
-                        name: selectedFood.name, family, kcalPer100: selectedFood.k,
-                        unit: selectedFood.unit, unitText: selectedFood.unitText, kcalItem,
-                        grams: basePortionGrams, baseFood: selectedFood
-                    });
-                }
-                
-                // Ajuste de Escala para Atingir Kcal da Refeição
-                if (totalKcalGenerated > 0) {
-                    const scaleFactor = mealKcal / totalKcalGenerated;
-                    let currentTotalKcal = 0;
-
-                    initialItems.forEach(item => {
-                        if (item.grams > 0 && item.baseFood) {
-                            
-                            // 1. Escala (Tenta atingir a meta)
-                            let finalGrams = item.grams * scaleFactor;
-                            const base = item.baseFood;
-                            
-                            // 2. Hard Caps (Ponto 3 do plano)
-                            if (finalGrams < base.portionMin) finalGrams = base.portionMin;
-                            if (finalGrams > base.portionMax) finalGrams = base.portionMax;
-                            
-                            // 3. Arredondamento e Recálculo Final de Kcal
-                            item.grams = Math.round(finalGrams);
-                            item.kcalItem = Math.round((item.grams / 100) * item.kcalPer100);
-                        }
-                        currentTotalKcal += item.kcalItem;
-                    });
-                    
-                    meal.items = initialItems;
-                    meal.totalKcal = currentTotalKcal;
-                }
-
-                dailyPlan.meals.push(meal);
-            }
-
-            dailyPlan.totalKcal = dailyPlan.meals.reduce((sum, meal) => sum + meal.totalKcal, 0);
-            return dailyPlan;
-        }
-        
-        // --- FUNÇÃO ASSÍNCRONA PARA MOSTRAR O LOADING ---
-        function generatePlanAsync(profile) {
-            showLoading("Otimizando as calorias para seu treino, preferências e dispensa...");
-            
-            setTimeout(() => {
-                const plan = generateDailyPlan(profile);
-                if (plan) {
-                    appState.generatedPlan = plan;
-                    appState.isPlanGenerated = true;
-                    renderApp();
-                    showMessage("✅ Plano gerado com sucesso! Revise os detalhes.", false);
-                }
-                hideLoading();
-            }, 800); // Aumentei o mock delay para 800ms para corresponder à complexidade percebida da nova lógica
-        }
-
-        // --- FUNÇÕES DE PERSISTÊNCIA E EXPORTAÇÃO ---
-
-        function saveProfile() {
-            if (saveState('profile', appState.profile)) {
-                showMessage("✅ Perfil salvo com sucesso!", false);
-            } else {
-                showMessage("🔴 Erro ao salvar perfil.", true);
-            }
-        }
-
-        function loadProfile() {
-            const profile = loadState('profile');
-            if (profile) {
-                appState.profile = profile;
-                appState.currentStep = 0; // Volta para o início para re-renderizar o form preenchido
-                renderApp();
-                showMessage("✅ Perfil carregado! Clique em 'Gerar Plano' para continuar.", false);
-            } else {
-                showMessage("🔴 Nenhum perfil encontrado localmente.", true);
-            }
-        }
-
-        function saveFavoritePlan() {
-            const newFav = {
-                id: Date.now(),
-                timestamp: new Date().toLocaleString('pt-BR'),
-                profile: appState.profile,
-                plan: appState.generatedPlan
-            };
-
-            let favorites = loadState('favorites') || [];
-            // Limitar a N favoritos (ex: 10)
-            if (favorites.length >= 10) favorites.shift(); 
-            
-            favorites.push(newFav);
-            if (saveState('favorites', favorites)) {
-                showMessage("⭐ Plano salvo como Favorito!", false);
-                appState.favorites = favorites;
-            } else {
-                showMessage("🔴 Erro ao salvar favorito.", true);
-            }
-        }
-        
-        // Exportação para PNG/PDF
-        function exportPlan(format) {
-            const planSection = document.getElementById('plan-output');
-            if (!planSection) {
-                showMessage("🔴 O plano não foi gerado para exportação.", true);
-                return;
-            }
-
-            showLoading(`Preparando ${format.toUpperCase()} para exportação...`);
-
-            // Usa html2canvas para renderizar a div em uma imagem
-            html2canvas(planSection, {
-                scale: 2, // Maior resolução
-                backgroundColor: '#1e293b',
-                logging: false
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-
-                if (format === 'png') {
-                    const link = document.createElement('a');
-                    link.download = `FitPlan_PNG_${Date.now()}.png`;
-                    link.href = imgData;
-                    link.click();
-                    showMessage("✅ PNG exportado com sucesso!", false);
-                }
-
-                if (format === 'pdf') {
-                    // Configurações do PDF
-                    const { jsPDF } = window.jspdf;
-                    const pdf = new jsPDF({
-                        orientation: 'portrait',
-                        unit: 'px',
-                        format: [canvas.width, canvas.height] // Define o PDF com o tamanho exato do conteúdo
-                    });
-
-                    // Adiciona a imagem do canvas ao PDF
-                    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-                    pdf.save(`FitPlan_PDF_${Date.now()}.pdf`);
-                    showMessage("✅ PDF exportado com sucesso!", false);
-                }
-            }).catch(error => {
-                console.error("Erro na exportação:", error);
-                showMessage("🔴 Erro ao exportar. Tente novamente.", true);
-            }).finally(() => {
-                hideLoading();
-            });
-        }
-
-
-        // --- FUNÇÕES DE RENDERIZAÇÃO DA UI ---
-
-        /**
-         * Atualiza o Stepper
-         */
-        function renderStepper() {
-            const stepperEl = document.getElementById('stepper');
-            stepperEl.innerHTML = STEPS.map((step, index) => {
-                const isCurrent = index === appState.currentStep;
-                const isDone = index < appState.currentStep;
-                // Adicionado w-1/5 para forçar o layout de 5 colunas
-                let classes = 'w-1/5 text-center p-2 rounded-full text-xs sm:text-base cursor-pointer transition duration-300';
-                
-                if (isCurrent) {
-                    classes += ' stepper-active ring-4 ring-accent-light';
-                } else if (isDone) {
-                    classes += ' stepper-done opacity-70 hover:opacity-100';
-                } else {
-                    classes += ' bg-slate-700 text-text-muted';
-                }
-
-                // Permite clicar nos passos concluídos
-                const onClick = isDone || isCurrent ? `onclick="goToStep(${index})"` : '';
-
-                return `<div class="${classes}" ${onClick} aria-label="Passo ${index + 1}: ${step.name}">${index + 1}</div>`; // Simplificando o texto do stepper
-            }).join('');
-        }
-        
-        /**
-         * Navega entre os passos do formulário
-         */
-        function goToStep(stepIndex) {
-            if (stepIndex >= 0 && stepIndex < STEPS.length) {
-                saveCurrentStepData();
-                appState.currentStep = stepIndex;
-                appState.isPlanGenerated = false; // Força voltar para o formulário
-                renderApp();
-            }
-        }
-
-        /**
-         * Tooltip reutilizável
-         */
-        function getTooltip(text) {
-             return `<span class="relative group">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block tooltip-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        <span class="absolute z-10 hidden group-hover:block w-48 p-2 text-xs bg-slate-700 text-text-light rounded-lg shadow-lg bottom-full left-1/2 transform -translate-x-1/2 mb-2 whitespace-normal">${text}</span>
-                    </span>`;
-        }
-
-
-        /**
-         * Renderiza o formulário do passo atual
-         */
-        function renderFormStep() {
-            const step = STEPS[appState.currentStep];
-            const contentEl = document.getElementById('app-content');
-            const data = appState.profile;
-
-            let html = `<div class="card p-6 sm:p-8">`;
-            html += `<h2 class="text-2xl font-bold mb-6 text-accent">${appState.currentStep + 1}. ${step.name}</h2>`;
-            html += `<form id="current-step-form" onsubmit="event.preventDefault(); nextStep();">`;
-
-            // --- Campos do Formulário ---
-            switch (step.key) {
-                case 'goal':
-                    html += `<div class="mb-4">
-                        <label class="block text-text-muted mb-2">Seu Objetivo Principal ${getTooltip('Define o déficit ou superávit calórico necessário para atingir sua meta.')}</label>
-                        <select id="objective" name="objective" class="input-dark w-full p-3 rounded-lg" required>
-                            <option value="" disabled selected>O que você quer conquistar?</option>
-                            <option value="perder_gordura" ${data.objective === 'perder_gordura' ? 'selected' : ''}>Perder Gordura (Emagrecer)</option>
-                            <option value="recomposicao" ${data.objective === 'recomposicao' ? 'selected' : ''}>Recomposição Corporal (Manter/melhorar)</option>
-                            <option value="ganhar_massa" ${data.objective === 'ganhar_massa' ? 'selected' : ''}>Ganhar Massa Muscular (Volume)</option>
-                        </select>
-                    </div>`;
-                    html += `<div class="mb-4">
-                        <label class="block text-text-muted mb-2">Horizonte do Plano ${getTooltip('O tempo de duração do seu plano. Quanto maior o horizonte, mais variedade de alimentos o plano incluirá ao longo da semana.')}</label>
-                        <select id="horizonte" name="horizonte" class="input-dark w-full p-3 rounded-lg">
-                            <option value="8_semanas" ${data.horizonte === '8_semanas' ? 'selected' : ''}>8 Semanas (Alta Variedade)</option>
-                            <option value="12_semanas" ${data.horizonte === '12_semanas' ? 'selected' : ''}>12 Semanas (Média Variedade)</option>
-                            <option value="16_semanas" ${data.horizonte === '16_semanas' ? 'selected' : ''}>16 Semanas (Baixa Variedade)</option>
-                        </select>
-                    </div>`;
-                    break;
-                case 'body':
-                    html += `<div class="grid grid-cols-2 gap-4 mb-4">
-                        <div><label class="block text-text-muted mb-2">Sexo</label>
-                            <select id="sex" name="sex" class="input-dark w-full p-3 rounded-lg" required>
-                                <option value="" disabled selected>Selecione...</option>
-                                <option value="masculino" ${data.sex === 'masculino' ? 'selected' : ''}>Masculino</option>
-                                <option value="feminino" ${data.sex === 'feminino' ? 'selected' : ''}>Feminino</option>
-                            </select>
-                        </div>
-                        <div><label class="block text-text-muted mb-2">Idade (anos)</label>
-                            <input type="number" id="age" name="age" value="${data.age || ''}" class="input-dark w-full p-3 rounded-lg" required min="16" max="99">
-                        </div>
-                    </div>`;
-                    html += `<div class="grid grid-cols-2 gap-4 mb-4">
-                        <div><label class="block text-text-muted mb-2">Altura (cm)</label>
-                            <input type="number" id="height" name="height" value="${data.height || ''}" class="input-dark w-full p-3 rounded-lg" required min="100" max="250">
-                        </div>
-                        <div><label class="block text-text-muted mb-2">Peso (kg)</label>
-                            <input type="number" id="weight" name="weight" value="${data.weight || ''}" class="input-dark w-full p-3 rounded-lg" required min="30" max="300">
-                        </div>
-                    </div>`;
-                    html += `<div class="mb-4">
-                        <label class="block text-text-muted mb-2">Nº de Refeições/Dia</label>
-                        <select id="numMeals" name="numMeals" class="input-dark w-full p-3 rounded-lg" required>
-                            <option value="3" ${data.numMeals === '3' ? 'selected' : ''}>3 Refeições</option>
-                            <option value="4" ${data.numMeals === '4' ? 'selected' : ''}>4 Refeições (Padrão: Café/Almoço/Lanche/Jantar)</option>
-                            <option value="5" ${data.numMeals === '5' ? 'selected' : ''}>5 Refeições</option>
-                            <option value="6" ${data.numMeals === '6' ? 'selected' : ''}>6 Refeições</option>
-                        </select>
-                    </div>`;
-                    html += `<div class="text-text-muted mt-4 p-2 border-l-4 border-accent text-sm">
-                        *Usamos seus dados para calcular sua necessidade calórica basal.
-                    </div>`;
-                    break;
-                case 'routine':
-                    html += `<div class="mb-4">
-                        <label class="block text-text-muted mb-2">Seu Nível de Atividade Diária ${getTooltip('Ajusta seu Gasto Energético (TDEE). Seja honesto para ter um plano realista.')}</label>
-                        <select id="activity" name="activity" class="input-dark w-full p-3 rounded-lg" required>
-                            <option value="sedentario" ${data.activity === 'sedentario' ? 'selected' : ''}>Sedentário (Trabalho sentado, pouco movimento)</option>
-                            <option value="leve" ${data.activity === 'leve' ? 'selected' : ''}>Leve (Exercício 1-3 dias/semana)</option>
-                            <option value="moderado" ${data.activity === 'moderado' ? 'selected' : ''}>Moderado (Exercício 3-5 dias/semana)</option>
-                            <option value="ativo" ${data.activity === 'ativo' ? 'selected' : ''}>Ativo (Exercício 6-7 dias/semana)</option>
-                            <option value="atleta" ${data.activity === 'atleta' ? 'selected' : ''}>Atleta (Treinos 2x/dia)</option>
-                        </select>
-                    </div>`;
-                    html += `<div class="mb-4">
-                        <label class="block text-text-muted mb-2">Faz Treino de Força (Musculação)?</label>
-                        <select id="training" name="training" onchange="toggleTrainingFields(this.value)" class="input-dark w-full p-3 rounded-lg">
-                            <option value="nao" ${data.training === 'nao' ? 'selected' : ''}>Não</option>
-                            <option value="sim" ${data.training === 'sim' ? 'selected' : ''}>Sim (Ajustaremos as calorias pré e pós-treino)</option>
-                        </select>
-                    </div>`;
-                    
-                    html += `<div id="training-fields" class="mb-4 ${data.training !== 'sim' ? 'hidden' : ''}">
-                        <label class="block text-text-muted mb-2">Horário do Treino</label>
-                        <select id="trainingTime" name="trainingTime" class="input-dark w-full p-3 rounded-lg">
-                            <option value="manha" ${data.trainingTime === 'manha' ? 'selected' : ''}>Manhã (até 12h)</option>
-                            <option value="tarde" ${data.trainingTime === 'tarde' ? 'selected' : ''}>Tarde (12h-18h)</option>
-                            <option value="noite" ${data.trainingTime === 'noite' ? 'selected' : ''}>Noite (após 18h)</option>
-                        </select>
-                        <label class="block text-text-muted mb-2 mt-4">Intensidade Percebida</label>
-                        <select id="intensity" name="intensity" class="input-dark w-full p-3 rounded-lg">
-                            <option value="baixa" ${data.intensity === 'baixa' ? 'selected' : ''}>Baixa (Fácil/Moderado)</option>
-                            <option value="media" ${data.intensity === 'media' ? 'selected' : ''}>Média (Normal/Pesado)</option>
-                            <option value="alta" ${data.intensity === 'alta' ? 'selected' : ''}>Alta (Muito Pesado/Exaustivo)</option>
-                        </select>
-                    </div>`;
-                    // NOVO CAMPO DE FOME
-                    html += `<div class="mb-4">
-                        <label class="block text-text-muted mb-2">Horário de Maior Fome ${getTooltip('O plano ajustará as calorias (+8%) para esta refeição, auxiliando na saciedade.')}</label>
-                        <select id="hungerTime" name="hungerTime" class="input-dark w-full p-3 rounded-lg">
-                            <option value="none" ${data.hungerTime === 'none' ? 'selected' : ''}>Não se aplica / Fome estável</option>
-                            <option value="manha" ${data.hungerTime === 'manha' ? 'selected' : ''}>Manhã (Ajusta Café da Manhã)</option>
-                            <option value="tarde" ${data.hungerTime === 'tarde' ? 'selected' : ''}>Tarde (Ajusta Lanche da Tarde)</option>
-                            <option value="noite" ${data.hungerTime === 'noite' ? 'selected' : ''}>Noite (Ajusta Jantar)</option>
-                        </select>
-                    </div>`;
-                    html += `<div class="mb-4">
-                        <label class="block text-text-muted mb-2">Horas de Sono ${getTooltip('O sono afeta o metabolismo. Dormir menos de 6h resulta em um pequeno ajuste negativo no gasto calórico.')}</label>
-                        <select id="sleep" name="sleep" class="input-dark w-full p-3 rounded-lg">
-                            <option value="mais_6h" ${data.sleep === 'mais_6h' ? 'selected' : ''}>6h ou Mais</option>
-                            <option value="menos_6h" ${data.sleep === 'menos_6h' ? 'selected' : ''}>Menos de 6h</option>
-                        </select>
-                    </div>`;
-                    break;
-                case 'prefs':
-                    html += `<div class="mb-4">
-                        <label class="block text-text-muted mb-2">Estilo de Alimentação</label>
-                        <select id="style" name="style" class="input-dark w-full p-3 rounded-lg">
-                            <option value="indiferente" ${data.style === 'indiferente' ? 'selected' : ''}>Indiferente</option>
-                            <option value="natural" ${data.style === 'natural' ? 'selected' : ''}>Mais Natural (Grãos integrais, menos industrializados)</option>
-                            <option value="pratico" ${data.style === 'pratico' ? 'selected' : ''}>Mais Prático (Rapidez, enlatados/congelados)</option>
-                        </select>
-                    </div>`;
-                    html += `<div class="mb-4">
-                        <label class="block text-text-muted mb-2">Tempo de Preparo Diário</label>
-                        <select id="time" name="time" class="input-dark w-full p-3 rounded-lg">
-                            <option value="lt_15" ${data.time === 'lt_15' ? 'selected' : ''}>< 15 min (Refeições ultra-rápidas)</option>
-                            <option value="15_30" ${data.time === '15_30' ? 'selected' : ''}>15–30 min (Ideal para marmita simples)</option>
-                            <option value="gt_30" ${data.time === 'gt_30' ? 'selected' : ''}>> 30 min (Refeições mais elaboradas)</option>
-                        </select>
-                    </div>`;
-                    html += `<div class="mb-4">
-                        <label class="block text-text-muted mb-2">Orçamento</label>
-                        <select id="budget" name="budget" class="input-dark w-full p-3 rounded-lg">
-                            <option value="baixo" ${data.budget === 'baixo' ? 'selected' : ''}>Baixo (Prioriza ovos, frango, arroz e raízes)</option>
-                            <option value="medio" ${data.budget === 'medio' ? 'selected' : ''}>Médio</option>
-                            <option value="alto" ${data.budget === 'alto' ? 'selected' : ''}>Alto (Permite peixes e cortes mais nobres)</option>
-                        </select>
-                    </div>`;
-                    
-                    // Restrições (Multi-select simplificado como Checkbox)
-                    html += `<label class="block text-text-muted mb-2 mt-4">Restrições</label>
-                    <div class="space-y-2">
-                        ${['sem_lactose', 'sem_gluten', 'vegetariano', 'vegan'].map(r => `
-                            <label class="flex items-center">
-                                <input type="checkbox" name="restrictions" value="${r}" class="h-5 w-5 text-accent rounded form-checkbox input-dark" ${data.restrictions && data.restrictions.includes(r) ? 'checked' : ''}>
-                                <span class="ml-2 text-text-light">${r.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                            </label>
-                        `).join('')}
-                    </div>`;
-                    html += `<div class="mt-6">
-                        <label class="block text-text-muted mb-2">Evitar (ex: peixe, castanhas)</label>
-                        <input type="text" id="avoidList" name="avoidList" value="${(data.avoidList || []).join(', ')}" class="input-dark w-full p-3 rounded-lg" placeholder="Separado por vírgulas">
-                    </div>`;
-                    break;
-                case 'pantry':
-                    html += `<div class="mb-4 flex items-center justify-between p-3 card border-accent border-2">
-                        <label class="text-xl font-bold">Usar Dispensa / Hábitos?</label>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="useDispensa" name="useDispensa" class="sr-only peer" ${data.useDispensa ? 'checked' : ''} onchange="toggleDispensaFields(this.checked)">
-                            <div class="w-11 h-6 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
-                            <span class="ml-3 text-sm font-medium text-text-light">${data.useDispensa ? 'ON' : 'OFF'}</span>
-                        </label>
-                    </div>`;
-                    
-                    html += `<div id="dispensa-fields" class="mt-4 space-y-4 ${!data.useDispensa ? 'hidden' : ''}">
-                        <div>
-                            <label class="block text-text-muted mb-2">Com o que tenho em casa (dispensa)</label>
-                            <textarea id="dispensa" name="dispensa" class="input-dark w-full p-3 rounded-lg h-24" placeholder="Itens que você tem na geladeira/armário, separado por vírgulas (ex: Arroz, Ovos, Frango, Maçã)">${(data.dispensa || []).join(', ')}</textarea>
-                        </div>
-                        <div>
-                            <label class="block text-text-muted mb-2">Costumo comer (hábitos reais)</label>
-                            <textarea id="costumo" name="costumo" class="input-dark w-full p-3 rounded-lg h-24" placeholder="Itens que você costuma ter na dieta (ex: Batata doce, Azeite, Café)">${(data.costumo || []).join(', ')}</textarea>
-                        </div>
-                        <p class="text-sm text-text-muted italic">O gerador dará prioridade a esses itens. Se OFF, esses campos são ignorados.</p>
-                    </div>`;
-                    
-                    break;
-            }
-
-            html += `</form>`; // Fecha o formulário
-
-            // Botões de navegação
-            html += `<div class="flex justify-between mt-8 pt-4 border-t border-slate-700">`;
-            if (appState.currentStep > 0) {
-                html += `<button onclick="prevStep()" class="bg-slate-600 text-text-light font-bold py-2 px-4 rounded-lg hover:bg-slate-500 transition duration-200">
-                            ← Anterior
-                         </button>`;
-            } else {
-                 html += `<div><button onclick="loadProfile()" class="bg-slate-700 text-text-light py-2 px-4 rounded-lg hover:bg-slate-600 transition duration-200">
-                             Carregar Perfil
-                         </button></div>`;
-            }
-
-            if (appState.currentStep < STEPS.length - 1) {
-                html += `<button onclick="nextStep()" class="bg-accent text-secondary-dark font-bold py-2 px-4 rounded-lg hover:bg-accent-light transition duration-200">
-                            Próximo →
-                         </button>`;
-            } else {
-                // CTA final agora usa a cor ACCENT (verde)
-                html += `<button onclick="nextStep()" class="bg-accent text-secondary-dark font-bold py-2 px-4 rounded-lg hover:bg-accent-light transition duration-200">
-                            🚀 Gerar Plano!
-                         </button>`;
-            }
-            html += `</div></div>`; // Fecha card e div
-
-            contentEl.innerHTML = html;
-
-            // Re-bind listener para toggle (necessário após renderização)
-            if (step.key === 'routine') {
-                const trainingSelect = document.getElementById('training');
-                if (trainingSelect) trainingSelect.onchange = (e) => toggleTrainingFields(e.target.value);
-            }
-            if (step.key === 'pantry') {
-                const dispensaCheckbox = document.getElementById('useDispensa');
-                if (dispensaCheckbox) dispensaCheckbox.onchange = (e) => toggleDispensaFields(e.target.checked);
-            }
-        }
-
-        /**
-         * Renderiza a saída do Plano de Refeições
-         */
-        function renderPlanOutput() {
-            const contentEl = document.getElementById('app-content');
-            const plan = appState.generatedPlan;
-            if (!plan) {
-                contentEl.innerHTML = `<div class="card text-center p-12"><h2 class="text-2xl text-danger font-bold mb-4">Plano Não Gerado</h2><p>Por favor, complete os 5 passos e clique em 'Gerar Plano'.</p></div>`;
-                return;
-            }
-
-            const dailyPlanHtml = generatePlanHtml(plan, appState.profile.numMeals);
-            const shoppingListHtml = generateShoppingListHtml(plan);
-
-            let html = `
-                <div class="card p-4 sm:p-6 mb-6">
-                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 border-b border-slate-700 pb-4">
-                        <h2 class="text-3xl font-extrabold text-accent mb-2 sm:mb-0">Seu Plano Gerado</h2>
-                        <div class="flex space-x-2">
-                            <button onclick="saveFavoritePlan()" class="p-2 rounded-full bg-slate-700 hover:bg-slate-600 text-yellow-400" title="Salvar Favorito">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                            </button>
-                            <button onclick="exportPlan('png')" class="py-2 px-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-text-light text-sm">
-                                Exportar PNG
-                            </button>
-                            <button onclick="exportPlan('pdf')" class="py-2 px-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-text-light text-sm">
-                                Exportar PDF
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Aba de navegação (Dia Único / Lista de Compras) -->
-                    <div class="flex border-b border-slate-700 mb-6">
-                        <button id="tab-plan" onclick="showTab('plan')" class="tab-active py-2 px-4">Plano (Dia 1)</button>
-                        <button id="tab-shopping" onclick="showTab('shopping')" class="py-2 px-4">Lista de Compras (Dia)</button>
-                    </div>
-
-                    <!-- Informações Gerais (Clareza sobre termos técnicos) -->
-                    <div class="p-3 bg-slate-700 rounded-lg mb-6 flex justify-around text-center text-sm font-medium">
-                        <div><span class="text-text-muted">Meta Calórica:</span> <span class="text-accent">${plan.goalKcal} kcal</span></div>
-                        <div><span class="text-text-muted">Gasto Est. (TDEE):</span> <span class="text-text-light">${plan.tdee} kcal</span></div>
-                        <div><span class="text-text-muted">Plano Total:</span> <span class="text-text-light">${plan.totalKcal} kcal</span></div>
-                    </div>
-                </div>
-
-                <!-- Conteúdo do Plano (Div para Exportação) -->
-                <div id="plan-output" class="p-4 sm:p-6 card shadow-2xl">
-                    <div id="plan-content">${dailyPlanHtml}</div>
-                    <div id="shopping-content" class="hidden">${shoppingListHtml}</div>
-                </div>
-
-                <div class="mt-8 flex justify-between">
-                    <button onclick="goToStep(0)" class="bg-slate-600 text-text-light font-bold py-2 px-4 rounded-lg hover:bg-slate-500 transition duration-200">
-                        ← Voltar ao Formulário
-                    </button>
-                    <button onclick="saveProfile()" class="bg-accent text-secondary-dark font-bold py-2 px-4 rounded-lg hover:bg-accent-light transition duration-200">
-                        💾 Salvar Perfil
-                    </button>
-                </div>
-            `;
-            contentEl.innerHTML = html;
-        }
-
-        /**
-         * Gera o HTML da Lista de Compras
-         */
-        function generateShoppingListHtml(plan) {
-            const shoppingList = {};
-            // Agrega todos os itens de todas as refeições
-            plan.meals.forEach(meal => {
-                meal.items.forEach(item => {
-                    if (item.grams > 0) {
-                        const key = item.name;
-                        const quantity = item.grams;
-                        if (shoppingList[key]) {
-                            shoppingList[key] += quantity;
-                        } else {
-                            shoppingList[key] = quantity;
-                        }
-                    }
-                });
-            });
-
-            const items = Object.entries(shoppingList).map(([name, totalGrams]) => {
-                // Conversão amigável (muito simplificada)
-                let displayQuantity = `${Math.round(totalGrams)}g`;
-                if (totalGrams > 1000) displayQuantity = `${(totalGrams / 1000).toFixed(1)}kg`;
-                
-                return `<li class="flex justify-between items-center py-2 border-b border-slate-700">
-                            <span class="text-text-light">${name}</span>
-                            <span class="text-accent font-bold">${displayQuantity}</span>
-                        </li>`;
-            }).join('');
-
+  </main>
+
+  <!-- ======================== LOGICA / FUNCOES ======================== -->
+  <script>
+  // -------------------- AppState (localStorage) --------------------
+  const LS_KEYS = {
+    profile: 'dpt2_profile',
+    prefs: 'dpt2_prefs',
+    plan: 'dpt2_plan'
+  };
+  const AppState = {
+    saveProfile(p){ localStorage.setItem(LS_KEYS.profile, JSON.stringify(p)); },
+    loadProfile(){ try{ return JSON.parse(localStorage.getItem(LS_KEYS.profile)||'null'); }catch{ return null; } },
+    savePrefs(p){ localStorage.setItem(LS_KEYS.prefs, JSON.stringify(p)); },
+    loadPrefs(){ try{ return JSON.parse(localStorage.getItem(LS_KEYS.prefs)||'{"tags_incluir":[],"tags_evitar":[],"equivalentes_estado":true}'); }catch{ return {"tags_incluir":[],"tags_evitar":[],"equivalentes_estado":true}; } },
+    savePlan(p){ localStorage.setItem(LS_KEYS.plan, JSON.stringify(p)); },
+    loadPlan(){ try{ return JSON.parse(localStorage.getItem(LS_KEYS.plan)||'null'); }catch{ return null; } }
+  };
+
+  // -------------------- DataLoader --------------------
+  const Data = { foods: [], presets: [], manifestVersion: 0 };
+  async function loadManifest(){
+    const res = await fetch('data/foods_manifest.json'); const j = await res.json();
+    Data.manifestVersion = j.version||1;
+    return j.files||[];
+  }
+  async function loadFoods(files){
+    const all = [];
+    for(const f of files){
+      try{
+        const r = await fetch('data/'+f+'?v='+Data.manifestVersion);
+        const j = await r.json();
+        if(Array.isArray(j)) all.push(...j);
+      }catch(e){ console.warn('Falha ao carregar', f, e); }
+    }
+    // IDs únicos e normalização simples
+    const seen = new Set();
+    Data.foods = all.filter(it=>{
+      if(!it || seen.has(it.id)) return false;
+      seen.add(it.id);
+      return true;
+    });
+  }
+  async function loadPresets(){
+    const res = await fetch('data/presets.json?v='+Data.manifestVersion);
+    const j = await res.json();
+    Data.presets = j.presets||[];
+  }
+
+  // -------------------- Cálculos --------------------
+  function bmrMifflin(sexo, peso, altura, idade){
+    return sexo==='M' ? (10*peso + 6.25*altura - 5*idade + 5)
+                      : (10*peso + 6.25*altura - 5*idade - 161);
+  }
+  function tdee(bmr, atividade){
+    const map = { sedentario:1.2, leve:1.375, moderada:1.55, intensa:1.725 };
+    return bmr * (map[atividade]||1.55);
+  }
+  function targetKcal(tdee, goal){
+    if(goal==='cut') return Math.round(tdee*0.85);
+    if(goal==='bulk') return Math.round(tdee*1.08);
+    return Math.round(tdee);
+  }
+
+  // -------------------- Generator --------------------
+  const CAPS = { solidMin:30, solidMax:250, oilMin:5, oilMax:20 };
+  function macrosPer100(item){ return {kcal:item.kcal, P:item.P, C:item.C, G:item.G}; }
+
+  function pickFromFamily(family, prefs){
+    // filtro simples por tags incluídas (se marcadas) e ordenar por presença de tags e estado comum
+    const inc = new Set(prefs.tags_incluir||[]);
+    let list = Data.foods.filter(f=>f.family===family);
+    if(inc.size){
+      list = list.sort((a,b)=>{
+        const ai = (a.tags||[]).filter(t=>inc.has(t)).length;
+        const bi = (b.tags||[]).filter(t=>inc.has(t)).length;
+        return bi-ai;
+      });
+    }
+    return list;
+  }
+
+  function gramsForTargets(item, target){
+    // converte alvo de macros (g) para gramas de alimento usando P/C/G por 100 g do item,
+    // estratégia simples: prioriza macro maior do alvo (P>C>G)
+    const p = item.P||0, c=item.C||0, g=item.G||0;
+    let basis = p? 'P' : (c? 'C' : 'G');
+    if(target.P>=target.C && target.P>=target.G && p) basis='P';
+    else if(target.C>=target.P && target.C>=target.G && c) basis='C';
+    else if(g) basis='G';
+    const per100 = (basis==='P'?p:(basis==='C'?c:g));
+    if(per100<=0) return 0;
+    let grams = (target[basis] / per100) * 100;
+    // caps
+    if(item.family==='Gordura') grams = Math.min(Math.max(grams, CAPS.oilMin), CAPS.oilMax);
+    else grams = Math.min(Math.max(grams, CAPS.solidMin), CAPS.solidMax);
+    return Math.round(grams);
+  }
+
+  function mealTargets(kcalMeal, ratio){
+    // ratio: {P,C,G} soma = 1
+    const kcalP = kcalMeal * (ratio.P||0);
+    const kcalC = kcalMeal * (ratio.C||0);
+    const kcalG = kcalMeal * (ratio.G||0);
+    return {
+      kcal: Math.round(kcalMeal),
+      P: +(kcalP/4).toFixed(1),
+      C: +(kcalC/4).toFixed(1),
+      G: +(kcalG/9).toFixed(1)
+    };
+  }
+
+  function buildPlan(metaKcal, preset, prefs){
+    const plan = { meta_kcal: metaKcal, preset_id: preset.id, meals: [] };
+    for(const m of preset.meals){
+      const kcalMeal = metaKcal * (m.kcal_frac||0.25);
+      const tgt = mealTargets(kcalMeal, m.macro_ratio||{P:.3,C:.45,G:.25});
+      const items = [];
+      for(const fam of m.families){
+        const pool = pickFromFamily(fam, prefs);
+        if(!pool.length) continue;
+        // escolher top do pool
+        const chosen = pool[0];
+        const grams = gramsForTargets(chosen, tgt);
+        items.push({ id: chosen.id, name: chosen.name, family: fam, state: chosen.state, g: grams });
+      }
+      plan.meals.push({ id:m.id, name:m.name, target:tgt, items });
+    }
+    return plan;
+  }
+
+  function computeMealKcal(items){
+    let kcal=0, P=0, C=0, G=0;
+    for(const it of items){
+      const food = Data.foods.find(f=>f.id===it.id); if(!food) continue;
+      const factor = (it.g||0)/100;
+      kcal += (food.kcal||0)*factor; P += (food.P||0)*factor; C += (food.C||0)*factor; G += (food.G||0)*factor;
+    }
+    return { kcal: Math.round(kcal), P:+P.toFixed(1), C:+C.toFixed(1), G:+G.toFixed(1) };
+  }
+
+  // -------------------- Render --------------------
+  function renderPresets(){
+    const wrap = document.getElementById('presetList'); wrap.innerHTML='';
+    Data.presets.forEach(p=>{
+      const el = document.createElement('div');
+      el.className='bg-slate-900 rounded-xl p-4';
+      const meals = (p.meals||[]).map(m=>m.name).join(' · ');
+      el.innerHTML = `
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div class="font-semibold">${p.name}</div>
+            <div class="text-slate-400 text-sm">${meals}</div>
+          </div>
+          <button class="btn" data-pid="${p.id}">Selecionar</button>
+        </div>`;
+      wrap.appendChild(el);
+    });
+    wrap.querySelectorAll('button[data-pid]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const p = Data.presets.find(x=>x.id===btn.dataset.pid);
+        const profile = readProfileUI();
+        const bmr = bmrMifflin(profile.sexo, profile.peso_kg, profile.altura_cm, profile.idade);
+        const td = tdee(bmr, profile.atividade);
+        const meta = targetKcal(td, profile.objetivo);
+        showCalc(bmr, td, meta);
+        const prefs = AppState.loadPrefs();
+        const plan = buildPlan(meta, p, prefs);
+        AppState.savePlan(plan);
+        renderPlanner(plan);
+      });
+    });
+  }
+
+  function renderPlanner(plan){
+    const host = document.getElementById('planner'); host.innerHTML='';
+    if(!plan || !plan.meals) return;
+    const total = plan.meals.reduce((acc,m)=>{
+      const s = computeMealKcal(m.items);
+      acc.kcal+=s.kcal; acc.P+=s.P; acc.C+=s.C; acc.G+=s.G; return acc;
+    }, {kcal:0,P:0,C:0,G:0});
+    const meta = plan.meta_kcal;
+    const tol = Math.abs(total.kcal - meta)/meta;
+    const tolBadge = tol<=0.02 ? `<span class="text-emerald-400">🟢 dentro do alvo (±2%)</span>` :
+                                 `<span class="text-amber-300">🟠 fora do alvo (${Math.round(tol*100)}%)</span>`;
+
+    const head = document.createElement('div');
+    head.className='bg-slate-900 rounded-xl p-3 flex items-center justify-between';
+    head.innerHTML = `
+      <div class="text-sm md:text-base">Meta: <b>${meta}</b> kcal · Total: <b>${total.kcal}</b> kcal
+        <span class="ml-2">${tolBadge}</span></div>
+      <div class="text-slate-400 text-sm">P:${total.P.toFixed(0)}g · C:${total.C.toFixed(0)}g · G:${total.G.toFixed(0)}g</div>`;
+    host.appendChild(head);
+
+    plan.meals.forEach((m,mi)=>{
+      const sum = computeMealKcal(m.items);
+      const row = document.createElement('div');
+      row.className='bg-slate-900 rounded-xl p-4';
+      const devP = pctDev(sum.P, m.target.P), devC=pctDev(sum.C, m.target.C), devG=pctDev(sum.G, m.target.G);
+      row.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="font-semibold">${m.name}</div>
+          <div class="kcal-badge font-semibold">${sum.kcal} kcal</div>
+        </div>
+        <div class="text-slate-400 text-sm mt-1">
+          Alvo: P ${m.target.P}g (${devBadge(devP)}) · C ${m.target.C}g (${devBadge(devC)}) · G ${m.target.G}g (${devBadge(devG)})
+        </div>
+        <div class="mt-3 space-y-2">
+          ${m.items.map((it, ii)=>{
+            const f = Data.foods.find(x=>x.id===it.id) || {};
             return `
-                <h3 class="text-2xl font-bold mb-4 text-accent">Lista de Compras (Dia Único)</h3>
-                <p class="text-text-muted mb-4">Esta lista detalha as quantidades necessárias para cumprir o plano de ${appState.profile.numMeals} refeições em um dia. Para um plano semanal, multiplique!</p>
-                <ul class="divide-y divide-slate-700 list-none p-0 m-0">
-                    ${items.length > 0 ? items : '<li class="text-text-muted text-center py-4">Nenhum item gerado para a lista.</li>'}
-                </ul>
-            `;
-        }
+            <div class="flex items-center justify-between bg-slate-800 rounded-lg p-2">
+              <div>
+                <div class="font-medium">${f.name||it.name}</div>
+                <div class="text-slate-400 text-xs">Família: ${it.family} · Estado: ${it.state||'-'}</div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="text-sm">${it.g} g</div>
+                <button class="btn-ghost text-xs" data-swap="${mi}:${ii}">Trocar</button>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>`;
+      host.appendChild(row);
+    });
 
+    // bind swap
+    host.querySelectorAll('button[data-swap]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const [mi,ii] = btn.dataset.swap.split(':').map(Number);
+        openSwap(plan, mi, ii);
+      });
+    });
+  }
 
-        /**
-         * Gera o HTML para o Plano do Dia Único (D1)
-         */
-        function generatePlanHtml(plan) {
-            return plan.meals.map(meal => {
-                const itemsHtml = meal.items.map(item => `
-                    <li class="flex justify-between text-sm py-1">
-                        <span class="text-text-muted">${item.name}</span>
-                        <span class="text-text-light font-medium">
-                            ${Math.round(item.grams)} ${item.baseFood ? item.baseFood.unit : 'g'} <span class="text-xs text-accent">(${item.baseFood ? item.baseFood.unitText : 'porção'})</span>
-                        </span>
-                    </li>
-                `).join('');
+  function pctDev(v, t){ if(!t) return 0; return Math.round(((v - t)/t)*100); }
+  function devBadge(p){ return (Math.abs(p)<=2? '±2%' : (p>0? '+'+p+'%' : p+'%')); }
 
-                return `
-                    <div class="card p-4 mb-4">
-                        <div class="flex justify-between items-center border-b border-slate-600 pb-2 mb-3">
-                            <h3 class="text-xl font-bold text-accent-light">${meal.name}</h3>
-                            <span class="text-lg font-extrabold text-accent">${meal.totalKcal} kcal</span>
-                        </div>
-                        <p class="text-xs text-text-muted italic mb-3">Sugestão de Prato: ${meal.template} (Score: ${meal.score.toFixed(1)})</p>
-                        <ul class="list-none p-0 m-0 space-y-1">
-                            ${itemsHtml}
-                        </ul>
-                        <!-- Lógica de Substituição (Mockup) -->
-                        <div class="mt-4 text-right">
-                             <button onclick="showModal('Substituição de Alimento', 'FUNCIONALIDADE FUTURA: Esta função permitirá que você troque um alimento por outro similar (ex: Arroz por Batata Doce), recalculando as porções para manter as Kcal da refeição.')" class="text-sm text-yellow-400 hover:text-yellow-300 transition duration-200">
-                                🔄 Trocar Alimento (Próximo Módulo)
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
+  function showCalc(bmr, tdeeVal, meta){
+    document.getElementById('calc-summary').classList.remove('hidden');
+    document.getElementById('bmrOut').textContent = Math.round(bmr);
+    document.getElementById('tdeeOut').textContent = Math.round(tdeeVal);
+    document.getElementById('targetOut').textContent = meta;
+  }
 
-        // --- FUNÇÕES DE CONTROLE DO APP ---
+  // -------------------- Swap --------------------
+  let SWAP_CTX = null;
+  function openSwap(plan, mealIdx, itemIdx){
+    SWAP_CTX = { plan, mealIdx, itemIdx };
+    const m = plan.meals[mealIdx]; const it = m.items[itemIdx];
+    const hint = `Equivalentes para família <b>${it.family}</b> (prioriza mesmo estado: <b>${it.state||'-'}</b>).`;
+    document.getElementById('swapHint').innerHTML = hint;
 
-        /**
-         * Salva os dados do passo atual no perfil
-         */
-        function saveCurrentStepData() {
-            const form = document.getElementById('current-step-form');
-            if (!form) return;
+    const list = pickFromFamily(it.family, AppState.loadPrefs());
+    // ordenar por estado igual primeiro
+    list.sort((a,b)=>{
+      const ae = (a.state===it.state)?1:0, be=(b.state===it.state)?1:0;
+      return be-ae;
+    });
 
-            const formData = new FormData(form);
-            const currentProfile = appState.profile;
+    const box = document.getElementById('swapList'); box.innerHTML='';
+    list.slice(0,100).forEach(f=>{
+      const el = document.createElement('div');
+      el.className='bg-slate-800 rounded-lg p-2 flex items-center justify-between';
+      el.innerHTML = `
+        <div>
+          <div class="font-medium">${f.name}</div>
+          <div class="text-slate-400 text-xs">Estado: ${f.state||'-'} · 100 g → P ${f.P||0}g · C ${f.C||0}g · G ${f.G||0}g</div>
+        </div>
+        <button class="btn text-xs" data-choose="${f.id}">Usar</button>`;
+      box.appendChild(el);
+    });
 
-            // Coleta dados simples
-            for (const [key, value] of formData.entries()) {
-                currentProfile[key] = value;
-            }
+    document.getElementById('swapModal').classList.remove('hidden');
+    box.querySelectorAll('button[data-choose]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const foodId = +b.dataset.choose;
+        applySwap(foodId);
+      });
+    });
+  }
+  function applySwap(foodId){
+    if(!SWAP_CTX) return;
+    const { plan, mealIdx, itemIdx } = SWAP_CTX;
+    const m = plan.meals[mealIdx];
+    const tgt = m.target;
+    const chosen = Data.foods.find(f=>f.id===foodId); if(!chosen) return;
 
-            // Coleta dados complexos (Arrays)
-            currentProfile.restrictions = formData.getAll('restrictions') || [];
-            
-            // Tratamento de campos de texto separados por vírgula: avoidList, dispensa, costumo.
-            const fieldsToProcess = ['avoidList', 'dispensa', 'costumo'];
-            
-            fieldsToProcess.forEach(field => {
-                const formValue = formData.get(field);
-                
-                if (formValue !== null) {
-                    // O campo foi enviado no formulário. Processar a string.
-                    currentProfile[field] = formValue.split(',')
-                                                    .map(s => s.trim())
-                                                    .filter(s => s.length > 0);
-                } 
-            });
+    // recalcular porção do item trocado olhando o alvo da refeição e os demais itens
+    const others = m.items.filter((_,i)=>i!==itemIdx);
+    const partial = computeMealKcal(others);
+    const remaining = {
+      kcal: Math.max(tgt.kcal - partial.kcal, 0),
+      P: Math.max(tgt.P - partial.P, 0),
+      C: Math.max(tgt.C - partial.C, 0),
+      G: Math.max(tgt.G - partial.G, 0)
+    };
+    const grams = gramsForTargets(chosen, remaining);
+    m.items[itemIdx] = { id: chosen.id, name: chosen.name, family: chosen.family, state: chosen.state, g: grams };
 
-            // Tratamento de checkboxes (useDispensa)
-            currentProfile.useDispensa = document.getElementById('useDispensa') ? document.getElementById('useDispensa').checked : (currentProfile.useDispensa || false);
+    AppState.savePlan(plan);
+    renderPlanner(plan);
+    closeSwap();
+  }
+  function closeSwap(){
+    document.getElementById('swapModal').classList.add('hidden');
+    SWAP_CTX = null;
+  }
 
-            appState.profile = currentProfile;
-        }
+  // -------------------- UI helpers --------------------
+  function readProfileUI(){
+    return {
+      sexo: document.getElementById('sx').value,
+      idade: +document.getElementById('age').value,
+      altura_cm: +document.getElementById('h').value,
+      peso_kg: +document.getElementById('w').value,
+      atividade: document.getElementById('act').value,
+      objetivo: document.getElementById('goal').value
+    };
+  }
 
-        /**
-         * Avança para o próximo passo ou gera o plano
-         */
-        function nextStep() {
-            saveCurrentStepData();
+  function gatherFilters(){
+    const boxes = document.querySelectorAll('#filters input[type=checkbox]');
+    const inc=[]; boxes.forEach(b=>{ if(b.checked) inc.push(b.value); });
+    return { tags_incluir: inc, tags_evitar: [], equivalentes_estado: true };
+  }
 
-            // Validação simples
-            const form = document.getElementById('current-step-form');
-            if (form && !form.checkValidity()) {
-                 showMessage("🔴 Por favor, preencha todos os campos obrigatórios.", true);
-                 form.reportValidity(); // Mostra as mensagens de erro nativas do HTML
-                 return;
-            }
+  // -------------------- Export/Import --------------------
+  async function exportPNG(){
+    const el = document.getElementById('plannerWrap');
+    const canvas = await html2canvas(el, { backgroundColor: '#0a0f1c', scale: 2, useCORS: true });
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    const now = new Date(); const ts = now.toISOString().slice(0,10);
+    a.download = `FitPlan_${ts}.png`;
+    a.click();
+  }
+  function exportPlanJSON(){
+    const plan = AppState.loadPlan(); if(!plan) return;
+    const blob = new Blob([JSON.stringify(plan,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download='meu_plano.json'; a.click();
+    URL.revokeObjectURL(url);
+  }
+  function importPlanJSON(file){
+    const fr = new FileReader();
+    fr.onload = () => {
+      try{
+        const obj = JSON.parse(fr.result);
+        AppState.savePlan(obj);
+        renderPlanner(obj);
+      }catch(e){ alert('Arquivo inválido'); }
+    };
+    fr.readAsText(file);
+  }
 
-            showMessage("", false); // Limpa mensagens
+  // -------------------- Bind inicial --------------------
+  document.getElementById('btnCalc').addEventListener('click', ()=>{
+    const p = readProfileUI();
+    const b = bmrMifflin(p.sexo, p.peso_kg, p.altura_cm, p.idade);
+    const td = tdee(b, p.atividade);
+    const meta = targetKcal(td, p.objetivo);
+    showCalc(b, td, meta);
+  });
+  document.getElementById('btnSaveProfile').addEventListener('click', ()=>{
+    const p = readProfileUI(); AppState.saveProfile(p);
+  });
+  document.getElementById('btnApplyFilters').addEventListener('click', ()=>{
+    const prefs = gatherFilters(); AppState.savePrefs(prefs);
+    const plan = AppState.loadPlan(); if(plan) renderPlanner(plan);
+  });
+  document.getElementById('btnClearFilters').addEventListener('click', ()=>{
+    document.querySelectorAll('#filters input[type=checkbox]').forEach(b=>b.checked=false);
+    const prefs = gatherFilters(); AppState.savePrefs(prefs);
+    const plan = AppState.loadPlan(); if(plan) renderPlanner(plan);
+  });
+  document.getElementById('btnExportPNG').addEventListener('click', exportPNG);
+  document.getElementById('btnSavePlan').addEventListener('click', exportPlanJSON);
+  document.getElementById('importPlan').addEventListener('change', (e)=>{ if(e.target.files[0]) importPlanJSON(e.target.files[0]); });
+  document.getElementById('btnCloseSwap').addEventListener('click', closeSwap);
 
-            if (appState.currentStep < STEPS.length - 1) {
-                appState.currentStep++;
-                renderApp();
-            } else {
-                // Último passo: Gerar Plano -> Chama a função assíncrona
-                generatePlanAsync(appState.profile);
-            }
-        }
+  // -------------------- Boot --------------------
+  (async function boot(){
+    const prof = AppState.loadProfile();
+    if(prof){
+      document.getElementById('sx').value = prof.sexo;
+      document.getElementById('age').value = prof.idade;
+      document.getElementById('h').value = prof.altura_cm;
+      document.getElementById('w').value = prof.peso_kg;
+      document.getElementById('act').value = prof.atividade;
+      document.getElementById('goal').value = prof.objetivo;
+    }
+    const files = await loadManifest();
+    await loadFoods(files);
+    await loadPresets();
+    renderPresets();
 
-        /**
-         * Volta para o passo anterior
-         */
-        function prevStep() {
-            appState.currentStep--;
-            appState.isPlanGenerated = false;
-            renderApp();
-        }
-        
-        /**
-         * Função para ligar/desligar os campos de treino
-         */
-        function toggleTrainingFields(value) {
-            const fields = document.getElementById('training-fields');
-            if (fields) {
-                fields.classList.toggle('hidden', value !== 'sim');
-            }
-        }
-
-        /**
-         * Função para ligar/desligar os campos da dispensa
-         */
-        function toggleDispensaFields(isChecked) {
-             const fields = document.getElementById('dispensa-fields');
-            if (fields) {
-                fields.classList.toggle('hidden', !isChecked);
-            }
-        }
-
-        /**
-         * Função para mostrar a aba (Plano ou Lista de Compras)
-         */
-        function showTab(tabName) {
-            document.getElementById('plan-content').classList.add('hidden');
-            document.getElementById('shopping-content').classList.add('hidden');
-            document.getElementById('tab-plan').classList.remove('tab-active');
-            document.getElementById('tab-shopping').classList.remove('tab-active');
-
-            document.getElementById(`${tabName}-content`).classList.remove('hidden');
-            document.getElementById(`tab-${tabName}`).classList.add('tab-active');
-        }
-
-
-        /**
-         * Renderiza o App Principal (chamado em cada transição)
-         */
-        function renderApp() {
-            document.getElementById('message-area').classList.add('hidden');
-            renderStepper();
-            
-            if (appState.isPlanGenerated) {
-                renderPlanOutput();
-            } else {
-                renderFormStep();
-            }
-        }
-
-        // Inicialização do App
-        document.addEventListener('DOMContentLoaded', () => {
-            // Carregar favoritos e definir estado inicial
-            appState.favorites = loadState('favorites') || [];
-
-            // Tentar carregar perfil (se existir)
-            const savedProfile = loadState('profile');
-            if (savedProfile) {
-                appState.profile = savedProfile;
-                // Previne redefinição de campos array se o estado for carregado.
-            } else {
-                 // Preenche valores padrão no perfil para evitar undefined em inputs
-                 appState.profile = {
-                    objective: 'perder_gordura', sex: 'masculino', age: 30, height: 175, weight: 80, numMeals: '4',
-                    activity: 'moderado', training: 'nao', intensity: 'media', sleep: 'mais_6h',
-                    style: 'indiferente', time: '15_30', budget: 'medio', hungerTime: 'none', // Adicionado hungerTime padrão
-                    restrictions: [], avoidList: [], dispensa: [], costumo: [], useDispensa: false
-                };
-            }
-
-            renderApp();
-        });
-    </script>
+    const plan = AppState.loadPlan();
+    if(plan) renderPlanner(plan);
+  })();
+  </script>
 </body>
 </html>
