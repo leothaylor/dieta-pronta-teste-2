@@ -1,1 +1,42 @@
-
+[
+  {
+    "id": 3101,
+    "name": "Arroz integral (cozido)",
+    "family": "Carbo",
+    "state": "COZIDO",
+    "method": "cozido",
+    "kcal": 124, "P": 2.6, "C": 25.8, "G": 1.0,
+    "def": 140,
+    "tags": ["arroz","marmita","caseiro","integral"]
+  },
+  {
+    "id": 3102,
+    "name": "Arroz branco (cozido)",
+    "family": "Carbo",
+    "state": "COZIDO",
+    "method": "cozido",
+    "kcal": 130, "P": 2.4, "C": 28.2, "G": 0.3,
+    "def": 140,
+    "tags": ["arroz","marmita","caseiro"]
+  },
+  {
+    "id": 3201,
+    "name": "Batata doce (cozida)",
+    "family": "Carbo",
+    "state": "COZIDO",
+    "method": "cozido",
+    "kcal": 86, "P": 1.6, "C": 20.1, "G": 0.1,
+    "def": 130,
+    "tags": ["tubérculo","marmita","caseiro","baixo-custo"]
+  },
+  {
+    "id": 3301,
+    "name": "Pão integral (industrializado)",
+    "family": "Carbo",
+    "state": "INDUSTRIALIZADO",
+    "method": "fatias",
+    "kcal": 250, "P": 9, "C": 41, "G": 4,
+    "def": 50,
+    "tags": ["pão","rápido","integral"]
+  }
+]
