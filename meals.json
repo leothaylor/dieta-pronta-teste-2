@@ -1,25 +1,27 @@
 {
   "protein": [
     { "name": "Peito de frango grelhado", "kcalPer100": 165, "p": 31, "c": 0,  "f": 3,  "unit": "g" },
+    { "name": "Tilápia grelhada",         "kcalPer100": 128, "p": 26, "c": 0,  "f": 3,  "unit": "g" },
     { "name": "Ovo cozido",               "kcalPer100": 155, "p": 13, "c": 1.1,"f": 11, "unit": "g" },
-    { "name": "Tofu firme",               "kcalPer100": 76,  "p": 8,  "c": 1.9,"f": 4.8,"unit": "g" },
-    { "name": "Tilápia grelhada",         "kcalPer100": 128, "p": 26, "c": 0,  "f": 3,  "unit": "g" }
+    { "name": "Cottage (lácteo)",         "kcalPer100": 98,  "p": 11, "c": 3,  "f": 4,  "unit": "g", "flags": { "lactose": true } }
   ],
   "carbs": [
     { "name": "Arroz branco cozido", "kcalPer100": 130, "p": 2.4, "c": 28, "f": 0.3, "unit": "g" },
-    { "name": "Arroz integral",      "kcalPer100": 124, "p": 2.6, "c": 26, "f": 1.0, "unit": "g" },
+    { "name": "Arroz integral cozido","kcalPer100": 124, "p": 2.6, "c": 26, "f": 1.0, "unit": "g" },
     { "name": "Batata-doce cozida",  "kcalPer100": 90,  "p": 2,   "c": 21, "f": 0.1, "unit": "g" },
-    { "name": "Macarrão cozido",     "kcalPer100": 157, "p": 5.8, "c": 30, "f": 0.9, "unit": "g" }
+    { "name": "Macarrão cozido",     "kcalPer100": 157, "p": 5.8, "c": 30, "f": 0.9, "unit": "g" },
+    { "name": "Pão integral",        "kcalPer100": 250, "p": 10,  "c": 43, "f": 3,   "unit": "g", "flags": { "gluten": true } },
+    { "name": "Banana",              "kcalPer100": 89,  "p": 1.1, "c": 23, "f": 0.3, "unit": "g" },
+    { "name": "Aveia em flocos",     "kcalPer100": 389, "p": 17,  "c": 66, "f": 7,   "unit": "g" }
   ],
   "fat": [
-    { "name": "Azeite de oliva", "kcalPer100": 884, "p": 0, "c": 0, "f": 100, "unit": "ml" },
-    { "name": "Abacate",         "kcalPer100": 160, "p": 2, "c": 9, "f": 15,  "unit": "g" },
-    { "name": "Castanha de caju","kcalPer100": 553, "p": 18,"c": 30,"f": 44,  "unit": "g" },
-    { "name": "Pasta de amendoim","kcalPer100": 588,"p": 25,"c": 20,"f": 50,  "unit": "g" }
+    { "name": "Azeite de oliva",     "kcalPer100": 884, "p": 0, "c": 0, "f": 100, "unit": "ml" },
+    { "name": "Abacate",             "kcalPer100": 160, "p": 2, "c": 9, "f": 15,  "unit": "g" },
+    { "name": "Castanha de caju",    "kcalPer100": 553, "p": 18,"c": 30,"f": 44,  "unit": "g" }
   ],
   "mixed": [
-    { "name": "Iogurte natural", "kcalPer100": 61, "p": 3.5, "c": 4.7, "f": 3.3, "unit": "g" },
-    { "name": "Feijão cozido",   "kcalPer100": 76, "p": 5.1, "c": 14,  "f": 0.5, "unit": "g" },
-    { "name": "Pão francês",     "kcalPer100": 270,"p": 8,   "c": 57,  "f": 3,   "unit": "g" }
+    { "name": "Iogurte natural",     "kcalPer100": 61,  "p": 3.5,"c": 4.7,"f": 3.3,"unit": "g", "flags": { "lactose": true } },
+    { "name": "Feijão cozido",       "kcalPer100": 76,  "p": 5.1,"c": 14, "f": 0.5,"unit": "g" },
+    { "name": "Molho de tomate",     "kcalPer100": 33,  "p": 1.6,"c": 6,  "f": 0.2,"unit": "g" }
   ]
 }
