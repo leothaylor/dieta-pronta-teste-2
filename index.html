@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FitPlan Pro ⚡ | v6 (3 passos)</title>
+  <title>FitPlan Pro ⚡ | v7</title>
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Export PNG: 1) html2canvas (principal)  2) dom-to-image-more (fallback) -->
+  <!-- Export: html2canvas (principal), dom-to-image-more (fallback), jsPDF (PDF) -->
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.2.0/dist/dom-to-image-more.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
   <style>
     :root{
@@ -18,7 +19,7 @@
       --green:#10b981; --green2:#86efac; --amber:#f59e0b; --red:#ef4444; --border:#334155;
     }
     html,body{background:var(--bg);color:var(--text)}
-    *{text-shadow:none !important;-webkit-font-smoothing:antialiased;image-rendering:auto}
+    *{-webkit-font-smoothing:antialiased}
     .shadow-soft{box-shadow:0 10px 30px rgba(0,0,0,.28)}
     .btn{padding:.6rem 1rem;border-radius:.8rem;background:var(--green);color:#001c12;font-weight:800}
     .btn:hover{filter:brightness(1.05)}
@@ -30,18 +31,33 @@
     .step.active{background:#065f46;color:white;border-color:#0ea5a4}
     .tag{display:inline-flex;align-items:center;border-radius:999px;padding:.15rem .55rem;font-size:.75rem;background:#111827;border:1px solid var(--border);margin:.25rem .35rem .25rem 0}
     .kcal-flag{color:var(--green2)}
-    /* evita artefatos na exportação */
-    #plannerWrap, #planner, .no-transform{transform:none !important}
+    .tabs button{border-bottom:2px solid transparent;padding-bottom:.4rem}
+    .tabs button.active{border-color:var(--green); color:var(--green2)}
+    .no-transform{transform:none !important}
+    /* overlay */
+    #overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:60}
+    #overlay .box{background:#0b1220;border:1px solid var(--border);border-radius:1rem;padding:1rem 1.2rem;display:flex;gap:.6rem;align-items:center}
+    .dot{width:.55rem;height:.55rem;border-radius:999px;background:var(--green);animation:b .9s infinite alternate}
+    .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+    @keyframes b{to{opacity:.2; transform:translateY(-2px)}}
   </style>
 </head>
 <body class="min-h-screen">
-  <header class="max-w-5xl mx-auto px-4 pt-8 pb-4">
+  <header class="max-w-6xl mx-auto px-4 pt-8 pb-4">
     <h1 class="text-3xl md:text-4xl font-extrabold">FitPlan Pro ⚡</h1>
     <p class="text-slate-300">Gere sua dieta realista em <b>3 passos</b> — apenas <b>index.html</b> + <b>.json</b>.</p>
   </header>
 
-  <main class="max-w-5xl mx-auto px-4 space-y-6 pb-24">
-    <!-- Stepper 3 passos -->
+  <!-- Overlay -->
+  <div id="overlay">
+    <div class="box">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      <div id="overlayMsg" class="text-slate-200 text-sm">Otimizando calorias…</div>
+    </div>
+  </div>
+
+  <main class="max-w-6xl mx-auto px-4 space-y-6 pb-24">
+    <!-- Stepper -->
     <nav class="grid grid-cols-3 gap-2 sticky top-0 z-10">
       <button id="st1" class="step">1</button>
       <button id="st2" class="step">2</button>
@@ -49,14 +65,14 @@
     </nav>
 
     <!-- 1) Perfil -->
-    <section id="s1" class="slide show bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
+    <section id="s1" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <h2 class="text-xl font-semibold mb-3">1) Seu Perfil</h2>
-      <div class="grid md:grid-cols-3 gap-4">
+      <div class="grid lg:grid-cols-4 md:grid-cols-3 gap-4">
         <div><div class="label">Sexo</div>
-          <select id="sx" class="field"><option value="M">Masculino</option><option value="F">Feminino</option></select>
+          <select id="sx" class="field" title="Usado no cálculo do metabolismo basal (Mifflin)."><option value="M">Masculino</option><option value="F">Feminino</option></select>
         </div>
         <div><div class="label">Idade (anos)</div>
-          <input id="age" type="number" class="field" value="33" min="12" max="90"/>
+          <input id="age" type="number" class="field" value="33" min="12" max="90" title="Entra no cálculo do BMR (Mifflin-St Jeor)."/>
         </div>
         <div><div class="label">Altura (cm)</div>
           <input id="h" type="number" class="field" value="170" min="120" max="220"/>
@@ -65,7 +81,7 @@
           <input id="w" type="number" class="field" value="69" min="35" max="200"/>
         </div>
         <div><div class="label">Atividade</div>
-          <select id="act" class="field">
+          <select id="act" class="field" title="Multiplicador de TDEE (sedentário → intensa).">
             <option value="sedentario">Sedentário</option>
             <option value="leve">Leve (1–2x/sem)</option>
             <option value="moderada" selected>Moderada (3–4x/sem)</option>
@@ -73,17 +89,37 @@
           </select>
         </div>
         <div><div class="label">Objetivo</div>
-          <select id="goal" class="field">
+          <select id="goal" class="field" title="Define o saldo calórico: Secar (−15%), Manter (0), Ganhar (+8%).">
             <option value="cut" selected>Secar (−15%)</option>
             <option value="maint">Manter (±0%)</option>
             <option value="bulk">Ganhar (+8%)</option>
           </select>
         </div>
+        <div><div class="label">Maior fome</div>
+          <select id="hunger" class="field" title="Damos um pequeno bônus de calorias nessa refeição.">
+            <option value="none" selected>Indiferente</option>
+            <option value="cafe">Café</option>
+            <option value="almoco">Almoço</option>
+            <option value="lanche">Lanche</option>
+            <option value="jantar">Jantar</option>
+          </select>
+        </div>
+        <div><div class="label">Treino</div>
+          <select id="train" class="field" title="Distribuímos calorias a favor da refeição do treino (+12%) e vizinhas (+6%).">
+            <option value="none" selected>Sem treino</option>
+            <option value="cafe">Treino: manhã (↗ café)</option>
+            <option value="almoco">Treino: meio-dia (↗ almoço)</option>
+            <option value="lanche">Treino: tarde (↗ lanche)</option>
+            <option value="jantar">Treino: noite (↗ jantar)</option>
+          </select>
+        </div>
       </div>
+
       <div class="mt-4 flex gap-2">
         <button id="btnCalc" class="btn">Calcular TDEE & Meta</button>
-        <button id="btnSaveProfile" class="btn-ghost">Salvar Perfil</button>
+        <button id="btnSaveProfile" class="btn-ghost" title="Grava dados básicos do passo 1.">Salvar Perfil</button>
       </div>
+
       <div id="calcBox" class="hidden mt-4 bg-[#0f172a] rounded-xl p-4 border border-[color:var(--border)]">
         <div class="grid md:grid-cols-3 gap-3">
           <div><div class="label">BMR (Mifflin)</div><div id="bmrOut" class="text-emerald-300 text-xl">—</div></div>
@@ -92,38 +128,107 @@
         </div>
         <p class="text-slate-400 text-sm mt-2">Proteína é pesada <b>CRUA</b>; carboidratos <b>COZIDOS</b>. Dica cardio Z2 ≈ <b>145 bpm</b>.</p>
       </div>
+
       <div class="mt-6 flex items-center justify-between">
         <span></span><button id="next1" class="btn">Próximo</button>
       </div>
     </section>
 
-    <!-- 2) Presets -->
+    <!-- 2) Presets + Preferências compactas -->
     <section id="s2" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
-      <h2 class="text-xl font-semibold mb-1">2) Escolha um modelo (presets elásticos)</h2>
+      <h2 class="text-xl font-semibold mb-1">2) Modelo & Preferências</h2>
       <p id="goalInfo" class="text-emerald-300 text-xs mb-3"></p>
-      <p class="text-slate-300 text-sm mb-2">Cada modelo é um <b>estilo</b> de montagem. Você pode trocar alimentos e gramaturas depois.</p>
+
+      <!-- preferências compactas -->
+      <div class="grid md:grid-cols-4 gap-3 mb-4">
+        <div>
+          <div class="label">Estilo</div>
+          <select id="prefStyle" class="field" title="Natural prioriza in natura; Prático prioriza preparos simples/marmita.">
+            <option value="indiferente" selected>Indiferente</option>
+            <option value="natural">Natural</option>
+            <option value="pratico">Prático</option>
+          </select>
+        </div>
+        <div>
+          <div class="label">Tempo</div>
+          <select id="prefTime" class="field" title="Rápido foca itens ≤10 min de preparo.">
+            <option value="indiferente" selected>Indiferente</option>
+            <option value="rapido">Rápido</option>
+            <option value="normal">Normal</option>
+          </select>
+        </div>
+        <div>
+          <div class="label">Orçamento</div>
+          <select id="prefBudget" class="field" title="Baixo custo prioriza opções econômicas.">
+            <option value="indiferente" selected>Indiferente</option>
+            <option value="baixo">Baixo</option>
+            <option value="medio">Médio</option>
+          </select>
+        </div>
+        <div>
+          <div class="label">Restrições</div>
+          <select id="prefRestrict" class="field" title="Filtra alimentos incompatíveis.">
+            <option value="nenhuma" selected>Nenhuma</option>
+            <option value="sem-lactose">Sem lactose</option>
+            <option value="sem-gluten">Sem glúten</option>
+            <option value="vegetariano">Vegetariano</option>
+            <option value="sem-peixe">Sem peixe</option>
+            <option value="sem-porco">Sem porco</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-3 mb-5">
+        <div>
+          <div class="label">Evitar (vírgula para separar)</div>
+          <input id="prefAvoid" class="field" placeholder="ex.: maionese, refrigerante, bacon" />
+        </div>
+        <div>
+          <div class="label">Dispensa/Hábitos (opcional)</div>
+          <input id="prefPantry" class="field" placeholder="ex.: arroz integral, frango, banana" />
+          <label class="text-xs text-slate-400 mt-1 inline-flex items-center gap-2"><input id="togglePantry" type="checkbox" class="accent-emerald-500"> Considerar dispensa e hábitos na montagem</label>
+        </div>
+      </div>
+
+      <h3 class="text-slate-200 font-semibold mb-2">Presets disponíveis</h3>
       <div id="presetList" class="grid md:grid-cols-2 gap-3"></div>
+
       <div class="mt-6 flex items-center justify-between">
         <button id="prev2" class="btn-ghost">Voltar</button>
         <button id="next2" class="btn">Ir para plano</button>
       </div>
     </section>
 
-    <!-- 3) Plano -->
+    <!-- 3) Plano + abas (Plano / Lista diária / Lista semanal / Favoritos) -->
     <section id="s3" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <div class="flex items-center justify-between gap-2 flex-wrap">
         <h2 class="text-xl font-semibold">3) Seu Plano</h2>
         <div class="flex gap-2 flex-wrap">
-          <button id="btnRegenDay" class="btn-ghost">Regerar dia</button>
+          <button id="btnRegenDay" class="btn-ghost" title="Gera o dia inteiro mantendo itens fixados.">Regerar dia</button>
+          <button id="btnFav" class="btn-ghost" title="Salva plano atual em Favoritos.">Favoritar</button>
           <button id="btnExportPNG" class="btn">Exportar PNG</button>
-          <button id="btnSavePlan" class="btn-ghost">Salvar Plano</button>
-          <label class="btn-ghost cursor-pointer">Importar Plano<input id="importPlan" type="file" accept="application/json" class="hidden"/></label>
+          <button id="btnExportPDF" class="btn-ghost">Exportar PDF</button>
+          <button id="btnSavePlan" class="btn-ghost">Salvar JSON</button>
+          <label class="btn-ghost cursor-pointer">Importar<input id="importPlan" type="file" accept="application/json" class="hidden"/></label>
         </div>
       </div>
-      <p class="text-slate-400 text-sm mt-1">Você pode <b>fixar</b> itens (📌) para não mudarem ao regerar. Proteína: CRU · Carbo: COZIDO.</p>
+      <p class="text-slate-400 text-sm mt-1">Fixe itens (📌) para não mudarem ao regerar. Proteína: CRU · Carbo: COZIDO.</p>
+
+      <div class="tabs mt-4 flex gap-4 text-slate-300">
+        <button id="tabPlan" class="active">Plano</button>
+        <button id="tabListDay">Lista diária</button>
+        <button id="tabListWeek">Lista semanal</button>
+        <button id="tabFavs">Favoritos</button>
+      </div>
+
       <div id="plannerWrap" class="mt-4 no-transform">
         <div id="planner" class="space-y-4 no-transform"></div>
       </div>
+
+      <div id="listDay" class="hidden mt-4"></div>
+      <div id="listWeek" class="hidden mt-4"></div>
+      <div id="favsBox" class="hidden mt-4"></div>
+
       <div class="mt-6 flex items-center justify-between">
         <button id="prev3" class="btn-ghost">Voltar</button>
         <button class="btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">Finalizar ↑</button>
@@ -144,7 +249,7 @@
   </main>
 
   <script>
-  /* ====== base ====== */
+  /* ---------------- Utils & Store ---------------- */
   const slides=["s1","s2","s3"]; let step=1;
   const showStep=n=>{
     step=Math.min(3,Math.max(1,n));
@@ -152,53 +257,98 @@
     [1,2,3].forEach(i=>document.getElementById('st'+i).classList.toggle('active',i===step));
     if(step===2) renderPresets();
     window.scrollTo({top:0,behavior:'smooth'});
-  };
-  showStep(1);
+  }; showStep(1);
 
-  const LS={profile:'fp_profile',prefs:'fp_prefs',plan:'fp_plan'};
+  const LS={profile:'fp_profile',prefs:'fp_prefs',plan:'fp_plan',favs:'fp_favs'};
   const State={save:(k,v)=>localStorage.setItem(k,JSON.stringify(v)), load:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}}};
+  const Overlay={show:(msg='Processando…')=>{document.getElementById('overlayMsg').textContent=msg; document.getElementById('overlay').style.display='flex'}, hide:()=>{document.getElementById('overlay').style.display='none'}};
 
   const Data={foods:[],presets:[],manifestVersion:0};
   async function loadManifest(){const r=await fetch('data/foods_manifest.json'); const j=await r.json(); Data.manifestVersion=j.version||1; return j.files||[]}
   async function loadFoods(files){const acc=[]; for(const f of files){ try{ const r=await fetch('data/'+f+'?v='+Data.manifestVersion); const j=await r.json(); Array.isArray(j)&&acc.push(...j);}catch(e){console.warn('Falha ao carregar',f,e)} } const seen=new Set(); Data.foods=acc.filter(x=>x && !seen.has(x.id) && seen.add(x.id)===true || x)}
   async function loadPresets(){ const r=await fetch('data/presets.json?v='+Data.manifestVersion); const j=await r.json(); Data.presets=j.presets||[] }
 
-  /* ====== cálculo ====== */
+  /* ---------------- Cálculo ---------------- */
   function bmrMifflin(sexo,peso,alt,idade){return sexo==='M'?(10*peso+6.25*alt-5*idade+5):(10*peso+6.25*alt-5*idade-161)}
   function tdeeFrom(bmr,act){const mult={sedentario:1.2,leve:1.375,moderada:1.55,intensa:1.725}; return bmr*(mult[act]||1.55)}
   function targetFrom(tdee,goal){if(goal==='cut') return Math.round(tdee*0.85); if(goal==='bulk') return Math.round(tdee*1.08); return Math.round(tdee)}
 
-  /* ====== variedade & memória ====== */
+  /* ---------------- Variedade/Score ---------------- */
   function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a}
   function weightedPick(items,getW){const acc=[]; let s=0; for(const it of items){ s+=Math.max(.0001,getW(it)); acc.push(s); } const r=Math.random()*s; const idx=acc.findIndex(x=>x>=r); return items[Math.max(0,idx)]}
   const Memory={last:new Set(),clear(){this.last.clear()},mark(id){this.last.add(id)},has(id){return this.last.has(id)}};
 
-  /* ====== caps & metas ====== */
+  /* ---------------- Caps & metas ---------------- */
   const CAPS={solidMin:30,solidMax:300, oilMin:5, oilMax:20};
   function mealTargets(kcal,ratio){const P=(ratio.P||.3),C=(ratio.C||.45),G=(ratio.G||.25); return {kcal:Math.round(kcal),P:+(kcal*P/4).toFixed(1),C:+(kcal*C/4).toFixed(1),G:+(kcal*G/9).toFixed(1)}}
 
-  /* ====== helpers alimento ====== */
+  /* ---------------- Helpers alimento ---------------- */
   const sf=s=>String(s||'').toLowerCase();
   function getFood(id){return Data.foods.find(x=>x.id===id)}
   function isFamily(f, fam){return sf(f.family)===sf(fam)}
+  function hasTag(f, t){return (f.tags||[]).map(sf).includes(sf(t))}
   function isBean(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return n.includes('feijao')||n.includes('feijão')||t.includes('leguminosa')}
   function isFishOrTuna(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return t.includes('peixe')||t.includes('atum')||t.includes('tilapia')||t.includes('sardinha')||n.includes('tilápia')||n.includes('peixe')||n.includes('atum')}
-  function isDairy(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return t.includes('laticinio')||t.includes('laticínio')||n.includes('iogurte')||n.includes('queijo')}
+  function isDairy(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return t.includes('lactose')||n.includes('iogurte')||n.includes('queijo')}
+  function isPork(f){const n=sf(f.name); return /porco|bacon|lombo|su[ií]no/.test(n)}
+  function isAnimal(f){const n=sf(f.name); return /frango|carne|boi|bovino|peixe|atum|sardinha|su[ií]no|porco|ovo/.test(n)}
 
+  /* score de escolha respeitando preferências */
   function pickPoolByFamily(family,prefs,preferState){
     let list=Data.foods.filter(f=>sf(f.family)===sf(family));
     if(!list.length) return [];
-    const inc=new Set((prefs.tags_incluir||[]).map(sf)); const exc=new Set((prefs.tags_evitar||[]).map(sf));
-    list=list.filter(f=>!(f.tags||[]).map(sf).some(t=>exc.has(t)));
+
+    // Restrições
+    list=list.filter(f=>{
+      if(prefs.restrict==='sem-lactose' && isDairy(f)) return false;
+      if(prefs.restrict==='sem-gluten' && hasTag(f,'gluten')) return false;
+      if(prefs.restrict==='sem-peixe' && isFishOrTuna(f)) return false;
+      if(prefs.restrict==='sem-porco' && isPork(f)) return false;
+      if(prefs.restrict==='vegetariano' && isAnimal(f)) return false;
+      return true;
+    });
+
+    // Evitar palavras
+    const avoid=(prefs.avoid||[]).map(sf);
+    if(avoid.length) list=list.filter(f=>!avoid.some(w=>sf(f.name).includes(w)));
+
+    // Estilo
+    const style=prefs.style||'indiferente';
+    const preferNatural = style==='natural';
+    const preferPratico = style==='pratico';
+
+    const fastWanted = prefs.time==='rapido';
+    const cheapWanted = prefs.budget==='baixo';
+
+    // Dispensa/hábitos
+    const pantrySet=new Set((prefs.pantry||[]).map(sf));
+    const considerPantry=!!prefs.considerPantry;
+
+    // Tags a priorizar
+    const inc=new Set((prefs.tags_incluir||[]).map(sf));
+
     const varF=(+prefs.var||45)/100;
+
     const score=f=>{
-      const tags=(f.tags||[]).map(sf); const match=tags.filter(t=>inc.has(t)).length;
-      const penal=Memory.has(f.id)?(0.35+0.3*varF):0;
-      const same=(preferState&&f.state===preferState)?0.25:0;
-      const fast=(f.prep_min!=null&&f.prep_min<=10)?0.15:0;
-      const cheap=(tags.includes('baixo-custo')?0.1:0);
-      return Math.max(0.05,1+0.5*match+same+fast+cheap-penal);
+      const tags=(f.tags||[]).map(sf);
+      let s=1;
+
+      // Priorizações
+      if(inc.size) s+=0.2*tags.filter(t=>inc.has(t)).length;
+      if(preferState && f.state===preferState) s+=0.25;
+      if(fastWanted && f.prep_min!=null && f.prep_min<=10) s+=0.25;
+      if(cheapWanted && tags.includes('baixo-custo')) s+=0.2;
+      if(preferNatural && sf(f.state).includes('in natura')) s+=0.25;
+      if(preferPratico  && (sf(f.state).includes('industrializado')||tags.includes('marmita'))) s+=0.2;
+
+      if(considerPantry && (pantrySet.has(sf(f.name)))) s+=0.35;
+
+      // Penaliza repetição
+      if(Memory.has(f.id)) s-= (0.35+0.3*varF);
+
+      return Math.max(0.05,s);
     };
+
     return shuffle(list.slice(0)).map(x=>({...x,__w:score(x)})).sort((a,b)=>b.__w-a.__w)
   }
 
@@ -219,33 +369,77 @@
   }
 
   function mealKind(name){const n=sf(name); if(n.includes('café')) return 'cafe'; if(n.includes('almoço')||n.includes('almoco')) return 'almoco'; if(n.includes('jantar')) return 'jantar'; return 'lanche'}
+
   function enforceCompatibility(kind, items){
-    if(kind==='lanche'){ for(let i=0;i<items.length;i++){ const f=getFood(items[i].id); if(f && isBean(f)){ items.splice(i,1); break; } } return items; }
+    if(kind==='lanche'){ // lanches sem feijão
+      for(let i=0;i<items.length;i++){ const f=getFood(items[i].id); if(f && isBean(f)){ items.splice(i,1); break; } }
+      return items;
+    }
+    // almoço/jantar
     let hasBean=-1, fishIdx=-1, dairyIdx=-1;
     items.forEach((it,idx)=>{ const f=getFood(it.id); if(!f) return; if(isBean(f)) hasBean=idx; if(isFishOrTuna(f)) fishIdx=idx; if(isDairy(f)) dairyIdx=idx; });
-    if(hasBean>-1 && fishIdx>-1){
-      const prefs=State.load(LS.prefs)||{tags_incluir:[]}; const pool=pickPoolByFamily('Carbo',prefs,null);
+    if(hasBean>-1 && fishIdx>-1){ // troca feijão por carbo base
+      const prefs=readPrefs(); const pool=pickPoolByFamily('Carbo',prefs,null);
       const rice= pool.find(x=>sf(x.name).includes('arroz')) || pool[0]; if(rice){ items[hasBean]={id:rice.id,name:rice.name,family:'Carbo',state:rice.state,g:items[hasBean].g,locked:false}; }
     }
-    if(hasBean>-1 && dairyIdx>-1){
-      const prefs=State.load(LS.prefs)||{tags_incluir:[]}; const pool=pickPoolByFamily('Proteína',prefs,null);
+    if(hasBean>-1 && dairyIdx>-1){ // troca laticínio por proteína não láctea
+      const prefs=readPrefs(); const pool=pickPoolByFamily('Proteína',prefs,null);
       const fr= pool.find(x=>!isDairy(x)) || pool[0]; if(fr){ items[dairyIdx]={id:fr.id,name:fr.name,family:'Proteína',state:fr.state,g:items[dairyIdx].g,locked:false}; }
     }
     return items;
   }
 
-  /* ====== plano ====== */
-  function buildPlan(meta,preset,prefs){ const plan={meta_kcal:meta,preset_id:preset.id,meals:[]}; Memory.clear();
-    for(const m of (preset.meals||[])){
-      const kcalMeal= meta*(m.kcal_frac||0.25); const tgt=mealTargets(kcalMeal, m.macro_ratio||{P:.3,C:.45,G:.25}); const kind=mealKind(m.name||''); const items=[];
+  /* ---------------- Plano ---------------- */
+  function normalizedFractions(preset, hunger, train){
+    // base
+    const meals=preset.meals||[]; let fracs=meals.map(m=>m.kcal_frac||0.25);
+
+    const idxMap={cafe:meals.findIndex(m=>mealKind(m.name)==='cafe'),
+                  almoco:meals.findIndex(m=>mealKind(m.name)==='almoco'),
+                  lanche:meals.findIndex(m=>mealKind(m.name)==='lanche'),
+                  jantar:meals.findIndex(m=>mealKind(m.name)==='jantar')};
+
+    // fome: +8% na refeição escolhida
+    if(hunger!=='none' && idxMap[hunger]>-1) fracs[idxMap[hunger]]+=0.08;
+
+    // treino: +12% na refeição do treino e +6% nas vizinhas (aproximação simples)
+    if(train!=='none' && idxMap[train]>-1){
+      fracs[idxMap[train]]+=0.12;
+      // vizinho anterior e posterior (quando existirem)
+      const ids=Object.values(idxMap).filter(i=>i>-1).sort((a,b)=>a-b);
+      const pos=ids.indexOf(idxMap[train]);
+      if(ids[pos-1]!=null) fracs[ids[pos-1]]+=0.06;
+      if(ids[pos+1]!=null) fracs[ids[pos+1]]+=0.06;
+    }
+
+    // normaliza para somar 1
+    const s=fracs.reduce((a,b)=>a+b,0)||1;
+    fracs=fracs.map(x=>x/s);
+    return fracs;
+  }
+
+  function buildPlan(meta,preset,prefs){
+    const plan={meta_kcal:meta,preset_id:preset.id,meals:[]};
+    Memory.clear();
+    const fracs = normalizedFractions(preset, (readProfile().fome||'none'), (readProfile().treino||'none'));
+
+    (preset.meals||[]).forEach((m,idx)=>{
+      const kcalMeal= meta*fracs[idx];
+      const tgt=mealTargets(kcalMeal, m.macro_ratio||{P:.3,C:.45,G:.25});
+      const kind=mealKind(m.name||'');
+      const items=[];
       for(const fam of (m.families||[])){
-        const pool=pickPoolByFamily(fam,prefs,null); if(!pool.length) continue; const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt);
-        items.push({id:chosen.id,name:chosen.name,family:fam,state:chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);
+        const pool=pickPoolByFamily(fam,prefs,null); if(!pool.length) continue;
+        const chosen=weightedPick(pool,x=>x.__w||1);
+        const grams=gramsForTargets(chosen,tgt);
+        items.push({id:chosen.id,name:chosen.name,family:fam,state:chosen.state,g:grams,locked:false});
+        Memory.mark(chosen.id);
       }
       enforceCompatibility(kind, items);
       adjustMealToTarget({target:tgt,items});
       plan.meals.push({id:m.id,name:m.name,target:tgt,items});
-    }
+    });
+
     adjustDayToMeta(plan);
     return plan;
   }
@@ -259,11 +453,14 @@
     return items.findIndex(it=>{ const f=getFood(it.id); const v=macro==='P'?f.P:macro==='C'?f.C:f.G; return v>0; });
   }
 
-  function adjustMealToTarget(meal){ const tgt=meal.target; const calc=()=>sumMeal(meal.items); let cur=calc();
-    const clampG=(food, g)=>{ if(isFamily(food,'Gordura')) return Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax); return Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax); };
+  function adjustMealToTarget(meal){
+    const tgt=meal.target; const calc=()=>sumMeal(meal.items); let cur=calc();
+    const clampG=(food, g)=> isFamily(food,'Gordura') ? Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax) : Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax);
     for(const M of ['P','C','G']){
-      let deficit = +(tgt[M]-cur[M]).toFixed(1); if(Math.abs(deficit)<1) continue; const idx=chooseItemForMacro(meal.items,M); if(idx<0) continue;
-      const it=meal.items[idx]; const f=getFood(it.id); const per100 = M==='P'?f.P:M==='C'?f.C:f.G; if(!per100) continue; const delta = (deficit/per100)*100; const newG = clampG(f, (it.g||0)+delta); it.g=Math.round(newG); cur=calc();
+      let deficit = +(tgt[M]-cur[M]).toFixed(1); if(Math.abs(deficit)<1) continue;
+      const idx=chooseItemForMacro(meal.items,M); if(idx<0) continue;
+      const it=meal.items[idx]; const f=getFood(it.id); const per100 = M==='P'?f.P:M==='C'?f.C:f.G; if(!per100) continue;
+      const delta = (deficit/per100)*100; const newG = clampG(f, (it.g||0)+delta); it.g=Math.round(newG); cur=calc();
     }
     return meal;
   }
@@ -271,17 +468,43 @@
   function adjustDayToMeta(plan){
     const meta=plan.meta_kcal; const totals=plan.meals.reduce((a,m)=>{const s=sumMeal(m.items); a.kcal+=s.kcal; return a;},{kcal:0});
     const diff = meta - totals.kcal; const tol = Math.abs(diff)/meta; if(tol<=0.02) return plan;
-    let targetMealIdx = plan.meals.findIndex(m=>mealKind(m.name)==='jantar'); if(targetMealIdx<0) targetMealIdx=plan.meals.findIndex(m=>mealKind(m.name)==='almoco'); if(targetMealIdx<0) targetMealIdx=0;
-    const m=plan.meals[targetMealIdx]; const idx=chooseItemForMacro(m.items,'C'); if(idx<0){ return plan; }
-    const it=m.items[idx]; const f=getFood(it.id); const kcal100 = f.kcal||0; if(kcal100<=0) return plan; const delta = (diff/kcal100)*100;
-    const clampG=(food, g)=>{ if(isFamily(food,'Gordura')) return Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax); return Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax); };
+    let idx = plan.meals.findIndex(m=>mealKind(m.name)==='jantar'); if(idx<0) idx=plan.meals.findIndex(m=>mealKind(m.name)==='almoco'); if(idx<0) idx=0;
+    const m=plan.meals[idx]; const id=chooseItemForMacro(m.items,'C'); if(id<0){ return plan; }
+    const it=m.items[id]; const f=getFood(it.id); const kcal100 = f.kcal||0; if(kcal100<=0) return plan; const delta = (diff/kcal100)*100;
+    const clampG=(food, g)=> isFamily(food,'Gordura')?Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax) : Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax);
     it.g=Math.round(clampG(f,(it.g||0)+delta)); return plan;
   }
 
-  function regenerateDay(plan,preset,prefs){ Memory.clear(); for(const m of plan.meals){ const kind=mealKind(m.name); const tgt=m.target; const newItems=[]; for(const it of m.items){ if(it.locked){ newItems.push(it); Memory.mark(it.id); continue;} const pool=pickPoolByFamily(it.family,prefs,it.state); if(!pool.length){ newItems.push(it); continue;} const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt); newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);} enforceCompatibility(kind,newItems); m.items=newItems; adjustMealToTarget(m);} adjustDayToMeta(plan); return plan; }
-  function regenerateMeal(plan,mealIdx,prefs){ const m=plan.meals[mealIdx]; Memory.clear(); const tgt=m.target; const kind=mealKind(m.name); const newItems=[]; for(const it of m.items){ if(it.locked){ newItems.push(it); Memory.mark(it.id); continue;} const pool=pickPoolByFamily(it.family,prefs,it.state); if(!pool.length){ newItems.push(it); continue;} const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt); newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:it.state||chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);} enforceCompatibility(kind,newItems); m.items=newItems; adjustMealToTarget(m); adjustDayToMeta(plan); return plan; }
+  function regenerateDay(plan,preset,prefs){
+    Overlay.show('Gerando variedade…');
+    Memory.clear();
+    for(const m of plan.meals){
+      const kind=mealKind(m.name); const tgt=m.target; const newItems=[];
+      for(const it of m.items){
+        if(it.locked){ newItems.push(it); Memory.mark(it.id); continue; }
+        const pool=pickPoolByFamily(it.family,prefs,it.state); if(!pool.length){ newItems.push(it); continue; }
+        const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt);
+        newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);
+      }
+      enforceCompatibility(kind,newItems); m.items=newItems; adjustMealToTarget(m);
+    }
+    adjustDayToMeta(plan); Overlay.hide(); return plan;
+  }
 
-  /* ====== presets filtrados ====== */
+  function regenerateMeal(plan,mi,prefs){
+    Overlay.show('Trocando refeição…');
+    const m=plan.meals[mi]; Memory.clear();
+    const tgt=m.target; const kind=mealKind(m.name); const newItems=[];
+    for(const it of m.items){
+      if(it.locked){ newItems.push(it); Memory.mark(it.id); continue; }
+      const pool=pickPoolByFamily(it.family,prefs,it.state); if(!pool.length){ newItems.push(it); continue; }
+      const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt);
+      newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);
+    }
+    enforceCompatibility(kind,newItems); m.items=newItems; adjustMealToTarget(m); adjustDayToMeta(plan); Overlay.hide(); return plan;
+  }
+
+  /* ---------------- Presets filtrados ---------------- */
   function isPresetAllowedForGoal(preset, goal){
     const name = String(preset.name||'').toLowerCase();
     const isCutLike  = /cut|secar|defini[cç][aã]o|low[- ]?carb/.test(name);
@@ -291,7 +514,7 @@
     return true;
   }
 
-  /* ====== render ====== */
+  /* ---------------- Render ---------------- */
   function pctDev(v,t){if(!t) return 0; return Math.round(((v-t)/t)*100)}
   function devTxt(p){return (Math.abs(p)<=2?'±2%': (p>0?('+'+p+'%'):(p+'%')))}
 
@@ -334,7 +557,8 @@
       const prof=readProfile(); const bmr=bmrMifflin(prof.sexo,prof.peso_kg,prof.altura_cm,prof.idade);
       const td=tdeeFrom(bmr,prof.atividade); const meta=targetFrom(td,prof.objetivo);
       showCalc(bmr,td,meta);
-      const prefs=State.load(LS.prefs)||{tags_incluir:[],tags_evitar:[],var:45};
+      savePrefs(); // garante prefs atuais
+      const prefs=readPrefs();
       const plan=buildPlan(meta,p,prefs); State.save(LS.plan,plan); renderPlanner(plan); showStep(3);
     }));
   }
@@ -372,23 +596,27 @@
       host.appendChild(card);
     });
 
+    // Ações dos cards
     host.querySelectorAll('button[data-swap]').forEach(b=>b.addEventListener('click',()=>{ const [mi,ii]=b.dataset.swap.split(':').map(Number); openSwap(State.load(LS.plan),mi,ii); }));
     host.querySelectorAll('button[data-pin]').forEach(b=>b.addEventListener('click',()=>{ const [mi,ii]=b.dataset.pin.split(':').map(Number); togglePin(mi,ii); }));
-    host.querySelectorAll('button[data-regmi]').forEach(b=>b.addEventListener('click',()=>{ const mi=+b.dataset.regmi; const plan=State.load(LS.plan); const prefs=State.load(LS.prefs)||{tags_incluir:[],var:45}; regenerateMeal(plan,mi,prefs); State.save(LS.plan,plan); renderPlanner(plan); }));
+    host.querySelectorAll('button[data-regmi]').forEach(b=>b.addEventListener('click',()=>{ const mi=+b.dataset.regmi; const plan=State.load(LS.plan); const prefs=readPrefs(); regenerateMeal(plan,mi,prefs); State.save(LS.plan,plan); renderPlanner(plan); }));
+
+    // Atualiza listas
+    renderListDay(plan);
   }
 
   function showCalc(bmr,tdee,meta){ document.getElementById('calcBox').style.display='block'; document.getElementById('bmrOut').textContent=Math.round(bmr); document.getElementById('tdeeOut').textContent=Math.round(tdee); document.getElementById('targetOut').textContent=meta; }
 
-  /* ====== pins ====== */
+  /* ---------------- Pins ---------------- */
   function togglePin(mi,ii){ const plan=State.load(LS.plan); const it=plan.meals[mi].items[ii]; it.locked=!it.locked; State.save(LS.plan,plan); renderPlanner(plan); }
 
-  /* ====== swap ====== */
+  /* ---------------- SWAP ---------------- */
   let SWAP=null;
   function openSwap(plan,mi,ii){
     SWAP={plan,mi,ii};
     const m=plan.meals[mi], it=m.items[ii];
     document.getElementById('swapHint').innerHTML=`Equivalentes para <b>${it.family}</b> (prioriza estado <b>${it.state||'-'}</b>).`;
-    const prefs=State.load(LS.prefs)||{tags_incluir:[],var:45};
+    const prefs=readPrefs();
     const list=pickPoolByFamily(it.family,prefs,it.state);
     const box=document.getElementById('swapList'); box.innerHTML='';
     list.slice(0,150).forEach(f=>{
@@ -426,20 +654,129 @@
     State.save(LS.plan,plan); renderPlanner(plan); closeSwap();
   }
 
-  /* ====== util ====== */
-  function readProfile(){ return { sexo:document.getElementById('sx').value, idade:+document.getElementById('age').value, altura_cm:+document.getElementById('h').value, peso_kg:+document.getElementById('w').value, atividade:document.getElementById('act').value, objetivo:document.getElementById('goal').value } }
+  /* ---------------- Preferências ---------------- */
+  function readProfile(){
+    return {
+      sexo:document.getElementById('sx').value,
+      idade:+document.getElementById('age').value,
+      altura_cm:+document.getElementById('h').value,
+      peso_kg:+document.getElementById('w').value,
+      atividade:document.getElementById('act').value,
+      objetivo:document.getElementById('goal').value,
+      fome:document.getElementById('hunger').value,
+      treino:document.getElementById('train').value
+    }
+  }
 
+  function readPrefs(){
+    const raw = State.load(LS.prefs) || {};
+    return {
+      style: raw.style||document.getElementById('prefStyle').value,
+      time: raw.time||document.getElementById('prefTime').value,
+      budget: raw.budget||document.getElementById('prefBudget').value,
+      restrict: raw.restrict||document.getElementById('prefRestrict').value,
+      avoid: raw.avoid|| (document.getElementById('prefAvoid').value||'').split(',').map(s=>s.trim()).filter(Boolean),
+      pantry: raw.pantry|| (document.getElementById('prefPantry').value||'').split(',').map(s=>s.trim()).filter(Boolean),
+      considerPantry: raw.considerPantry ?? document.getElementById('togglePantry').checked,
+      tags_incluir: raw.tags_incluir||[],
+      tags_evitar: raw.tags_evitar||[],
+      var: raw.var||45
+    }
+  }
+  function savePrefs(){
+    const obj=readPrefs();
+    State.save(LS.prefs,obj);
+  }
+
+  /* ---------------- Listas de compras ---------------- */
+  function aggregateItems(items){
+    // soma por (name + state) para ficar legível na compra
+    const map=new Map();
+    items.forEach(it=>{
+      const f=getFood(it.id)||{name:it.name,state:it.state}; const key=f.name+'|'+(f.state||'');
+      const prev=map.get(key)||0; map.set(key, prev+(it.g||0));
+    });
+    return Array.from(map.entries()).map(([k,v])=>{
+      const [name,state]=k.split('|'); return {name, state, g:Math.round(v)};
+    }).sort((a,b)=>a.name.localeCompare(b.name));
+  }
+
+  function renderListDay(plan){
+    const host=document.getElementById('listDay'); host.innerHTML='';
+    const all=[]; plan.meals.forEach(m=>m.items.forEach(it=>all.push(it)));
+    const agg=aggregateItems(all);
+    const box=document.createElement('div'); box.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
+    box.innerHTML=`<div class='font-semibold mb-2'>Lista diária</div>
+      <div class='grid md:grid-cols-2 gap-2'>
+        ${agg.map(x=>`<div class='flex items-center justify-between bg-[#111827] rounded p-2'><div>${x.name} <span class='text-slate-400 text-xs'>${x.state||''}</span></div><div>${x.g} g</div></div>`).join('')}
+      </div>`;
+    host.appendChild(box);
+  }
+
+  async function renderListWeek(){
+    const host=document.getElementById('listWeek'); host.innerHTML='';
+    const plan=State.load(LS.plan); if(!plan) return;
+    const prefs=readPrefs(); const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0];
+
+    Overlay.show('Gerando semana…');
+    const allItems=[];
+    // gera 7 dias variados (respeitando pins? — aqui ignoramos pins para variedade global)
+    for(let d=0; d<7; d++){
+      const tmp=buildPlan(plan.meta_kcal,preset,prefs);
+      tmp.meals.forEach(m=>m.items.forEach(it=>allItems.push({...it})));
+    }
+    Overlay.hide();
+
+    const agg=aggregateItems(allItems);
+    const box=document.createElement('div'); box.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
+    box.innerHTML=`<div class='font-semibold mb-2'>Lista semanal (7 dias)</div>
+      <div class='grid md:grid-cols-2 gap-2'>
+        ${agg.map(x=>`<div class='flex items-center justify-between bg-[#111827] rounded p-2'><div>${x.name} <span class='text-slate-400 text-xs'>${x.state||''}</span></div><div>${x.g} g</div></div>`).join('')}
+      </div>`;
+    host.appendChild(box);
+  }
+
+  /* ---------------- Favoritos ---------------- */
+  function loadFavs(){ return State.load(LS.favs)||[] }
+  function saveFavs(arr){ State.save(LS.favs, arr.slice(0,10)) }
+
+  function addFav(){
+    const plan=State.load(LS.plan); if(!plan) return;
+    const favs=loadFavs();
+    favs.unshift({ts:Date.now(), plan});
+    saveFavs(favs);
+    renderFavs();
+  }
+  function renderFavs(){
+    const host=document.getElementById('favsBox'); host.innerHTML='';
+    const favs=loadFavs();
+    if(!favs.length){ host.innerHTML="<div class='text-slate-400'>Nenhum favorito ainda.</div>"; return; }
+    favs.forEach((f,i)=>{
+      const d=new Date(f.ts).toLocaleString();
+      const card=document.createElement('div'); card.className='bg-[#0f172a] rounded-xl p-3 border border-[color:var(--border)] flex items-center justify-between gap-2 mb-2';
+      card.innerHTML=`<div><div class='font-semibold'>Plano salvo</div><div class='text-slate-400 text-sm'>${d}</div></div>
+      <div class='flex gap-2'><button class='btn-ghost btn-xs' data-open='${i}'>Abrir</button><button class='btn-ghost btn-xs' data-del='${i}'>Excluir</button></div>`;
+      host.appendChild(card);
+    });
+    host.querySelectorAll('button[data-open]').forEach(b=>b.addEventListener('click',()=>{
+      const idx=+b.dataset.open; const fav=loadFavs()[idx]; if(!fav) return;
+      State.save(LS.plan,fav.plan); renderPlanner(fav.plan); switchTab('plan');
+    }));
+    host.querySelectorAll('button[data-del]').forEach(b=>b.addEventListener('click',()=>{
+      const idx=+b.dataset.del; const arr=loadFavs(); arr.splice(idx,1); saveFavs(arr); renderFavs();
+    }));
+  }
+
+  /* ---------------- Export ---------------- */
   async function exportPNG(){
     const node = document.getElementById('plannerWrap');
     try{
-      // html2canvas (preferido): sem transform, escala 2
       const canvas = await html2canvas(node, {
         backgroundColor: '#0a0f1c',
         scale: 2,
         useCORS: true,
         allowTaint: true,
-        logging: false,
-        windowWidth: document.documentElement.clientWidth
+        logging: false
       });
       const blob = await new Promise(res=>canvas.toBlob(res, 'image/png'));
       if(blob){
@@ -449,17 +786,57 @@
       }
       throw new Error('no-blob');
     }catch(e){
-      // fallback dom-to-image-more, sem transform
       try{
         const dataUrl = await window.domtoimage.toPng(node, {bgcolor:'#0a0f1c',quality:1,style:{transform:'none',transformOrigin:'top left'}});
         const a = document.createElement('a'); a.href=dataUrl; a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png'; a.click();
-      }catch(e2){
-        alert('Falha ao gerar imagem'); console.error('exportPNG erro', e2);
-      }
+      }catch(e2){ alert('Falha ao gerar imagem'); console.error(e2); }
     }
   }
 
-  /* ====== eventos ====== */
+  async function exportPDF(){
+    const node=document.getElementById('plannerWrap');
+    Overlay.show('Gerando PDF…');
+    try{
+      const canvas = await html2canvas(node,{backgroundColor:'#0a0f1c',scale:2,useCORS:true,allowTaint:true});
+      const img = canvas.toDataURL('image/png');
+      const {jsPDF}=window.jspdf;
+      const pdf=new jsPDF({unit:'pt',format:'a4',compress:true});
+      const pageWidth=pdf.internal.pageSize.getWidth();
+      const pageHeight=pdf.internal.pageSize.getHeight();
+      const imgWidth=pageWidth-40;
+      const imgHeight=canvas.height*(imgWidth/canvas.width);
+      let y=20;
+      if(imgHeight<=pageHeight-40){
+        pdf.addImage(img,'PNG',20,20,imgWidth,imgHeight);
+      }else{
+        // paginar verticalmente
+        let sY=0, sliceHeight = Math.floor(canvas.width*( (pageHeight-40)/imgWidth ));
+        while(sY<canvas.height){
+          const slice=document.createElement('canvas'); slice.width=canvas.width; slice.height=Math.min(sliceHeight, canvas.height-sY);
+          const ctx=slice.getContext('2d'); ctx.drawImage(canvas,0,sY,canvas.width,slice.height,0,0,canvas.width,slice.height);
+          const part=slice.toDataURL('image/png');
+          pdf.addImage(part,'PNG',20,20,imgWidth,(slice.height*(imgWidth/canvas.width)));
+          sY+=slice.height;
+          if(sY<canvas.height) pdf.addPage();
+        }
+      }
+      pdf.save('FitPlan_'+new Date().toISOString().slice(0,10)+'.pdf');
+    }catch(e){ alert('Falha ao gerar PDF'); console.error(e); }
+    Overlay.hide();
+  }
+
+  /* ---------------- Tabs ---------------- */
+  function switchTab(key){
+    const btns={plan:'tabPlan', day:'tabListDay', week:'tabListWeek', favs:'tabFavs'};
+    Object.values(btns).forEach(id=>document.getElementById(id).classList.remove('active'));
+    document.getElementById(btns[key]).classList.add('active');
+    document.getElementById('plannerWrap').style.display=(key==='plan')?'block':'none';
+    document.getElementById('listDay').style.display=(key==='day')?'block':'none';
+    document.getElementById('listWeek').style.display=(key==='week')?'block':'none';
+    document.getElementById('favsBox').style.display=(key==='favs')?'block':'none';
+  }
+
+  /* ---------------- Eventos ---------------- */
   ;[1,2,3].forEach(i=>document.getElementById('st'+i).addEventListener('click',()=>showStep(i)));
   document.getElementById('next1').addEventListener('click',()=>{ renderPresets(); showStep(2); });
   document.getElementById('prev2').addEventListener('click',()=>showStep(1));
@@ -469,16 +846,35 @@
   document.getElementById('btnCalc').addEventListener('click',()=>{ const p=readProfile(); const b=bmrMifflin(p.sexo,p.peso_kg,p.altura_cm,p.idade); const td=tdeeFrom(b,p.atividade); const meta=targetFrom(td,p.objetivo); showCalc(b,td,meta); });
   document.getElementById('btnSaveProfile').addEventListener('click',()=>State.save(LS.profile,readProfile()));
   document.getElementById('goal').addEventListener('change', ()=>{ renderPresets(); });
+  document.getElementById('hunger').addEventListener('change', ()=>State.save(LS.profile,readProfile()));
+  document.getElementById('train').addEventListener('change', ()=>State.save(LS.profile,readProfile()));
 
+  // tabs
+  document.getElementById('tabPlan').addEventListener('click',()=>switchTab('plan'));
+  document.getElementById('tabListDay').addEventListener('click',()=>{ renderListDay(State.load(LS.plan)); switchTab('day'); });
+  document.getElementById('tabListWeek').addEventListener('click',async ()=>{ await renderListWeek(); switchTab('week'); });
+  document.getElementById('tabFavs').addEventListener('click',()=>{ renderFavs(); switchTab('favs'); });
+
+  // export & save
   document.getElementById('btnExportPNG').addEventListener('click',exportPNG);
+  document.getElementById('btnExportPDF').addEventListener('click',exportPDF);
   document.getElementById('btnSavePlan').addEventListener('click',()=>{ const plan=State.load(LS.plan); if(!plan) return; const blob=new Blob([JSON.stringify(plan,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='meu_plano.json'; a.click(); URL.revokeObjectURL(url); });
   document.getElementById('importPlan').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ const obj=JSON.parse(fr.result); State.save(LS.plan,obj); renderPlanner(obj); showStep(3);}catch{ alert('Arquivo inválido'); } }; fr.readAsText(f); });
-  document.getElementById('btnRegenDay').addEventListener('click',()=>{ const plan=State.load(LS.plan); if(!plan) return; const prefs={tags_incluir:[],var:45}; const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0]; regenerateDay(plan,preset,prefs); State.save(LS.plan,plan); renderPlanner(plan); });
 
-  /* ====== boot ====== */
+  // favoritos
+  document.getElementById('btnFav').addEventListener('click',()=>{ addFav(); alert('Plano salvo em Favoritos ✅') });
+
+  // regenerar
+  document.getElementById('btnRegenDay').addEventListener('click',()=>{ const plan=State.load(LS.plan); if(!plan) return; const prefs=readPrefs(); const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0]; regenerateDay(plan,preset,prefs); State.save(LS.plan,plan); renderPlanner(plan); });
+
+  /* ---------------- Boot ---------------- */
   (async function boot(){
     const prof=State.load(LS.profile);
-    if(prof){ document.getElementById('sx').value=prof.sexo; document.getElementById('age').value=prof.idade; document.getElementById('h').value=prof.altura_cm; document.getElementById('w').value=prof.peso_kg; document.getElementById('act').value=prof.atividade; document.getElementById('goal').value=prof.objetivo; }
+    if(prof){
+      document.getElementById('sx').value=prof.sexo; document.getElementById('age').value=prof.idade; document.getElementById('h').value=prof.altura_cm;
+      document.getElementById('w').value=prof.peso_kg; document.getElementById('act').value=prof.atividade; document.getElementById('goal').value=prof.objetivo||'maint';
+      document.getElementById('hunger').value=prof.fome||'none'; document.getElementById('train').value=prof.treino||'none';
+    }
     const files=await loadManifest(); await loadFoods(files); await loadPresets(); renderPresets();
     const plan=State.load(LS.plan); if(plan){ renderPlanner(plan); showStep(3); }
   })();
