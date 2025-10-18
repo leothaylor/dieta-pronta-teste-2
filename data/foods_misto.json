@@ -1,1 +1,6 @@
-
+[
+  { "id": 5101, "name": "Iogurte natural (170 g)",   "family": "Misto", "state": "INDUSTRIALIZADO", "method": "pote", "kcal": 63, "P": 3.5, "C": 4.7, "G": 3.3, "def": 170, "tags": ["laticínio","rápido"] },
+  { "id": 5102, "name": "Queijo cottage",            "family": "Misto", "state": "INDUSTRIALIZADO", "method": "pote", "kcal": 98, "P": 11, "C": 3, "G": 4, "def": 100, "tags": ["alto-proteína"] },
+  { "id": 5201, "name": "Banana (unidade 90 g)",     "family": "Misto", "state": "IN NATURA", "method": "unidade", "kcal": 89, "P": 1.1, "C": 22.8, "G": 0.3, "def": 90, "tags": ["fruta","rápido","baixo-custo"] },
+  { "id": 5202, "name": "Maçã (unidade 130 g)",      "family": "Misto", "state": "IN NATURA", "method": "unidade", "kcal": 52, "P": 0.3, "C": 13.8, "G": 0.2, "def": 130, "tags": ["fruta"] }
+]
