@@ -3,50 +3,39 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FitPlan Pro ⚡ | dieta-pronta-teste-2 (v2)</title>
+  <title>FitPlan Pro ⚡ | v3</title>
 
-  <!-- Tailwind CDN -->
+  <!-- Tailwind (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- html2canvas (Exportar PNG) -->
+  <!-- html2canvas para exportação -->
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-  <!-- Estilo (alto contraste) -->
   <style>
     :root{
-      --bg:#0a0f1c; --card:#0b1220; --soft:#111827; --muted:#9ca3af;
-      --text:#e5e7eb; --green:#10b981; --green-soft:#86efac; --amber:#f59e0b;
-      --border:#374151; --border-strong:#475569; --red:#ef4444;
+      --bg:#0a0f1c; --card:#0b1220; --muted:#9ca3af; --text:#e5e7eb; --green:#10b981; --green2:#86efac; --amber:#f59e0b; --red:#ef4444; --border:#334155;
     }
     html,body{background:var(--bg);color:var(--text)}
     .shadow-soft{box-shadow:0 10px 30px rgba(0,0,0,.28)}
-    .kcal-badge{color:var(--green-soft)}
-    .btn{padding:.55rem 1rem;border-radius:.75rem;background:var(--green);color:white;font-weight:700;transition:.15s}
-    .btn:hover{filter:brightness(1.08)}
-    .btn-ghost{padding:.55rem .95rem;border-radius:.75rem;background:#1f2937;color:#e5e7eb;border:1px solid var(--border);font-weight:700;transition:.15s}
-    .btn-ghost:hover{background:#273449;border-color:var(--border-strong)}
+    .btn{padding:.6rem 1rem;border-radius:.8rem;background:var(--green);color:#001c12;font-weight:800;}
+    .btn:hover{filter:brightness(1.05)}
+    .btn-ghost{padding:.55rem .9rem;border-radius:.8rem;border:1px solid var(--border);background:#111827;color:#e5e7eb}
     .btn-xs{padding:.35rem .6rem;border-radius:.6rem;font-size:.8rem}
-    .btn[disabled]{opacity:.6;filter:saturate(.7);cursor:not-allowed}
-    .field{width:100%;padding:.6rem .75rem;border-radius:.75rem;background:#1f2937;color:#e5e7eb;border:1px solid var(--border);outline:none}
-    .field:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(16,185,129,.15)}
-    .label{font-size:.8rem;color:#9ca3af}
-    .tag{display:inline-flex;align-items:center;border-radius:999px;padding:.15rem .5rem;font-size:.75rem;background:#1f2937;color:#e5e7eb;border:1px solid var(--border);margin-right:.35rem;margin-bottom:.35rem}
-    .step{background:#1f2937;color:#cbd5e1;border-radius:.8rem;padding:.55rem 0;text-align:center;border:1px solid var(--border)}
+    .field{width:100%;padding:.6rem .75rem;border-radius:.8rem;background:#111827;color:#e5e7eb;border:1px solid var(--border)}
+    .label{font-size:.8rem;color:var(--muted)}
+    .step{background:#111827;color:#cbd5e1;border-radius:.8rem;padding:.55rem 0;text-align:center;border:1px solid var(--border)}
     .step.active{background:#065f46;color:white;border-color:#0ea5a4}
-    .divider{height:1px;background:#1f2937;margin:1rem 0}
-    .slide{display:none}
-    .slide.show{display:block}
-    a.link{color:var(--green-soft);text-decoration:underline}
-    .pin{filter:grayscale(.2)}
+    .tag{display:inline-flex;align-items:center;border-radius:999px;padding:.15rem .55rem;font-size:.75rem;background:#111827;border:1px solid var(--border);margin:.25rem .35rem .25rem 0}
+    .kcal-flag{color:var(--green2)}
   </style>
 </head>
 <body class="min-h-screen">
   <header class="max-w-5xl mx-auto px-4 pt-8 pb-4">
-    <h1 class="text-3xl md:text-4xl font-bold">FitPlan Pro ⚡</h1>
+    <h1 class="text-3xl md:text-4xl font-extrabold">FitPlan Pro ⚡</h1>
     <p class="text-slate-300">Gere sua dieta realista em 5 passos — <b>apenas index.html + .json</b>.</p>
   </header>
 
   <main class="max-w-5xl mx-auto px-4 space-y-6 pb-24">
-    <!-- STEPPER -->
+    <!-- Stepper -->
     <nav class="grid grid-cols-5 gap-2 sticky top-0 z-10">
       <button id="st1" class="step">1</button>
       <button id="st2" class="step">2</button>
@@ -55,20 +44,28 @@
       <button id="st5" class="step">5</button>
     </nav>
 
-    <!-- SLIDE 1: PERFIL -->
-    <section id="slide1" class="slide show bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
+    <!-- Slide 1: Perfil -->
+    <section id="s1" class="slide show bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <h2 class="text-xl font-semibold mb-3">1) Seu Perfil</h2>
       <div class="grid md:grid-cols-3 gap-4">
-        <div><div class="label">Sexo</div>
-          <select id="sx" class="field">
-            <option value="M">Masculino</option>
-            <option value="F">Feminino</option>
-          </select>
+        <div>
+          <div class="label">Sexo</div>
+          <select id="sx" class="field"><option value="M">Masculino</option><option value="F">Feminino</option></select>
         </div>
-        <div><div class="label">Idade (anos)</div><input id="age" type="number" min="12" max="90" class="field" value="33"/></div>
-        <div><div class="label">Altura (cm)</div><input id="h" type="number" min="120" max="220" class="field" value="170"/></div>
-        <div><div class="label">Peso (kg)</div><input id="w" type="number" min="35" max="180" class="field" value="73"/></div>
-        <div><div class="label">Atividade</div>
+        <div>
+          <div class="label">Idade (anos)</div>
+          <input id="age" type="number" class="field" value="33" min="12" max="90"/>
+        </div>
+        <div>
+          <div class="label">Altura (cm)</div>
+          <input id="h" type="number" class="field" value="170" min="120" max="220"/>
+        </div>
+        <div>
+          <div class="label">Peso (kg)</div>
+          <input id="w" type="number" class="field" value="69" min="35" max="200"/>
+        </div>
+        <div>
+          <div class="label">Atividade</div>
           <select id="act" class="field">
             <option value="sedentario">Sedentário</option>
             <option value="leve">Leve (1–2x/sem)</option>
@@ -76,65 +73,52 @@
             <option value="intensa">Intensa (5–7x/sem)</option>
           </select>
         </div>
-        <div><div class="label">Objetivo</div>
+        <div>
+          <div class="label">Objetivo</div>
           <select id="goal" class="field">
-            <option value="cut">Cut (-15%)</option>
-            <option value="maint" selected>Manutenção</option>
-            <option value="bulk">Bulk (+8%)</option>
+            <option value="cut" selected>Secar (−15%)</option>
+            <option value="maint">Manter (±0%)</option>
+            <option value="bulk">Ganhar (+8%)</option>
           </select>
         </div>
       </div>
-
       <div class="mt-4 flex gap-2">
         <button id="btnCalc" class="btn">Calcular TDEE & Meta</button>
         <button id="btnSaveProfile" class="btn-ghost">Salvar Perfil</button>
       </div>
-
-      <div id="calc-summary" class="mt-4 hidden bg-[#0f172a] rounded-xl p-4 border border-[color:var(--border)]">
+      <div id="calcBox" class="hidden mt-4 bg-[#0f172a] rounded-xl p-4 border border-[color:var(--border)]">
         <div class="grid md:grid-cols-3 gap-3">
           <div><div class="label">BMR (Mifflin)</div><div id="bmrOut" class="text-emerald-300 text-xl">—</div></div>
           <div><div class="label">TDEE</div><div id="tdeeOut" class="text-emerald-300 text-xl">—</div></div>
           <div><div class="label">Meta diária</div><div id="targetOut" class="text-emerald-300 text-xl">—</div></div>
         </div>
-        <p class="text-slate-400 text-sm mt-2">Dica cardio pessoal: Z2 ≈ <b>145 bpm</b>.</p>
+        <p class="text-slate-400 text-sm mt-2">Proteína é pesada <b>CRUA</b>; carboidratos <b>COZIDOS</b>. Dica cardio Z2 ≈ <b>145 bpm</b>.</p>
       </div>
-
-      <div class="mt-6 flex items-center justify-between">
-        <button class="btn-ghost" disabled>Voltar</button>
-        <button id="next1" class="btn">Próximo</button>
-      </div>
+      <div class="mt-6 flex items-center justify-between"><button class="btn-ghost" disabled>Voltar</button><button id="next1" class="btn">Próximo</button></div>
     </section>
 
-    <!-- SLIDE 2: PRESETS -->
-    <section id="slide2" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
+    <!-- Slide 2: Presets -->
+    <section id="s2" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <h2 class="text-xl font-semibold mb-3">2) Escolha um modelo (presets elásticos)</h2>
+      <p class="text-slate-300 text-sm mb-2">Cada modelo é um <b>estilo</b> de montagem. Você pode trocar alimentos e gramaturas depois. Veja abaixo para quem cada modelo é indicado.</p>
       <div id="presetList" class="grid md:grid-cols-2 gap-3"></div>
-
-      <div class="mt-6 flex items-center justify-between">
-        <button id="prev2" class="btn-ghost">Voltar</button>
-        <button id="next2" class="btn">Próximo</button>
-      </div>
+      <div class="mt-6 flex items-center justify-between"><button id="prev2" class="btn-ghost">Voltar</button><button id="next2" class="btn">Próximo</button></div>
     </section>
 
-    <!-- SLIDE 3: FILTROS -->
-    <section id="slide3" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
-      <h2 class="text-xl font-semibold mb-3">3) Filtros rápidos</h2>
-      <div class="flex flex-wrap">
-        <label class="tag"><input class="mr-1" type="checkbox" value="pf" /> pf</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="marmita" /> marmita</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="caseiro" /> caseiro</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="rápido" /> rápido</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="baixo-custo" /> baixo-custo</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="integral" /> integral</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="alto-proteína" /> alto-proteína</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="low-carb" /> low-carb</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="vegetariano" /> vegetariano</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="vegano" /> vegano</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="sem-gluten" /> sem-gluten</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="sem-lactose" /> sem-lactose</label>
+    <!-- Slide 3: Filtros rápidos -->
+    <section id="s3" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
+      <h2 class="text-xl font-semibold mb-3">3) Preferências (opcional)</h2>
+      <div class="flex flex-wrap items-center">
+        <label class="tag"><input class="mr-1" type="checkbox" value="marmita"> Marmita</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="baixo-custo"> Baixo custo</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="rápido"> Rápido</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="integral"> Integral</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="sem-lactose"> Sem lactose</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="sem-glúten"> Sem glúten</label>
+        <label class="tag"><input class="mr-1" type="checkbox" value="alto-proteína"> Alto-proteína</label>
       </div>
       <div class="mt-3 flex flex-wrap gap-2 items-center">
-        <button id="btnApplyFilters" class="btn-ghost">Aplicar filtros</button>
+        <button id="btnApplyFilters" class="btn-ghost">Aplicar</button>
         <button id="btnClearFilters" class="btn-ghost">Limpar</button>
         <div class="flex items-center gap-2 ml-auto">
           <span class="label">Variação</span>
@@ -142,15 +126,11 @@
           <span id="varOut" class="text-slate-300 text-sm">45%</span>
         </div>
       </div>
-
-      <div class="mt-6 flex items-center justify-between">
-        <button id="prev3" class="btn-ghost">Voltar</button>
-        <button id="next3" class="btn">Próximo</button>
-      </div>
+      <div class="mt-6 flex items-center justify-between"><button id="prev3" class="btn-ghost">Voltar</button><button id="next3" class="btn">Próximo</button></div>
     </section>
 
-    <!-- SLIDE 4: PLANNER -->
-    <section id="slide4" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
+    <!-- Slide 4: Plano -->
+    <section id="s4" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <div class="flex items-center justify-between gap-2 flex-wrap">
         <h2 class="text-xl font-semibold">4) Seu Plano Gerado</h2>
         <div class="flex gap-2 flex-wrap">
@@ -160,354 +140,219 @@
           <label class="btn-ghost cursor-pointer">Importar Plano<input id="importPlan" type="file" accept="application/json" class="hidden"/></label>
         </div>
       </div>
-      <p class="text-slate-400 text-sm mt-1">Dica: você pode <b>fixar</b> itens (📌) para não mudarem ao regerar.</p>
-      <div id="planner" class="mt-4 space-y-4"></div>
-      <div class="divider"></div>
-      <p class="text-slate-400 text-sm">Nota: Proteínas pesadas <b>cruas</b>; Carbos <b>cozidos</b>. Macros por 100 g no estado indicado.</p>
-      <div class="mt-6 flex items-center justify-between">
-        <button id="prev4" class="btn-ghost">Voltar</button>
-        <button id="next4" class="btn">Próximo</button>
+      <p class="text-slate-400 text-sm mt-1">Você pode <b>fixar</b> itens (📌) para não mudarem ao regerar. Proteína: CRU · Carbo: COZIDO.</p>
+      <div id="plannerWrap" class="mt-4">
+        <div id="planner" class="space-y-4"></div>
       </div>
+      <div class="mt-6 flex items-center justify-between"><button id="prev4" class="btn-ghost">Voltar</button><button id="next4" class="btn">Próximo</button></div>
     </section>
 
-    <!-- SLIDE 5: RESUMO/EXPORT -->
-    <section id="slide5" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
+    <!-- Slide 5: Resumo -->
+    <section id="s5" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <h2 class="text-xl font-semibold mb-3">5) Resumo & Exportação</h2>
-      <p class="text-slate-300 mb-3">Revise o total diário, faça trocas se quiser (volte ao passo 4) e <b>exporte</b> seu plano em PNG ou <b>salve</b> o arquivo JSON para recuperar depois.</p>
-      <div class="flex gap-2">
-        <button id="btnExportPNG2" class="btn">Exportar PNG</button>
-        <button id="btnSavePlan2" class="btn-ghost">Salvar Plano</button>
-      </div>
-      <div class="mt-6 flex items-center justify-between">
-        <button id="prev5" class="btn-ghost">Voltar</button>
-        <button class="btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">Finalizar ↑</button>
-      </div>
+      <p class="text-slate-300">Revise o total diário, faça trocas (volte ao passo 4) e <b>exporte</b> seu plano em PNG ou <b>salve</b> como JSON para recuperar depois.</p>
+      <div class="mt-3 flex gap-2"><button id="btnExportPNG2" class="btn">Exportar PNG</button><button id="btnSavePlan2" class="btn-ghost">Salvar Plano</button></div>
+      <div class="mt-6 flex items-center justify-between"><button id="prev5" class="btn-ghost">Voltar</button><button class="btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">Finalizar ↑</button></div>
     </section>
 
-    <!-- MODAL SWAP -->
+    <!-- Modal Swap -->
     <div id="swapModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
       <div class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 max-w-2xl w-full shadow-soft border border-[color:var(--border)]">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold">Trocar alimento</h3>
-          <button id="btnCloseSwap" class="btn-ghost">Fechar</button>
-        </div>
+        <div class="flex items-center justify-between"><h3 class="text-lg font-semibold">Trocar alimento</h3><button id="btnCloseSwap" class="btn-ghost">Fechar</button></div>
         <p id="swapHint" class="text-slate-400 text-sm mt-1"></p>
-        <div id="swapList" class="mt-3 max-h-[55vh] overflow-auto space-y-2"></div>
+        <div id="swapList" class="mt-3 max-h-[58vh] overflow-auto space-y-2"></div>
       </div>
     </div>
   </main>
 
-  <!-- ================= LÓGICA ================= -->
   <script>
-  // ------- Slides / Stepper -------
-  const slides=['slide1','slide2','slide3','slide4','slide5'];
-  let currentStep=1;
-  function showStep(n){currentStep=Math.min(Math.max(n,1),5);slides.forEach((id,idx)=>{const el=document.getElementById(id);if(!el)return;el.classList.toggle('show', idx===currentStep-1)});[1,2,3,4,5].forEach(i=>document.getElementById('st'+i).classList.toggle('active',i===currentStep));window.scrollTo({top:0,behavior:'smooth'})}
+  /* =================== Núcleo =================== */
+  const slides=["s1","s2","s3","s4","s5"]; let step=1; const showStep=n=>{step=Math.min(5,Math.max(1,n));slides.forEach((id,i)=>{const el=document.getElementById(id); if(el) el.style.display=(i===step-1?'block':'none')}); [1,2,3,4,5].forEach(i=>document.getElementById('st'+i).classList.toggle('active',i===step)); window.scrollTo({top:0,behavior:'smooth'})};
   showStep(1);
 
-  // ------- Estado (localStorage) -------
-  const LS_KEYS={profile:'dpt2_profile',prefs:'dpt2_prefs',plan:'dpt2_plan',pins:'dpt2_pins'};
-  const AppState={
-    saveProfile:p=>localStorage.setItem(LS_KEYS.profile,JSON.stringify(p)),
-    loadProfile:()=>{try{return JSON.parse(localStorage.getItem(LS_KEYS.profile)||'null')}catch{return null}},
-    savePrefs:p=>localStorage.setItem(LS_KEYS.prefs,JSON.stringify(p)),
-    loadPrefs:()=>{try{return JSON.parse(localStorage.getItem(LS_KEYS.prefs)||'{"tags_incluir":[],"tags_evitar":[],"equivalentes_estado":true,"var":45}')}catch{return {tags_incluir:[],tags_evitar:[],equivalentes_estado:true,var:45}}},
-    savePlan:p=>localStorage.setItem(LS_KEYS.plan,JSON.stringify(p)),
-    loadPlan:()=>{try{return JSON.parse(localStorage.getItem(LS_KEYS.plan)||'null')}catch{return null}},
-    savePins:set=>localStorage.setItem(LS_KEYS.pins,JSON.stringify([...set])),
-    loadPins:()=>{try{return new Set(JSON.parse(localStorage.getItem(LS_KEYS.pins)||'[]'))}catch{return new Set()}}
-  };
+  const LS={profile:'fp_profile',prefs:'fp_prefs',plan:'fp_plan'};
+  const State={save:(k,v)=>localStorage.setItem(k,JSON.stringify(v)), load:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}}};
 
-  // ------- Dados -------
   const Data={foods:[],presets:[],manifestVersion:0};
-  async function loadManifest(){const r=await fetch('data/foods_manifest.json');const j=await r.json();Data.manifestVersion=j.version||1;return j.files||[]}
-  async function loadFoods(files){const all=[];for(const f of files){try{const r=await fetch('data/'+f+'?v='+Data.manifestVersion);const j=await r.json();if(Array.isArray(j))all.push(...j)}catch(e){console.warn('Falha ao carregar',f)}}const seen=new Set();Data.foods=all.filter(it=>it&&!seen.has(it.id)&&(seen.add(it.id),true))}
-  async function loadPresets(){const r=await fetch('data/presets.json?v='+Data.manifestVersion);const j=await r.json();Data.presets=j.presets||[]}
+  async function loadManifest(){const r=await fetch('data/foods_manifest.json'); const j=await r.json(); Data.manifestVersion=j.version||1; return j.files||[]}
+  async function loadFoods(files){const acc=[]; for(const f of files){ try{ const r=await fetch('data/'+f+'?v='+Data.manifestVersion); const j=await r.json(); Array.isArray(j)&&acc.push(...j);}catch(e){console.warn('Falha ao carregar',f,e)} } const seen=new Set(); Data.foods=acc.filter(x=>x && !seen.has(x.id) && seen.add(x.id)===true || x)}
+  async function loadPresets(){ const r=await fetch('data/presets.json?v='+Data.manifestVersion); const j=await r.json(); Data.presets=j.presets||[] }
 
-  // ------- Cálculo -------
+  /* ========= Cálculo TDEE ========= */
   function bmrMifflin(sexo,peso,alt,idade){return sexo==='M'?(10*peso+6.25*alt-5*idade+5):(10*peso+6.25*alt-5*idade-161)}
-  function tdee(bmr,act){const m={sedentario:1.2,leve:1.375,moderada:1.55,intensa:1.725};return bmr*(m[act]||1.55)}
-  function targetKcal(tdee,goal){if(goal==='cut')return Math.round(tdee*0.85);if(goal==='bulk')return Math.round(tdee*1.08);return Math.round(tdee)}
+  function tdeeFrom(bmr,act){const mult={sedentario:1.2,leve:1.375,moderada:1.55,intensa:1.725}; return bmr*(mult[act]||1.55)}
+  function targetFrom(tdee,goal){if(goal==='cut') return Math.round(tdee*0.85); if(goal==='bulk') return Math.round(tdee*1.08); return Math.round(tdee)}
 
-  // ------- Variedade (aleatoriedade ponderada + memória anti-repetição) -------
-  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-  function weightedRandom(items,getW){const acc=[];let sum=0;items.forEach(it=>{sum+=Math.max(0.0001,getW(it));acc.push(sum)});const r=Math.random()*sum;const idx=acc.findIndex(x=>x>=r);return items[Math.max(0,idx)]}
-  const Memory={last:new Set(), clear(){this.last.clear()}, mark(id){this.last.add(id)}, has(id){return this.last.has(id)}}
+  /* ===== Variedade ponderada ===== */
+  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a}
+  function weightedPick(items,getW){const acc=[]; let s=0; for(const it of items){ s+=Math.max(.0001,getW(it)); acc.push(s); } const r=Math.random()*s; const idx=acc.findIndex(x=>x>=r); return items[Math.max(0,idx)]}
+  const Memory={last:new Set(),clear(){this.last.clear()},mark(id){this.last.add(id)},has(id){return this.last.has(id)}}
 
-  // ------- Caps e metas -------
-  const CAPS={solidMin:30,solidMax:250,oilMin:5,oilMax:20};
-  function mealTargets(kcal,ratio){const kcalP=kcal*(ratio.P||0),kcalC=kcal*(ratio.C||0),kcalG=kcal*(ratio.G||0);return{kcal:Math.round(kcal),P:+(kcalP/4).toFixed(1),C:+(kcalC/4).toFixed(1),G:+(kcalG/9).toFixed(1)}}
+  /* ===== Caps & metas ===== */
+  const CAPS={solidMin:30,solidMax:300, oilMin:5, oilMax:20};
+  function mealTargets(kcal,ratio){const P=(ratio.P||.3),C=(ratio.C||.45),G=(ratio.G||.25); return {kcal:Math.round(kcal),P:+(kcal*P/4).toFixed(1),C:+(kcal*C/4).toFixed(1),G:+(kcal*G/9).toFixed(1)}}
 
-  // ------- Escolha de alimentos (ponderando filtros + variação + anti-repetição) -------
+  /* ===== Helpers de alimento ===== */
+  const sf=s=>String(s||'').toLowerCase();
+  function getFood(id){return Data.foods.find(x=>x.id===id)}
+  function isFamily(f, fam){return sf(f.family)===sf(fam)}
+  function isBean(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return n.includes('feijao')||n.includes('feijão')||t.includes('feijao')||t.includes('feijão')||t.includes('leguminosa')}
+  function isFishOrTuna(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return t.includes('peixe')||t.includes('atum')||t.includes('tilapia')||t.includes('sardinha')||n.includes('tilápia')||n.includes('peixe')||n.includes('atum')||n.includes('sardinha')}
+  function isDairy(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return t.includes('laticinio')||t.includes('laticínio')||n.includes('iogurte')||n.includes('queijo')}
+
   function pickPoolByFamily(family,prefs,preferState){
-    let list=Data.foods.filter(f=>f.family===family);
+    let list=Data.foods.filter(f=>sf(f.family)===sf(family));
     if(!list.length) return [];
-    const inc=new Set((prefs.tags_incluir||[]).map(x=>x.toLowerCase()));
-    const hardExclude=new Set((prefs.tags_evitar||[]).map(x=>x.toLowerCase()));
-    list=list.filter(f=>!(f.tags||[]).some(t=>hardExclude.has(String(t).toLowerCase())));
-
-    const varFactor=(+prefs.var||45)/100; // 0–1
-    const score=(f)=>{
-      const t=(f.tags||[]).map(s=>String(s).toLowerCase());
-      const match=t.filter(x=>inc.has(x)).length;        // afinidade por filtro
-      const penal=Memory.has(f.id)?(0.35+0.3*varFactor):0;// penaliza repetição recente
-      const same=(preferState && f.state===preferState)?0.25:0; // bônus leve se bater estado
-      const fast=(f.prep_min!=null && f.prep_min<=10)?0.15:0;   // bônus "rápido" se cadastrado
-      const cheap=(t.includes('baixo-custo')?0.1:0);            // bônus baixo custo
-      const base=1+0.5*match+same+fast+cheap;
-      return Math.max(0.05, base - penal);
+    const inc=new Set((prefs.tags_incluir||[]).map(sf)); const exc=new Set((prefs.tags_evitar||[]).map(sf));
+    list=list.filter(f=>!(f.tags||[]).map(sf).some(t=>exc.has(t)));
+    const varF=(+prefs.var||45)/100; // 0..1
+    const score=f=>{
+      const tags=(f.tags||[]).map(sf); const match=tags.filter(t=>inc.has(t)).length; const penal=Memory.has(f.id)?(0.35+0.3*varF):0; const same=(preferState&&f.state===preferState)?0.25:0; const fast=(f.prep_min!=null&&f.prep_min<=10)?0.15:0; const cheap=(tags.includes('baixo-custo')?0.1:0); return Math.max(0.05,1+0.5*match+same+fast+cheap-penal);
     };
-    // Embaralha para estabilidade visual e retorna com peso
-    list=shuffle(list.slice(0)).map(x=>({...x,__w:score(x)}));
-    // Ordena apenas para debug/consistência (opcional)
-    list.sort((a,b)=>b.__w-a.__w);
-    return list;
+    return shuffle(list.slice(0)).map(x=>({...x,__w:score(x)})).sort((a,b)=>b.__w-a.__w)
   }
 
-  function gramsForTargets(item,t){
-    const p=item.P||0,c=item.C||0,g=item.G||0;
-    let basis=p?'P':(c?'C':'G');
-    if(t.P>=t.C&&t.P>=t.G&&p)basis='P'; else if(t.C>=t.P&&t.C>=t.G&&c)basis='C'; else if(g)basis='G';
-    const per100=(basis==='P'?p:(basis==='C'?c:g));
-    if(per100<=0) return 0;
-    let grams=(t[basis]/per100)*100;
-    if(item.family==='Gordura') grams=Math.min(Math.max(grams,CAPS.oilMin),CAPS.oilMax);
-    else grams=Math.min(Math.max(grams,CAPS.solidMin),CAPS.solidMax);
-    return Math.round(grams);
+  function gramsForTargets(food,t){ const p=food.P||0,c=food.C||0,g=food.G||0; const basis = (t.P>=t.C && t.P>=t.G && p)?'P':(t.C>=t.P && t.C>=t.G && c)?'C':(g?'G':'C'); const v=basis==='P'?p:basis==='C'?c:g; if(v<=0) return 0; let gms=(t[basis]/v)*100; if(isFamily(food,'Gordura')) gms=Math.min(Math.max(gms,CAPS.oilMin),CAPS.oilMax); else gms=Math.min(Math.max(gms,CAPS.solidMin),CAPS.solidMax); return Math.round(gms); }
+
+  function sumMeal(items){ let kcal=0,P=0,C=0,G=0; for(const it of items){ const f=getFood(it.id); if(!f) continue; const k=(it.g||0)/100; kcal+=(f.kcal||0)*k; P+=(f.P||0)*k; C+=(f.C||0)*k; G+=(f.G||0)*k; } return {kcal:Math.round(kcal),P:+P.toFixed(1),C:+C.toFixed(1),G:+G.toFixed(1)} }
+
+  /* ===== Template por refeição + compatibilidade ===== */
+  function mealKind(name){const n=sf(name); if(n.includes('café')) return 'cafe'; if(n.includes('almoço')||n.includes('almoco')) return 'almoco'; if(n.includes('jantar')) return 'jantar'; return 'lanche'}
+
+  function enforceCompatibility(kind, items){
+    // Evitar peixe/atum + feijão em almoço/jantar; evitar feijão em lanches; evitar laticínio + feijão
+    if(kind==='lanche'){
+      // remove feijão se apareceu
+      for(let i=0;i<items.length;i++){ const f=getFood(items[i].id); if(f && isBean(f)){ items.splice(i,1); break; } }
+      return items;
+    }
+    // almoço/jantar
+    let hasBean=-1, fishIdx=-1, dairyIdx=-1;
+    items.forEach((it,idx)=>{ const f=getFood(it.id); if(!f) return; if(isBean(f)) hasBean=idx; if(isFishOrTuna(f)) fishIdx=idx; if(isDairy(f)) dairyIdx=idx; });
+    if(hasBean>-1 && fishIdx>-1){ // troca o feijão por um carb base
+      const prefs=State.load(LS.prefs)||{tags_incluir:[]}; const pool=pickPoolByFamily('Carbo',prefs,null);
+      const rice= pool.find(x=>sf(x.name).includes('arroz')) || pool[0]; if(rice){ items[hasBean]={id:rice.id,name:rice.name,family:'Carbo',state:rice.state,g:items[hasBean].g,locked:false}; }
+    }
+    if(hasBean>-1 && dairyIdx>-1){ // trocar o laticínio (prefira manter o feijão no almoço)
+      const prefs=State.load(LS.prefs)||{tags_incluir:[]}; const pool=pickPoolByFamily('Proteína',prefs,null);
+      const fr= pool.find(x=>!isDairy(x)) || pool[0]; if(fr){ items[dairyIdx]={id:fr.id,name:fr.name,family:'Proteína',state:fr.state,g:items[dairyIdx].g,locked:false}; }
+    }
+    return items;
   }
 
-  function computeMealKcal(items){
-    let kcal=0,P=0,C=0,G=0;
-    for(const it of items){const f=Data.foods.find(x=>x.id===it.id); if(!f) continue; const k=(it.g||0)/100; kcal+=(f.kcal||0)*k; P+=(f.P||0)*k; C+=(f.C||0)*k; G+=(f.G||0)*k}
-    return {kcal:Math.round(kcal),P:+P.toFixed(1),C:+C.toFixed(1),G:+G.toFixed(1)}
-  }
-
-  // ------- Construção do plano com variedade -------
-  function buildPlan(meta,preset,prefs){
-    const pins=AppState.loadPins();
-    const plan={meta_kcal:meta,preset_id:preset.id,meals:[]};
-    Memory.clear();
+  /* ===== Construção do plano ===== */
+  function buildPlan(meta,preset,prefs){ const plan={meta_kcal:meta,preset_id:preset.id,meals:[]}; Memory.clear();
     for(const m of (preset.meals||[])){
-      const kcalMeal=meta*(m.kcal_frac||0.25);
-      const tgt=mealTargets(kcalMeal, m.macro_ratio||{P:.3,C:.45,G:.25});
-      const items=[];
+      const kcalMeal= meta*(m.kcal_frac||0.25); const tgt=mealTargets(kcalMeal, m.macro_ratio||{P:.3,C:.45,G:.25}); const kind=mealKind(m.name||''); const items=[];
       for(const fam of (m.families||[])){
-        const pool=pickPoolByFamily(fam, prefs, null);
-        if(!pool.length) continue;
-        const chosen=weightedRandom(pool, x=>x.__w||1);
-        const grams=gramsForTargets(chosen, tgt);
-        const idKey=`${fam}:${chosen.id}`;
-        const locked=pins.has(idKey)&&false; // pins guardam item específico por família; false na geração inicial
-        items.push({id:chosen.id,name:chosen.name,family:fam,state:chosen.state,g:grams,locked:false});
-        Memory.mark(chosen.id);
+        const pool=pickPoolByFamily(fam,prefs,null); if(!pool.length) continue; const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt);
+        items.push({id:chosen.id,name:chosen.name,family:fam,state:chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);
       }
+      enforceCompatibility(kind, items);
+      // Passo B: corretor por refeição
+      adjustMealToTarget({target:tgt,items});
       plan.meals.push({id:m.id,name:m.name,target:tgt,items});
     }
+    // Corretor global do dia (±2%)
+    adjustDayToMeta(plan);
     return plan;
   }
 
-  // Regerar dia (respeitando pins)
-  function regenerateDay(plan,preset,prefs){
-    Memory.clear();
-    for(const m of plan.meals){
-      const tgt=m.target; // mantém metas
-      const newItems=[];
-      for(let i=0;i<m.items.length;i++){
-        const it=m.items[i];
-        if(it.locked){ newItems.push(it); Memory.mark(it.id); continue; }
-        const pool=pickPoolByFamily(it.family, prefs, it.state);
-        if(!pool.length){ newItems.push(it); continue; }
-        const chosen=weightedRandom(pool, x=>x.__w||1);
-        const grams=gramsForTargets(chosen, tgt);
-        newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false});
-        Memory.mark(chosen.id);
-      }
-      m.items=newItems;
+  function chooseItemForMacro(items, macro){ // preferência por família
+    const order = macro==='C'?[ 'Carbo','Misto','Proteína','Gordura'] : macro==='P'?[ 'Proteína','Misto','Carbo','Gordura'] : ['Gordura','Misto','Carbo','Proteína'];
+    for(const fam of order){ const idx=items.findIndex(it=>{ const f=getFood(it.id); if(!f) return false; const v=macro==='P'?f.P:macro==='C'?f.C:f.G; return isFamily(f,fam) && v>0; }); if(idx>-1) return idx; }
+    return items.findIndex(it=>{ const f=getFood(it.id); const v=macro==='P'?f.P:macro==='C'?f.C:f.G; return v>0; });
+  }
+
+  function adjustMealToTarget(meal){ const tgt=meal.target; const calc=()=>sumMeal(meal.items); let cur=calc();
+    const clampG=(food, g)=>{ if(isFamily(food,'Gordura')) return Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax); return Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax); };
+    // Ajusta P, depois C, depois G
+    for(const M of ['P','C','G']){
+      let deficit = +(tgt[M]-cur[M]).toFixed(1); if(Math.abs(deficit)<1) continue; const idx=chooseItemForMacro(meal.items,M); if(idx<0) continue; const it=meal.items[idx]; const f=getFood(it.id); const per100 = M==='P'?f.P:M==='C'?f.C:f.G; if(!per100) continue; const delta = (deficit/per100)*100; const newG = clampG(f, (it.g||0)+delta); it.g=Math.round(newG); cur=calc();
     }
-    return plan;
+    return meal;
   }
 
-  // Regerar apenas uma refeição
-  function regenerateMeal(plan,mealIdx,prefs){
-    const m=plan.meals[mealIdx];
-    Memory.clear();
-    const tgt=m.target;
-    const newItems=[];
-    for(const it of m.items){
-      if(it.locked){ newItems.push(it); Memory.mark(it.id); continue; }
-      const pool=pickPoolByFamily(it.family, prefs, it.state);
-      if(!pool.length){ newItems.push(it); continue; }
-      const chosen=weightedRandom(pool, x=>x.__w||1);
-      const grams=gramsForTargets(chosen, tgt);
-      newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false});
-      Memory.mark(chosen.id);
-    }
-    m.items=newItems;
-    return plan;
+  function adjustDayToMeta(plan){ const meta=plan.meta_kcal; const totals=plan.meals.reduce((a,m)=>{const s=sumMeal(m.items); a.kcal+=s.kcal; return a;},{kcal:0}); const diff = meta - totals.kcal; const tol = Math.abs(diff)/meta; if(tol<=0.02) return plan; // já está ±2%
+    // Ajusta carbo do jantar (ou almoço se não existir)
+    let targetMealIdx = plan.meals.findIndex(m=>mealKind(m.name)==='jantar'); if(targetMealIdx<0) targetMealIdx=plan.meals.findIndex(m=>mealKind(m.name)==='almoco'); if(targetMealIdx<0) targetMealIdx=0;
+    const m=plan.meals[targetMealIdx]; const idx=chooseItemForMacro(m.items,'C'); if(idx<0){ return plan; }
+    const it=m.items[idx]; const f=getFood(it.id); const kcal100 = f.kcal||0; if(kcal100<=0) return plan; const delta = (diff/kcal100)*100; const clampG=(food, g)=>{ if(isFamily(food,'Gordura')) return Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax); return Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax); }; it.g=Math.round(clampG(f,(it.g||0)+delta)); return plan;
   }
 
-  // ------- Render -------
-  function renderPresets(){
-    const wrap=document.getElementById('presetList'); wrap.innerHTML='';
-    Data.presets.forEach(p=>{
-      const meals=(p.meals||[]).map(m=>m.name).join(' · ');
-      const el=document.createElement('div');
-      el.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
+  function regenerateDay(plan,preset,prefs){ Memory.clear(); for(const m of plan.meals){ const kind=mealKind(m.name); const tgt=m.target; const newItems=[]; for(const it of m.items){ if(it.locked){ newItems.push(it); Memory.mark(it.id); continue;} const pool=pickPoolByFamily(it.family,prefs,it.state); if(!pool.length){ newItems.push(it); continue;} const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt); newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);} enforceCompatibility(kind,newItems); m.items=newItems; adjustMealToTarget(m);} adjustDayToMeta(plan); return plan; }
+
+  function regenerateMeal(plan,mealIdx,prefs){ const m=plan.meals[mealIdx]; Memory.clear(); const tgt=m.target; const kind=mealKind(m.name); const newItems=[]; for(const it of m.items){ if(it.locked){ newItems.push(it); Memory.mark(it.id); continue;} const pool=pickPoolByFamily(it.family,prefs,it.state); if(!pool.length){ newItems.push(it); continue;} const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt); newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);} enforceCompatibility(kind,newItems); m.items=newItems; adjustMealToTarget(m); adjustDayToMeta(plan); return plan; }
+
+  /* ===== Render ===== */
+  function pctDev(v,t){if(!t) return 0; return Math.round(((v-t)/t)*100)}
+  function devTxt(p){return (Math.abs(p)<=2?'±2%': (p>0?('+'+p+'%'):(p+'%')))}
+
+  function renderPresets(){ const box=document.getElementById('presetList'); box.innerHTML='';
+    Data.presets.forEach(p=>{ const meals=(p.meals||[]).map(m=>m.name).join(' · '); const desc=p.description||'Variedade elástica com trocas simples.'; const who=p.indicado_para||'Público geral (2–4x/sem).'; const chips=(p.chips||meals.split(' · '));
+      const el=document.createElement('div'); el.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
       el.innerHTML=`<div class="flex items-start justify-between gap-3">
-        <div><div class="font-semibold">${p.name}</div>
-        <div class="text-slate-400 text-sm">${meals}</div></div>
-        <button class="btn" data-pid="${p.id}">Selecionar</button></div>`;
-      wrap.appendChild(el);
-    });
-    wrap.querySelectorAll('button[data-pid]').forEach(b=>b.addEventListener('click',()=>{
-      const p=Data.presets.find(x=>x.id===b.dataset.pid);
-      const profile=readProfileUI();
-      const bmr=bmrMifflin(profile.sexo,profile.peso_kg,profile.altura_cm,profile.idade);
-      const td=tdee(bmr,profile.atividade);
-      const meta=targetKcal(td,profile.objetivo);
-      showCalc(bmr,td,meta);
-      const prefs=AppState.loadPrefs();
-      const plan=buildPlan(meta,p,prefs);
-      AppState.savePlan(plan);
-      renderPlanner(plan);
-      showStep(4);
-    }));
-  }
-
-  function pctDev(v,t){if(!t)return 0;return Math.round(((v-t)/t)*100)}
-  function devBadge(p){return (Math.abs(p)<=2?'±2%':(p>0?('+'+p+'%'):(p+'%')))}
-
-  function renderPlanner(plan){
-    const host=document.getElementById('planner'); host.innerHTML='';
-    if(!plan||!plan.meals) return;
-
-    // Totais
-    const total=plan.meals.reduce((a,m)=>{const s=computeMealKcal(m.items);a.kcal+=s.kcal;a.P+=s.P;a.C+=s.C;a.G+=s.G;return a},{kcal:0,P:0,C:0,G:0});
-    const meta=plan.meta_kcal; const tol=Math.abs(total.kcal-meta)/meta;
-    const tolBadge=tol<=0.02?`<span class="text-emerald-400">🟢 dentro do alvo (±2%)</span>`:`<span class="text-amber-300">🟠 fora do alvo (${Math.round(tol*100)}%)</span>`;
-    const head=document.createElement('div'); head.className='bg-[#0f172a] rounded-xl p-3 flex items-center justify-between border border-[color:var(--border)] flex-wrap gap-2';
-    head.innerHTML=`<div class="text-sm md:text-base">Meta: <b>${meta}</b> kcal · Total: <b>${total.kcal}</b> kcal <span class="ml-2">${tolBadge}</span></div>
-                    <div class="text-slate-400 text-sm">P:${total.P.toFixed(0)}g · C:${total.C.toFixed(0)}g · G:${total.G.toFixed(0)}g</div>`;
-    host.appendChild(head);
-
-    // Refeições
-    plan.meals.forEach((m,mi)=>{
-      const sum=computeMealKcal(m.items);
-      const row=document.createElement('div'); row.className='bg-[#0f172a] rounded-xl p-4 border border-[color:var(--border)]';
-      const devP=pctDev(sum.P,m.target.P),devC=pctDev(sum.C,m.target.C),devG=pctDev(sum.G,m.target.G);
-      row.innerHTML=`
-        <div class="flex items-center justify-between gap-2 flex-wrap">
-          <div class="font-semibold">${m.name}</div>
-          <div class="flex items-center gap-2">
-            <button class="btn-ghost btn-xs" data-regmi="${mi}">Regerar refeição</button>
-            <div class="kcal-badge font-semibold">${sum.kcal} kcal</div>
-          </div>
+        <div>
+          <div class="font-semibold text-lg">${p.name||'Modelo'}</div>
+          <div class="text-slate-300 text-sm mb-1">${desc}</div>
+          <div class="text-slate-400 text-xs mb-2">Indicado para: ${who}</div>
+          <div class="flex flex-wrap">${(chips||[]).map(c=>`<span class='tag'>${c}</span>`).join('')}</div>
         </div>
-        <div class="text-slate-400 text-sm mt-1">
-          Alvo: P ${m.target.P}g (${devBadge(devP)}) · C ${m.target.C}g (${devBadge(devC)}) · G ${m.target.G}g (${devBadge(devG)})
+        <div class="min-w-[120px] text-right">
+          <div class="text-slate-400 text-xs mb-1">Refeições: ${meals}</div>
+          <button class="btn" data-pid="${p.id}">Selecionar</button>
         </div>
-        <div class="mt-3 space-y-2">
-          ${m.items.map((it,ii)=>{
-            const f=Data.foods.find(x=>x.id===it.id)||{};
-            const pin=it.locked?"📌":"📍";
-            return `
-            <div class="flex items-center justify-between bg-[#111827] rounded-lg p-2 border border-[color:var(--border)]">
-              <div>
-                <div class="font-medium">${f.name||it.name}</div>
-                <div class="text-slate-400 text-xs">Família: ${it.family} · Estado: ${it.state||'-'}</div>
-              </div>
-              <div class="flex items-center gap-2">
-                <button class="btn-ghost btn-xs" title="Fixar/soltar" data-pin="${mi}:${ii}">${pin}</button>
-                <div class="text-sm w-20 text-right">${it.g} g</div>
-                <button class="btn-ghost btn-xs" data-swap="${mi}:${ii}">Trocar</button>
-              </div>
-            </div>`;
-          }).join('')}
-        </div>`;
-      host.appendChild(row);
+      </div>`; box.appendChild(el);
+    });
+    box.querySelectorAll('button[data-pid]').forEach(b=>b.addEventListener('click',()=>{ const p=Data.presets.find(x=>x.id===b.dataset.pid); const prof=readProfile(); const bmr=bmrMifflin(prof.sexo,prof.peso_kg,prof.altura_cm,prof.idade); const td=tdeeFrom(bmr,prof.atividade); const meta=targetFrom(td,prof.objetivo); showCalc(bmr,td,meta); const prefs=State.load(LS.prefs)||{tags_incluir:[],tags_evitar:[],var:45}; const plan=buildPlan(meta,p,prefs); State.save(LS.plan,plan); renderPlanner(plan); showStep(4); }));
+  }
+
+  function renderPlanner(plan){ const host=document.getElementById('planner'); host.innerHTML=''; if(!plan||!plan.meals) return; const meta=plan.meta_kcal; const totals=plan.meals.reduce((a,m)=>{ const s=sumMeal(m.items); a.kcal+=s.kcal; a.P+=s.P; a.C+=s.C; a.G+=s.G; return a; },{kcal:0,P:0,C:0,G:0}); const tol=Math.abs(totals.kcal-meta)/meta; const status= tol<=0.02?`<span class='text-emerald-400'>🟢 dentro do alvo (±2%)</span>`:`<span class='text-amber-300'>🟠 fora do alvo (${Math.round(tol*100)}%)</span>`;
+    const head=document.createElement('div'); head.className='bg-[#0f172a] rounded-xl p-3 border border-[color:var(--border)] flex items-center justify-between flex-wrap gap-2'; head.innerHTML=`<div class='text-sm md:text-base'>Meta: <b>${meta}</b> kcal · Total: <b>${totals.kcal}</b> kcal ${status}</div><div class='text-slate-400 text-sm'>P:${totals.P.toFixed(0)}g · C:${totals.C.toFixed(0)}g · G:${totals.G.toFixed(0)}g</div>`; host.appendChild(head);
+
+    plan.meals.forEach((m,mi)=>{ const sum=sumMeal(m.items); const devP=pctDev(sum.P,m.target.P), devC=pctDev(sum.C,m.target.C), devG=pctDev(sum.G,m.target.G); const card=document.createElement('div'); card.className='bg-[#0f172a] rounded-xl p-4 border border-[color:var(--border)]'; card.innerHTML=`
+      <div class='flex items-center justify-between gap-2 flex-wrap'>
+        <div class='font-semibold'>${m.name}</div>
+        <div class='flex items-center gap-2'>
+          <button class='btn-ghost btn-xs' data-regmi='${mi}'>Regerar refeição</button>
+          <div class='kcal-flag font-semibold'>${sum.kcal} kcal</div>
+        </div>
+      </div>
+      <div class='text-slate-400 text-sm mt-1'>Alvo: P ${m.target.P}g (${devTxt(devP)}) · C ${m.target.C}g (${devTxt(devC)}) · G ${m.target.G}g (${devTxt(devG)})</div>
+      <div class='mt-3 space-y-2'>
+        ${m.items.map((it,ii)=>{ const f=getFood(it.id)||{}; const pin=it.locked?"📌":"📍"; return `<div class='flex items-center justify-between bg-[#111827] rounded-lg p-2 border border-[color:var(--border)]'>
+          <div><div class='font-medium'>${f.name||it.name}</div><div class='text-slate-400 text-xs'>Família: ${it.family} · Estado: ${it.state||'-'}</div></div>
+          <div class='flex items-center gap-2'>
+            <button class='btn-ghost btn-xs' title='Fixar/soltar' data-pin='${mi}:${ii}'>${pin}</button>
+            <div class='text-sm w-20 text-right'>${it.g} g</div>
+            <button class='btn-ghost btn-xs' data-swap='${mi}:${ii}'>Trocar</button>
+          </div></div>`; }).join('')}
+      </div>`; host.appendChild(card);
     });
 
-    // Binds dos botões por refeição
-    host.querySelectorAll('button[data-swap]').forEach(b=>b.addEventListener('click',()=>{const [mi,ii]=b.dataset.swap.split(':').map(Number);openSwap(AppState.loadPlan(),mi,ii)}));
-    host.querySelectorAll('button[data-pin]').forEach(b=>b.addEventListener('click',()=>{const [mi,ii]=b.dataset.pin.split(':').map(Number);togglePin(mi,ii)}));
-    host.querySelectorAll('button[data-regmi]').forEach(b=>b.addEventListener('click',()=>{const mi=+b.dataset.regmi; const plan=AppState.loadPlan(); const prefs=AppState.loadPrefs(); regenerateMeal(plan,mi,prefs); AppState.savePlan(plan); renderPlanner(plan)}));
+    host.querySelectorAll('button[data-swap]').forEach(b=>b.addEventListener('click',()=>{ const [mi,ii]=b.dataset.swap.split(':').map(Number); openSwap(State.load(LS.plan),mi,ii); }));
+    host.querySelectorAll('button[data-pin]').forEach(b=>b.addEventListener('click',()=>{ const [mi,ii]=b.dataset.pin.split(':').map(Number); togglePin(mi,ii); }));
+    host.querySelectorAll('button[data-regmi]').forEach(b=>b.addEventListener('click',()=>{ const mi=+b.dataset.regmi; const plan=State.load(LS.plan); const prefs=State.load(LS.prefs)||{tags_incluir:[],var:45}; regenerateMeal(plan,mi,prefs); State.save(LS.plan,plan); renderPlanner(plan); }));
   }
 
-  function showCalc(bmr,tdeeVal,meta){
-    document.getElementById('calc-summary').classList.remove('hidden');
-    document.getElementById('bmrOut').textContent=Math.round(bmr);
-    document.getElementById('tdeeOut').textContent=Math.round(tdeeVal);
-    document.getElementById('targetOut').textContent=meta;
-  }
+  function showCalc(bmr,tdee,meta){ document.getElementById('calcBox').style.display='block'; document.getElementById('bmrOut').textContent=Math.round(bmr); document.getElementById('tdeeOut').textContent=Math.round(tdee); document.getElementById('targetOut').textContent=meta; }
 
-  // ------- Pins (fixar itens) -------
-  function togglePin(mi,ii){
-    const plan=AppState.loadPlan();
-    const it=plan.meals[mi].items[ii];
-    it.locked=!it.locked;
-    AppState.savePlan(plan);
-    renderPlanner(plan);
-  }
+  /* ===== Pins ===== */
+  function togglePin(mi,ii){ const plan=State.load(LS.plan); const it=plan.meals[mi].items[ii]; it.locked=!it.locked; State.save(LS.plan,plan); renderPlanner(plan); }
 
-  // ------- SWAP (gramatura manual) -------
-  let SWAP_CTX=null;
-  function openSwap(plan,mealIdx,itemIdx){
-    SWAP_CTX={plan,mealIdx,itemIdx};
-    const m=plan.meals[mealIdx]; const it=m.items[itemIdx];
-    document.getElementById('swapHint').innerHTML=`Equivalentes para família <b>${it.family}</b> (prioriza mesmo estado: <b>${it.state||'-'}</b>).`;
-    const prefs=AppState.loadPrefs();
-    const list=pickPoolByFamily(it.family,prefs,it.state);
+  /* ===== SWAP ===== */
+  let SWAP=null; function openSwap(plan,mi,ii){ SWAP={plan,mi,ii}; const m=plan.meals[mi], it=m.items[ii]; document.getElementById('swapHint').innerHTML=`Equivalentes para <b>${it.family}</b> (prioriza estado <b>${it.state||'-'}</b>).`; const prefs=State.load(LS.prefs)||{tags_incluir:[],var:45}; const list=pickPoolByFamily(it.family,prefs,it.state); const box=document.getElementById('swapList'); box.innerHTML=''; list.slice(0,150).forEach(f=>{ const id=`g_${f.id}`; const row=document.createElement('div'); row.className='bg-[#111827] border border-[color:var(--border)] rounded-lg p-2'; row.innerHTML=`<div class='flex items-start justify-between gap-3'><div><div class='font-medium'>${f.name}</div><div class='text-slate-400 text-xs'>Estado: ${f.state||'-'} · 100 g → P ${f.P||0}g · C ${f.C||0}g · G ${f.G||0}g</div></div><div class='flex items-center gap-2'><input id='${id}' type='number' min='1' max='1000' placeholder='g' class='field w-28'/><button class='btn-ghost btn-xs' data-use='${f.id}'>Usar</button><button class='btn btn-xs' data-useg='${f.id}'>Usar c/gramas</button></div></div>`; box.appendChild(row); }); document.getElementById('swapModal').style.display='flex'; box.querySelectorAll('button[data-use]').forEach(b=>b.addEventListener('click',()=>applySwap(+b.dataset.use,null))); box.querySelectorAll('button[data-useg]').forEach(b=>b.addEventListener('click',()=>{ const fid=+b.dataset.useg; const v=document.getElementById('g_'+fid).value; applySwap(fid, v?+v:null); })); }
+  function closeSwap(){ document.getElementById('swapModal').style.display='none'; SWAP=null; }
+  document.getElementById('btnCloseSwap').addEventListener('click',closeSwap);
+  function applySwap(foodId, grams){ if(!SWAP) return; const {plan,mi,ii}=SWAP; const m=plan.meals[mi]; const tgt=m.target; const chosen=getFood(foodId); if(!chosen) return; if(!grams||grams<=0){ const others=m.items.filter((_,k)=>k!==ii); const partial=sumMeal(others); const remaining={kcal:Math.max(tgt.kcal-partial.kcal,0),P:Math.max(tgt.P-partial.P,0),C:Math.max(tgt.C-partial.C,0),G:Math.max(tgt.G-partial.G,0)}; grams=gramsForTargets(chosen,remaining); } const clamp=(f,g)=> isFamily(f,'Gordura')?Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax):Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax); grams=Math.round(clamp(chosen,grams)); m.items[ii]={id:chosen.id,name:chosen.name,family:chosen.family,state:chosen.state,g:grams,locked:false}; enforceCompatibility(mealKind(m.name), m.items); adjustMealToTarget(m); adjustDayToMeta(plan); State.save(LS.plan,plan); renderPlanner(plan); closeSwap(); }
 
-    const box=document.getElementById('swapList'); box.innerHTML='';
-    list.slice(0,120).forEach(f=>{
-      const el=document.createElement('div'); el.className='bg-[#111827] border border-[color:var(--border)] rounded-lg p-2';
-      const id=`g_${f.id}`;
-      el.innerHTML=`
-        <div class="flex items-start justify-between gap-3">
-          <div>
-            <div class="font-medium">${f.name}</div>
-            <div class="text-slate-400 text-xs">Estado: ${f.state||'-'} · 100 g → P ${f.P||0}g · C ${f.C||0}g · G ${f.G||0}g</div>
-          </div>
-          <div class="flex items-center gap-2">
-            <input id="${id}" type="number" min="1" max="1000" placeholder="g" class="field w-28" />
-            <button class="btn-ghost btn-xs" data-use="${f.id}">Usar</button>
-            <button class="btn btn-xs" data-useg="${f.id}">Usar c/gramas</button>
-          </div>
-        </div>`;
-      box.appendChild(el);
-    });
+  /* ===== UI Utils ===== */
+  function readProfile(){ return { sexo:document.getElementById('sx').value, idade:+document.getElementById('age').value, altura_cm:+document.getElementById('h').value, peso_kg:+document.getElementById('w').value, atividade:document.getElementById('act').value, objetivo:document.getElementById('goal').value } }
+  function gatherFilters(){ const inc=[]; document.querySelectorAll('#s3 input[type=checkbox]').forEach(b=>b.checked&&inc.push(b.value)); const prefs=State.load(LS.prefs)||{tags_incluir:[],tags_evitar:[],var:45}; return {tags_incluir:inc, tags_evitar:prefs.tags_evitar||[], equivalentes_estado:true, var:prefs.var||45}; }
 
-    document.getElementById('swapModal').classList.remove('hidden');
-    box.querySelectorAll('button[data-use]').forEach(b=>b.addEventListener('click',()=>applySwap(+b.dataset.use,null)));
-    box.querySelectorAll('button[data-useg]').forEach(b=>b.addEventListener('click',()=>{const fid=+b.dataset.useg; const g=document.getElementById('g_'+fid).value; applySwap(fid, g?+g:null)}));
-  }
-  function applySwap(foodId, gramsManual){
-    if(!SWAP_CTX) return;
-    const {plan,mealIdx,itemIdx}=SWAP_CTX;
-    const m=plan.meals[mealIdx]; const tgt=m.target;
-    const chosen=Data.foods.find(f=>f.id===foodId); if(!chosen) return;
+  async function exportPNG(){ try{ const box=document.getElementById('plannerWrap'); const canvas=await html2canvas(box,{backgroundColor:'#0a0f1c',scale:window.devicePixelRatio<2?2:1.5,useCORS:true,windowWidth:document.documentElement.clientWidth}); canvas.toBlob((blob)=>{ if(!blob){alert('Falha ao gerar imagem'); return;} const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png'; a.click(); URL.revokeObjectURL(url); },'image/png'); }catch(e){ alert('Exportação falhou. Tente novamente.'); console.error(e); } }
 
-    let grams=gramsManual;
-    if(!grams||grams<=0){
-      const others=m.items.filter((_,i)=>i!==itemIdx);
-      const partial=computeMealKcal(others);
-      const remaining={kcal:Math.max(tgt.kcal-partial.kcal,0),P:Math.max(tgt.P-partial.P,0),C:Math.max(tgt.C-partial.C,0),G:Math.max(tgt.G-partial.G,0)};
-      grams=gramsForTargets(chosen,remaining);
-    }
-    if(chosen.family==='Gordura'){grams=Math.min(Math.max(grams,CAPS.oilMin),CAPS.oilMax)}
-    else {grams=Math.min(Math.max(grams,CAPS.solidMin),CAPS.solidMax)}
-
-    m.items[itemIdx]={id:chosen.id,name:chosen.name,family:chosen.family,state:chosen.state,g:Math.round(grams),locked:false};
-    AppState.savePlan(plan); renderPlanner(plan); closeSwap();
-  }
-  function closeSwap(){document.getElementById('swapModal').classList.add('hidden'); SWAP_CTX=null}
-
-  // ------- Utilitários -------
-  function readProfileUI(){return{sexo:document.getElementById('sx').value,idade:+document.getElementById('age').value,altura_cm:+document.getElementById('h').value,peso_kg:+document.getElementById('w').value,atividade:document.getElementById('act').value,objetivo:document.getElementById('goal').value}}
-  function gatherFilters(){const boxes=document.querySelectorAll('#slide3 input[type=checkbox]');const inc=[];boxes.forEach(b=>b.checked&&inc.push(b.value)); const prefs=AppState.loadPrefs(); return{tags_incluir:inc,tags_evitar:prefs.tags_evitar||[],equivalentes_estado:true,var:prefs.var||45}}
-  async function exportPNG(){const el=document.getElementById('slide4');const canvas=await html2canvas(el,{backgroundColor:'#0a0f1c',scale:2,useCORS:true});const url=canvas.toDataURL('image/png');const a=document.createElement('a');a.href=url;a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png';a.click()}
-
-  // ------- Binds: navegação & ações -------
+  /* ===== Eventos ===== */
   ;[1,2,3,4,5].forEach(i=>document.getElementById('st'+i).addEventListener('click',()=>showStep(i)));
   document.getElementById('next1').addEventListener('click',()=>showStep(2));
   document.getElementById('prev2').addEventListener('click',()=>showStep(1));
@@ -518,31 +363,22 @@
   document.getElementById('next4').addEventListener('click',()=>showStep(5));
   document.getElementById('prev5').addEventListener('click',()=>showStep(4));
 
-  document.getElementById('btnCalc').addEventListener('click',()=>{const p=readProfileUI();const b=bmrMifflin(p.sexo,p.peso_kg,p.altura_cm,p.idade);const td=tdee(b,p.atividade);const meta=targetKcal(td,p.objetivo);showCalc(b,td,meta)});
-  document.getElementById('btnSaveProfile').addEventListener('click',()=>{AppState.saveProfile(readProfileUI())});
-
-  document.getElementById('btnApplyFilters').addEventListener('click',()=>{const prefs=gatherFilters();AppState.savePrefs(prefs);const plan=AppState.loadPlan();if(plan)renderPlanner(plan)});
-  document.getElementById('btnClearFilters').addEventListener('click',()=>{document.querySelectorAll('#slide3 input[type=checkbox]').forEach(b=>b.checked=false);const prefs=AppState.loadPrefs();prefs.tags_incluir=[];AppState.savePrefs(prefs);const plan=AppState.loadPlan();if(plan)renderPlanner(plan)});
-  document.getElementById('varSlider').addEventListener('input',e=>{const v=+e.target.value;document.getElementById('varOut').textContent=v+'%';const prefs=AppState.loadPrefs();prefs.var=v;AppState.savePrefs(prefs)});
+  document.getElementById('btnCalc').addEventListener('click',()=>{ const p=readProfile(); const b=bmrMifflin(p.sexo,p.peso_kg,p.altura_cm,p.idade); const td=tdeeFrom(b,p.atividade); const meta=targetFrom(td,p.objetivo); showCalc(b,td,meta); });
+  document.getElementById('btnSaveProfile').addEventListener('click',()=>State.save(LS.profile,readProfile()));
+  document.getElementById('btnApplyFilters').addEventListener('click',()=>{ const prefs=gatherFilters(); State.save(LS.prefs,prefs); const plan=State.load(LS.plan); if(plan) renderPlanner(plan); });
+  document.getElementById('btnClearFilters').addEventListener('click',()=>{ document.querySelectorAll('#s3 input[type=checkbox]').forEach(b=>b.checked=false); const prefs=State.load(LS.prefs)||{}; prefs.tags_incluir=[]; State.save(LS.prefs,prefs); const plan=State.load(LS.plan); if(plan) renderPlanner(plan); });
+  document.getElementById('varSlider').addEventListener('input',e=>{ document.getElementById('varOut').textContent=e.target.value+'%'; const prefs=State.load(LS.prefs)||{tags_incluir:[],tags_evitar:[]}; prefs.var=+e.target.value; State.save(LS.prefs,prefs); });
 
   document.getElementById('btnExportPNG').addEventListener('click',exportPNG);
-  document.getElementById('btnSavePlan').addEventListener('click',()=>{const plan=AppState.loadPlan(); if(!plan) return; const blob=new Blob([JSON.stringify(plan,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='meu_plano.json'; a.click(); URL.revokeObjectURL(url)});
   document.getElementById('btnExportPNG2').addEventListener('click',exportPNG);
+  document.getElementById('btnSavePlan').addEventListener('click',()=>{ const plan=State.load(LS.plan); if(!plan) return; const blob=new Blob([JSON.stringify(plan,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='meu_plano.json'; a.click(); URL.revokeObjectURL(url); });
   document.getElementById('btnSavePlan2').addEventListener('click',()=>document.getElementById('btnSavePlan').click());
-  document.getElementById('importPlan').addEventListener('change',e=>{if(!e.target.files[0])return; const fr=new FileReader(); fr.onload=()=>{try{const obj=JSON.parse(fr.result);AppState.savePlan(obj);renderPlanner(obj);showStep(4)}catch{alert('Arquivo inválido')}}; fr.readAsText(e.target.files[0])});
-  document.getElementById('btnCloseSwap').addEventListener('click',closeSwap);
+  document.getElementById('importPlan').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ const obj=JSON.parse(fr.result); State.save(LS.plan,obj); renderPlanner(obj); showStep(4);}catch{ alert('Arquivo inválido'); } }; fr.readAsText(f); });
+  document.getElementById('btnRegenDay').addEventListener('click',()=>{ const plan=State.load(LS.plan); if(!plan) return; const prefs=State.load(LS.prefs)||{tags_incluir:[],var:45}; const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0]; regenerateDay(plan,preset,prefs); State.save(LS.plan,plan); renderPlanner(plan); });
 
-  document.getElementById('btnRegenDay').addEventListener('click',()=>{const plan=AppState.loadPlan(); if(!plan) return; const prefs=AppState.loadPrefs(); const preset=Data.presets.find(p=>p.id===plan.preset_id) || Data.presets[0]; regenerateDay(plan,preset,prefs); AppState.savePlan(plan); renderPlanner(plan)});
-
-  // ------- Boot -------
-  (async function boot(){
-    const prof=AppState.loadProfile(); if(prof){
-      document.getElementById('sx').value=prof.sexo; document.getElementById('age').value=prof.idade;
-      document.getElementById('h').value=prof.altura_cm; document.getElementById('w').value=prof.peso_kg;
-      document.getElementById('act').value=prof.atividade; document.getElementById('goal').value=prof.objetivo;
-    }
-    const files=await loadManifest(); await loadFoods(files); await loadPresets(); renderPresets();
-    const plan=AppState.loadPlan(); if(plan){renderPlanner(plan); showStep(4)}
+  /* ===== Boot ===== */
+  (async function boot(){ const prof=State.load(LS.profile); if(prof){ document.getElementById('sx').value=prof.sexo; document.getElementById('age').value=prof.idade; document.getElementById('h').value=prof.altura_cm; document.getElementById('w').value=prof.peso_kg; document.getElementById('act').value=prof.atividade; document.getElementById('goal').value=prof.objetivo; }
+    const files=await loadManifest(); await loadFoods(files); await loadPresets(); renderPresets(); const plan=State.load(LS.plan); if(plan){ renderPlanner(plan); showStep(4); }
   })();
   </script>
 </body>
