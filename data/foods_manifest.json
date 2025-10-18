@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "files": [
+    "foods_proteina.json",
+    "foods_carbo.json",
+    "foods_gordura.json",
+    "foods_misto.json"
+  ]
+}
