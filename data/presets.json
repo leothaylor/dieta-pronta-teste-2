@@ -55,13 +55,82 @@
       ],
       "rules": {"swap_policy":"same_family_first","portion_caps":{"solid_g_min":30,"solid_g_max":250,"oil_g_min":5,"oil_g_max":20},"base_weighing":{"Proteína":"CRU","Carbo":"COZIDO"}}
     },
+
+    /* ——— novos modelos ——— */
+
     {
-      "id": "pratico-marmita-4",
-      "name": "Prático Marmita (4)",
+      "id": "pf-tradicional-4",
+      "name": "PF Tradicional (4)",
       "meals": [
-        {"id":"M1","name":"Café","kcal_frac":0.20,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo"]},
-        {"id":"M2","name":"Almoço","kcal_frac":0.35,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo","Misto"]},
-        {"id":"M3","name":"Lanche","kcal_frac":0.15,"macro_ratio":{"P":0.35,"C":0.35,"G":0.30},"families":["Proteína","Misto"]},
+        {"id":"M1","name":"Café","kcal_frac":0.20,"macro_ratio":{"P":0.30,"C":0.50,"G":0.20},"families":["Proteína","Carbo"]},
+        {"id":"M2","name":"Almoço (PF)", "kcal_frac":0.35,"macro_ratio":{"P":0.32,"C":0.50,"G":0.18},"families":["Proteína","Carbo","Misto"]},
+        {"id":"M3","name":"Lanche", "kcal_frac":0.15,"macro_ratio":{"P":0.35,"C":0.40,"G":0.25},"families":["Proteína","Misto"]},
+        {"id":"M4","name":"Jantar", "kcal_frac":0.30,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo","Gordura"]}
+      ],
+      "rules": {"swap_policy":"same_family_first","portion_caps":{"solid_g_min":30,"solid_g_max":260,"oil_g_min":5,"oil_g_max":18},"base_weighing":{"Proteína":"CRU","Carbo":"COZIDO"}}
+    },
+    {
+      "id": "pf-sem-salada-4",
+      "name": "PF Sem Salada (4)",
+      "meals": [
+        {"id":"M1","name":"Café","kcal_frac":0.22,"macro_ratio":{"P":0.30,"C":0.48,"G":0.22},"families":["Proteína","Carbo"]},
+        {"id":"M2","name":"Almoço (PF)", "kcal_frac":0.33,"macro_ratio":{"P":0.34,"C":0.48,"G":0.18},"families":["Proteína","Carbo","Misto"]},
+        {"id":"M3","name":"Lanche", "kcal_frac":0.15,"macro_ratio":{"P":0.40,"C":0.35,"G":0.25},"families":["Proteína","Misto"]},
+        {"id":"M4","name":"Jantar", "kcal_frac":0.30,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo","Gordura"]}
+      ],
+      "rules": {"swap_policy":"same_family_first","portion_caps":{"solid_g_min":30,"solid_g_max":250,"oil_g_min":5,"oil_g_max":18},"base_weighing":{"Proteína":"CRU","Carbo":"COZIDO"}}
+    },
+    {
+      "id": "marmita-express-4",
+      "name": "Marmita Express (4)",
+      "meals": [
+        {"id":"M1","name":"Café rápido","kcal_frac":0.20,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo"]},
+        {"id":"M2","name":"Almoço reaquece bem","kcal_frac":0.35,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo","Misto"]},
+        {"id":"M3","name":"Lanche prático","kcal_frac":0.15,"macro_ratio":{"P":0.35,"C":0.35,"G":0.30},"families":["Proteína","Misto"]},
+        {"id":"M4","name":"Jantar simples","kcal_frac":0.30,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo","Gordura"]}
+      ],
+      "rules": {"swap_policy":"same_family_first","portion_caps":{"solid_g_min":30,"solid_g_max":250,"oil_g_min":5,"oil_g_max":20},"base_weighing":{"Proteína":"CRU","Carbo":"COZIDO"}}
+    },
+    {
+      "id": "vegetariano-basico-4",
+      "name": "Vegetariano Básico (4)",
+      "meals": [
+        {"id":"M1","name":"Café", "kcal_frac":0.22,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo"]},
+        {"id":"M2","name":"Almoço", "kcal_frac":0.30,"macro_ratio":{"P":0.32,"C":0.45,"G":0.23},"families":["Proteína","Carbo","Misto"]},
+        {"id":"M3","name":"Lanche", "kcal_frac":0.18,"macro_ratio":{"P":0.35,"C":0.40,"G":0.25},"families":["Proteína","Misto"]},
+        {"id":"M4","name":"Jantar", "kcal_frac":0.30,"macro_ratio":{"P":0.32,"C":0.45,"G":0.23},"families":["Proteína","Carbo","Gordura"]}
+      ],
+      "rules": {"swap_policy":"same_family_first","portion_caps":{"solid_g_min":30,"solid_g_max":240,"oil_g_min":5,"oil_g_max":20},"base_weighing":{"Proteína":"CRU","Carbo":"COZIDO"}}
+    },
+    {
+      "id": "sem-lactose-4",
+      "name": "Sem Lactose (4)",
+      "meals": [
+        {"id":"M1","name":"Café", "kcal_frac":0.22,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo"]},
+        {"id":"M2","name":"Almoço", "kcal_frac":0.30,"macro_ratio":{"P":0.32,"C":0.45,"G":0.23},"families":["Proteína","Carbo","Misto"]},
+        {"id":"M3","name":"Lanche", "kcal_frac":0.18,"macro_ratio":{"P":0.35,"C":0.40,"G":0.25},"families":["Proteína","Misto"]},
+        {"id":"M4","name":"Jantar", "kcal_frac":0.30,"macro_ratio":{"P":0.32,"C":0.45,"G":0.23},"families":["Proteína","Carbo","Gordura"]}
+      ],
+      "rules": {"swap_policy":"same_family_first","portion_caps":{"solid_g_min":30,"solid_g_max":240,"oil_g_min":5,"oil_g_max":20},"base_weighing":{"Proteína":"CRU","Carbo":"COZIDO"}}
+    },
+    {
+      "id": "sem-gluten-4",
+      "name": "Sem Glúten (4)",
+      "meals": [
+        {"id":"M1","name":"Café", "kcal_frac":0.22,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo"]},
+        {"id":"M2","name":"Almoço", "kcal_frac":0.30,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo","Misto"]},
+        {"id":"M3","name":"Lanche", "kcal_frac":0.18,"macro_ratio":{"P":0.35,"C":0.40,"G":0.25},"families":["Proteína","Misto"]},
+        {"id":"M4","name":"Jantar", "kcal_frac":0.30,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo","Gordura"]}
+      ],
+      "rules": {"swap_policy":"same_family_first","portion_caps":{"solid_g_min":30,"solid_g_max":240,"oil_g_min":5,"oil_g_max":20},"base_weighing":{"Proteína":"CRU","Carbo":"COZIDO"}}
+    },
+    {
+      "id": "cafe-nordestino-4",
+      "name": "Café Nordestino (4)",
+      "meals": [
+        {"id":"M1","name":"Café (cuscuz/ovo)","kcal_frac":0.26,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo","Misto"]},
+        {"id":"M2","name":"Almoço", "kcal_frac":0.30,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo","Misto"]},
+        {"id":"M3","name":"Lanche","kcal_frac":0.14,"macro_ratio":{"P":0.35,"C":0.35,"G":0.30},"families":["Proteína","Misto"]},
         {"id":"M4","name":"Jantar","kcal_frac":0.30,"macro_ratio":{"P":0.32,"C":0.48,"G":0.20},"families":["Proteína","Carbo","Gordura"]}
       ],
       "rules": {"swap_policy":"same_family_first","portion_caps":{"solid_g_min":30,"solid_g_max":250,"oil_g_min":5,"oil_g_max":20},"base_weighing":{"Proteína":"CRU","Carbo":"COZIDO"}}
