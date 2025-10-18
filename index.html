@@ -441,7 +441,7 @@ function kcalFromMacros(P,C,G){ return P*4 + C*4 + G*9; }
 
 function solveMeal(mealSpec, kcalTarget){
   const families = mealSpec.families || [];
-  const caps = mealSpec.portion_caps || {min: {default: 30}, max: {default: 400}};
+  const caps = mealSpec.portion_caps || mealSpec.rules?.portion_caps || {min: {default: 30}, max: {default: 400}};
   const ratio = mealSpec.macro_ratio || {P:.3, C:.5, G:.2};
 
   function pickFood(fam, statePref){
@@ -466,7 +466,7 @@ function solveMeal(mealSpec, kcalTarget){
   const items = [];
   for(const f of families){
     // CORREÇÃO: Usa 'base_weighing' do preset como preferência de estado
-    const statePref = mealSpec.rules?.base_weighing?.[f] || f.state; // Usa f para a família do preset
+    const statePref = mealSpec.rules?.base_weighing?.[f] || 'COZIDO'; // Default COZIDO se não houver regra
     const food = pickFood(f, statePref);
     if(!food) return {ok:false, reason:`Sem candidatos para Família: ${f} (Estado Pref: ${statePref})`};
     items.push({
@@ -500,12 +500,9 @@ function solveMeal(mealSpec, kcalTarget){
     grams.push(g);
   }
 
-  function minCap(it){ return caps.solid_g_min ?? 30; }
-  function maxCap(it){ return caps.solid_g_max ?? 400; }
-
-  // Ajuste de caps com base nas regras do preset (fallback para hardcoded)
-  const solidMin = mealSpec.rules?.portion_caps?.solid_g_min || 30;
-  const solidMax = mealSpec.rules?.portion_caps?.solid_g_max || 400;
+  // Ajuste de caps com base nas regras do preset
+  const solidMin = caps.solid_g_min || 30;
+  const solidMax = caps.solid_g_max || 400;
 
   let K=0;
   let iters = 0;
@@ -519,8 +516,8 @@ function solveMeal(mealSpec, kcalTarget){
       let maxG = solidMax;
       
       if (items[i].family === 'Gordura') {
-        minG = mealSpec.rules?.portion_caps?.oil_g_min || 5;
-        maxG = mealSpec.rules?.portion_caps?.oil_g_max || 20;
+        minG = caps.oil_g_min || 5;
+        maxG = caps.oil_g_max || 20;
       }
       grams[i] = clamp(grams[i], minG, maxG);
     }
@@ -586,7 +583,10 @@ function generateDay(){
     const noise = (rand.next() * 0.06 - 0.03); // ±3%
     const kcalTarget = Math.round(baseTarget * (1 + noise));
 
-    const solved = solveMeal(m, kcalTarget);
+    // Passa as regras do preset para o solver
+    const mealSpecWithRules = {...m, rules: state.preset.rules};
+
+    const solved = solveMeal(mealSpecWithRules, kcalTarget);
     if(!solved.ok){
       console.error('[meal solver fail]', m.name, solved.reason);
       alertMsg(`🔴 Erro ao regerar o dia. Motivo (refeição ${m.name}): ${solved.reason}.`);
