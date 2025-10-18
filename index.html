@@ -5,11 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Dieta Pronta — Pro (2 arquivos)</title>
 
-<!-- Tipografia -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
-<!-- Estilo -->
 <style>
 :root{
   --bg:#0b0f14; --card:#0f141a; --ink:#e7eef5; --muted:#9fb1c2; --line:#1c2a3b;
@@ -86,13 +84,11 @@ small.disclaimer{display:block;color:#9fb1c2;text-align:center;margin:12px 0}
 }
 </style>
 
-<!-- libs para export -->
 <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
 
-<!-- Barra topo -->
 <div class="appbar">
   <div class="wrap">
     <h1>🍏 Dieta Pronta — Pro</h1>
@@ -107,7 +103,7 @@ small.disclaimer{display:block;color:#9fb1c2;text-align:center;margin:12px 0}
 
 <main class="container">
 
-  <!-- Onboarding / Builder -->
+  <!-- Builder -->
   <section class="card generator">
     <div class="stepper">
       <span id="st1" class="step active">1) Objetivo</span>
@@ -117,7 +113,7 @@ small.disclaimer{display:block;color:#9fb1c2;text-align:center;margin:12px 0}
       <span id="st5" class="step">5) Dispensa</span>
     </div>
 
-    <!-- step 1 -->
+    <!-- 1 -->
     <div id="s1" class="grid">
       <div class="row">
         <label><span>Objetivo</span>
@@ -142,7 +138,7 @@ small.disclaimer{display:block;color:#9fb1c2;text-align:center;margin:12px 0}
       </div>
     </div>
 
-    <!-- step 2 -->
+    <!-- 2 -->
     <div id="s2" class="grid" style="display:none">
       <div class="row3">
         <label><span>Sexo</span>
@@ -171,7 +167,7 @@ small.disclaimer{display:block;color:#9fb1c2;text-align:center;margin:12px 0}
       </div>
     </div>
 
-    <!-- step 3 -->
+    <!-- 3 -->
     <div id="s3" class="grid" style="display:none">
       <div class="row3">
         <label><span>Nível de atividade</span>
@@ -219,14 +215,15 @@ small.disclaimer{display:block;color:#9fb1c2;text-align:center;margin:12px 0}
       </div>
     </div>
 
-    <!-- step 4 -->
+    <!-- 4 -->
     <div id="s4" class="grid" style="display:none">
       <div class="row3">
         <label><span>Estilo</span>
           <select id="style">
             <option value="neutral" selected>Indiferente</option>
             <option value="natural">Mais natural</option>
-            <option value="pratico">Mais prático/industrializado</option>
+            <option value="pratico">Mais prático/industrializado
+          </option>
           </select>
         </label>
         <label><span>Tempo de preparo</span>
@@ -248,7 +245,7 @@ small.disclaimer{display:block;color:#9fb1c2;text-align:center;margin:12px 0}
       </div>
     </div>
 
-    <!-- step 5 -->
+    <!-- 5 -->
     <div id="s5" class="grid" style="display:none">
       <div class="row">
         <label><span>Usar o que tenho em casa</span>
@@ -569,7 +566,6 @@ function buildVariants(meal, cat){
 function buildDay(nums, cat, prefsActive, prefs, mealsN, style, trainTime, hunger){
   const T = templates(cat, prefsActive, prefs, style);
   // mapa de templates coerentes para posições
-  // 1 = Café, últimas = Jantar
   const refs = [];
   const poolB = T.BREAKS.length? T.BREAKS : [];
   const poolP = T.PF.length? T.PF : [];
@@ -714,13 +710,12 @@ async function exportPDF(){
   const pageW=pdf.internal.pageSize.getWidth();
   const pageH=pdf.internal.pageSize.getHeight();
   const imgW=pageW-40, imgH=canvas.height*(imgW/canvas.width);
-  let y=20;
-  if(imgH<pageH-40){ pdf.addImage(imgData,"PNG",20,y,imgW,imgH); }
+  if(imgH<pageH-40){ pdf.addImage(imgData,"PNG",20,20,imgW,imgH); }
   else{
-    // paginar verticalmente
     let s=0;
+    const sliceH=Math.floor(canvas.width*(pageH-40)/imgW);
     while(s<canvas.height){
-      const slice=canvas.getContext("2d").getImageData(0,s,canvas.width,Math.min(canvas.height-s,Math.floor(canvas.width*(pageH-40)/imgW)));
+      const slice=canvas.getContext("2d").getImageData(0,s,canvas.width,Math.min(canvas.height-s,sliceH));
       const tmp=document.createElement("canvas"); tmp.width=canvas.width; tmp.height=slice.height;
       tmp.getContext("2d").putImageData(slice,0,0);
       const img=tmp.toDataURL("image/png");
