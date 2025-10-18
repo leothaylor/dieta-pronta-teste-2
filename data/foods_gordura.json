@@ -1,6 +1,14 @@
 [
-  { "id": 4101, "name": "Azeite de oliva",        "family": "Gordura", "state": "IN NATURA", "method": "colher", "kcal": 884, "P": 0, "C": 0, "G": 100, "def": 10, "tags": ["temperar","saudável"] },
-  { "id": 4102, "name": "Óleo de coco",           "family": "Gordura", "state": "IN NATURA", "method": "colher", "kcal": 892, "P": 0, "C": 0, "G": 100, "def": 10, "tags": ["cozinha"] },
-  { "id": 4201, "name": "Pasta de amendoim",      "family": "Gordura", "state": "INDUSTRIALIZADO", "method": "colher", "kcal": 588, "P": 25, "C": 20, "G": 50, "def": 15, "tags": ["rápido","snack"] },
-  { "id": 4202, "name": "Castanha de caju",       "family": "Gordura", "state": "IN NATURA", "method": "porção", "kcal": 553, "P": 18, "C": 30, "G": 44, "def": 30, "tags": ["snack"] }
+  { "id": 4101, "name": "Azeite de oliva",          "family": "Gordura", "state": "IN NATURA",      "method": "colher",  "kcal": 884, "P": 0,  "C": 0,  "G": 100, "def": 10, "tags": ["temperar","saudável"] },
+  { "id": 4102, "name": "Óleo de coco",             "family": "Gordura", "state": "IN NATURA",      "method": "colher",  "kcal": 892, "P": 0,  "C": 0,  "G": 100, "def": 10, "tags": ["cozinha"] },
+  { "id": 4103, "name": "Manteiga",                 "family": "Gordura", "state": "INDUSTRIALIZADO","method": "colher",  "kcal": 717, "P": 0.9,"C": 0.1,"G": 81,  "def": 10, "tags": ["cozinha"] },
+  { "id": 4201, "name": "Pasta de amendoim",        "family": "Gordura", "state": "INDUSTRIALIZADO","method": "colher",  "kcal": 588, "P": 25, "C": 20, "G": 50,  "def": 15, "tags": ["rápido","snack"] },
+  { "id": 4202, "name": "Castanha de caju",         "family": "Gordura", "state": "IN NATURA",      "method": "porção",  "kcal": 553, "P": 18, "C": 30, "G": 44,  "def": 30, "tags": ["snack"] },
+  { "id": 4203, "name": "Castanha-do-pará",         "family": "Gordura", "state": "IN NATURA",      "method": "porção",  "kcal": 659, "P": 14, "C": 12, "G": 67,  "def": 20, "tags": ["snack"] },
+  { "id": 4204, "name": "Amendoim torrado",         "family": "Gordura", "state": "IN NATURA",      "method": "porção",  "kcal": 567, "P": 25, "C": 16, "G": 49,  "def": 30, "tags": ["baixo-custo"] },
+  { "id": 4205, "name": "Semente de chia",          "family": "Gordura", "state": "IN NATURA",      "method": "colher",  "kcal": 486, "P": 17, "C": 42, "G": 31,  "def": 15, "tags": ["fibras"] },
+  { "id": 4206, "name": "Semente de linhaça",       "family": "Gordura", "state": "IN NATURA",      "method": "colher",  "kcal": 534, "P": 18, "C": 29, "G": 42,  "def": 15, "tags": ["fibras"] },
+  { "id": 4207, "name": "Abacate",                  "family": "Gordura", "state": "IN NATURA",      "method": "pedaço",  "kcal": 160, "P": 2,  "C": 9,  "G": 15,  "def": 80, "tags": ["fruta","cremoso"] },
+  { "id": 4208, "name": "Maionese light",           "family": "Gordura", "state": "INDUSTRIALIZADO","method": "colher",  "kcal": 330, "P": 1,  "C": 2,  "G": 35,  "def": 12, "tags": ["condimento"] },
+  { "id": 4209, "name": "Azeitona (escorrida)",     "family": "Gordura", "state": "INDUSTRIALIZADO","method": "porção",  "kcal": 115, "P": 0.8,"C": 6,  "G": 10,  "def": 30, "tags": ["acompanhamento"] }
 ]
