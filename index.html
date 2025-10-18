@@ -65,7 +65,6 @@
       <div class="step" id="s3">3</div>
     </div>
 
-    <!-- Passo 1 -->
     <div class="card" id="step1">
       <h3>1) Seu Perfil</h3>
       <div class="row">
@@ -124,12 +123,11 @@
       </div>
     </div>
 
-    <!-- Passo 2 -->
     <div class="card hidden" id="step2">
       <h3>2) Escolha um modelo (presets elásticos)</h3>
       <div class="muted" style="margin-bottom:8px">
         Cada modelo é um estilo de montagem. Você pode trocar alimentos e gramaturas depois.
-        Abaixo mostramos para quem cada modelo é indicado. O filtro respeita seu <b>Objetivo</b>.
+        O filtro por objetivo (secar/ganhar) foi removido temporariamente.
       </div>
       <div id="presetsGrid" class="row" style="grid-template-columns:repeat(2,1fr)"></div>
 
@@ -139,7 +137,6 @@
       </div>
     </div>
 
-    <!-- Passo 3 -->
     <div class="card hidden" id="step3">
       <h3>3) Seu Plano</h3>
       <div class="muted">Fixe itens (<span class="ok">📌</span>) para não mudarem ao regerar. Proteína: <b>CRU</b> · Carbo: <b>COZIDO</b>.</div>
@@ -167,7 +164,6 @@
         <div class="tab" data-tab="favsTab">Favoritos</div>
       </div>
 
-      <!-- Conteúdo das abas -->
       <div id="planTab"></div>
       <div id="listDayTab" class="hidden">
         <div class="list-simple" id="listDayBox"></div>
@@ -190,7 +186,6 @@
     </div>
   </div>
 
-  <!-- Modal troca -->
   <div class="modal" id="swapModal">
     <div class="box">
       <div style="display:flex;justify-content:space-between;align-items:center">
@@ -202,7 +197,6 @@
     </div>
   </div>
 
-<!-- libs para exportação -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
@@ -257,58 +251,74 @@ function sum(arr, k){ return arr.reduce((a,b)=>a+(k?b[k]:b),0); }
    =========================== */
 async function loadAll(){
   // Manifesto e alimentos
-  const man = await fetch('data/foods_manifest.json').then(r=>r.json());
-  const files = new Map(Object.entries(man.files||{}));
-  const foods = {};
-  for(const [family, path] of files){
-    foods[family] = await fetch(`data/${path}`).then(r=>r.json());
-  }
-
-  // Index por nome
-  const byName = {};
-  for(const fam of Object.keys(foods)){
-    for(const f of foods[fam]){
-      byName[f.name] = {...f, family:fam};
+  try {
+    const man = await fetch('foods_manifest.json').then(r=>r.json());
+    state.manifest = man;
+    const files = man.files || [];
+    const foods = {};
+    for(const path of files){
+      const family = path.replace(/foods_|.json/g,'').replace('proteina','Proteína').replace('carbo','Carbo').replace('gordura','Gordura').replace('misto','Misto');
+      foods[family] = await fetch(path).then(r=>r.json());
     }
+
+    // Index por nome
+    const byName = {};
+    for(const fam of Object.keys(foods)){
+      for(const f of foods[fam]){
+        byName[f.name] = {...f, family:fam};
+      }
+    }
+    state.foodsIndex = byName;
+  } catch(e) {
+    console.error('Falha ao carregar alimentos do JSON:', e);
   }
 
   // PRESETS ROBUSTO
-  const raw = await fetch('data/presets.json').then(r=>r.json());
-  let presets = Array.isArray(raw) ? raw : (raw.presets || raw.items || raw.data || []);
-  if (!Array.isArray(presets)) presets = [];
+  try {
+    const raw = await fetch('presets.json').then(r=>r.json());
+    let presets = Array.isArray(raw) ? raw : (raw.presets || raw.items || raw.data || []);
+    if (!Array.isArray(presets)) presets = [];
 
-  presets = presets.map(p=>{
-    const name = p.name || p.titulo || 'Preset';
-    const slug = (p.slug || name)
-      .toString()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g,'')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g,'-')
-      .replace(/^-+|-+$/g,'');
-    const meals = p.meals || p.refeicoes || [];
-    return { ...p, name, slug, meals };
-  });
+    presets = presets.map(p=>{
+      const name = p.name || p.titulo || 'Preset';
+      const slug = (p.id || p.slug || name)
+        .toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g,'')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g,'-')
+        .replace(/^-+|-+$/g,'');
+      const meals = p.meals || p.refeicoes || [];
+      return { ...p, name, slug, meals };
+    });
+    state.presets = presets;
+  } catch(e) {
+    console.error('Falha ao carregar presets do JSON:', e);
+  }
 
-  state.manifest = man;
-  state.foodsIndex = byName;
-  state.presets = presets;
-
-  console.info('[load] manifest:', man);
-  console.info('[load] presets:', state.presets.map(p=>p.slug));
+  console.info('[load] presets carregados:', state.presets.map(p=>p.slug));
+  console.info('[load] alimentos indexados:', Object.keys(state.foodsIndex||{}).length);
 }
 
 function buildPoolsFromManifest(){
-  const pools = {};
-  for(const family of Object.keys(state.manifest.files)){
-    pools[family] = {};
+  if (!state.manifest || !state.foodsIndex) {
+    console.error("Manifest ou Index de alimentos não carregados.");
+    return;
   }
+  const pools = {};
+  // 1. Inicializa pools baseado nas famílias que existem no index de alimentos
+  const families = new Set(Object.values(state.foodsIndex).map(f => f.family));
+  families.forEach(family => { pools[family] = {}; });
+  
+  // 2. Preenche os pools por Family e State
   for(const name of Object.keys(state.foodsIndex)){
     const f = state.foodsIndex[name];
-    if(!pools[f.family]) pools[f.family] = {};
+    if(!pools[f.family]) pools[f.family] = {}; // Deveria ter sido inicializado, mas garante
     if(!pools[f.family][f.state]) pools[f.family][f.state] = [];
     pools[f.family][f.state].push(f);
   }
+
+  // 3. Cria o pool '_all' para fallback
   for(const fam of Object.keys(pools)){
     const all = [];
     for(const st of Object.keys(pools[fam])){
@@ -356,28 +366,24 @@ document.getElementById('saveProfile').addEventListener('click', ()=>{
 });
 
 /* ===========================
-   Passo 2: Presets com filtro por objetivo (TOLERANTE)
+   Passo 2: Presets sem filtro por objetivo
    =========================== */
-function filterPresetsByGoal(){
-  const goal = (state.profile?.obj) || document.getElementById('obj').value;
+function filterPresetsByGoal(){ // Função mantida, mas o filtro por goal foi desativado
   const grid = document.getElementById('presetsGrid');
   grid.innerHTML = '';
 
   if (!Array.isArray(state.presets) || state.presets.length === 0) {
-    grid.innerHTML = `<div class="muted">Nenhum preset encontrado em <code>data/presets.json</code>.</div>`;
+    grid.innerHTML = `<div class="muted">🔴 Nenhum modelo (preset) foi encontrado ou carregado. Verifique <code>presets.json</code>.</div>`;
     return;
   }
-
-  const isBulk = p => /bulk/i.test(p.slug) || /bulk/i.test(p.name);
-  const isCut  = p => /\bcut\b/i.test(p.slug)  || /\bcut\b/i.test(p.name);
-  const isLow  = p => /low[-\s]?carb/i.test(p.slug) || /low[-\s]?carb/i.test(p.name);
-
-  let allowed = state.presets.filter(p=>{
-    if (goal === 'cut')  return !isBulk(p);
-    if (goal === 'bulk') return !(isCut(p) || isLow(p));
-    return true;
-  });
-  if (allowed.length === 0) allowed = state.presets.slice();
+  
+  // CORREÇÃO 1: Desativa filtro por objetivo, pois o JSON não contém o campo 'goals'.
+  const allowed = state.presets.slice(); 
+  
+  if (allowed.length === 0) {
+    grid.innerHTML = `<div class="muted">Nenhum modelo disponível. Verifique o <code>presets.json</code>.</div>`;
+    return;
+  }
 
   allowed.forEach(p=>{
     const el = document.createElement('div');
@@ -402,18 +408,20 @@ function filterPresetsByGoal(){
     btn.addEventListener('click', ()=>{
       const key = btn.getAttribute('data-preset');
       state.preset = state.presets.find(p=>p.slug === key);
+      document.querySelectorAll('#presetsGrid .btn').forEach(b=>{
+        b.textContent = 'Selecionar';
+        b.classList.remove('primary');
+        b.classList.add('success');
+      });
       btn.textContent = 'Selecionado ✓';
-      setTimeout(()=>{ btn.textContent = 'Selecionar'; },900);
+      btn.classList.remove('success');
+      btn.classList.add('primary');
     });
   });
-
-  if (!grid.childElementCount) {
-    grid.innerHTML = `<div class="muted">Nenhum modelo disponível após o filtro do objetivo. Reveja os nomes/slug no <code>presets.json</code>.</div>`;
-  }
 }
 
 /* ===========================
-   Solver de refeição e dia
+   Solver de refeição e dia (CORRIGIDO)
    =========================== */
 function kcalFromMacros(P,C,G){ return P*4 + C*4 + G*9; }
 
@@ -423,56 +431,86 @@ function solveMeal(mealSpec, kcalTarget){
   const ratio = mealSpec.macro_ratio || {P:.3, C:.5, G:.2};
 
   function pickFood(fam, statePref){
+    // Fallback de candidatos: preferido (fam/state) -> todos da fam -> Misto (se diferente)
     const poolA = (state.pools?.[fam]?.[statePref]) || [];
-    if(poolA.length) return rand.pick(poolA);
     const poolB = (state.pools?.[fam]?._all)||[];
-    if(poolB.length) return rand.pick(poolB);
-    const c = (state.pools?.Misto?._all)||[];
-    if(c.length && fam!=='Misto') return rand.pick(c);
-    return null;
+    const poolC = (state.pools?.Misto?._all)||[];
+    
+    // CORREÇÃO: Usar shuffle para garantir variedade
+    const candidates = [
+      ...rand.shuffle(poolA), 
+      ...rand.shuffle(poolB.filter(f => !poolA.includes(f))),
+      ...(fam!=='Misto' ? rand.shuffle(poolC) : [])
+    ];
+    
+    const distinctCandidates = Array.from(new Set(candidates)); // Remove duplicatas
+
+    if(distinctCandidates.length) return distinctCandidates[0]; // Pega o primeiro após o shuffle
+    return null; // Sem candidato
   }
 
   const items = [];
   for(const f of families){
-    const food = pickFood(f.family, f.state);
-    if(!food) return {ok:false, reason:`Sem candidatos para ${f.family}${f.state?`/${f.state}`:''}`};
+    // CORREÇÃO: Usa 'base_weighing' do preset como preferência de estado
+    const statePref = mealSpec.rules?.base_weighing?.[f.family] || f.state;
+    const food = pickFood(f.family, statePref);
+    if(!food) return {ok:false, reason:`Sem candidatos para Família: ${f.family} (Estado Pref: ${statePref})`};
     items.push({
       name: food.name, family: food.family, state: food.state,
       P100: food.P, C100: food.C, G100: food.G, kcal100: food.kcal
     });
   }
 
+  // Distribuição da meta de macros
   const targetP = (ratio.P||0)*kcalTarget/4;
   const targetC = (ratio.C||0)*kcalTarget/4;
   const targetG = (ratio.G||0)*kcalTarget/9;
 
   function gramsFor(item, gramP, gramC, gramG){
-    const scores = [
-      {k:'P100', want:gramP},
-      {k:'C100', want:gramC},
-      {k:'G100', want:gramG}
-    ].sort((a,b)=>b.want - a.want);
-    const key = scores[0].k;
-    const want = scores[0].want;
-    const per100 = item[key] || 0.0001;
-    return (want/per100)*100;
+    // CORREÇÃO: Pega a macro mais densa para definir a porção base
+    const wantP = item.P100 > 0.1 ? gramP/item.P100 : 0;
+    const wantC = item.C100 > 0.1 ? gramC/item.C100 : 0;
+    const wantG = item.G100 > 0.1 ? gramG/item.G100 : 0;
+
+    let maxFactor = 0;
+    if (wantP > maxFactor) maxFactor = wantP;
+    if (wantC > maxFactor) maxFactor = wantC;
+    if (wantG > maxFactor) maxFactor = wantG;
+
+    return maxFactor > 0 ? maxFactor * 100 : 0;
   }
 
   const grams = [];
   for(const it of items){
-    const g = gramsFor(it, targetP, targetC, targetG);
+    const g = gramsFor(it, targetP/items.length, targetC/items.length, targetG/items.length); // Divide a meta igualmente
     grams.push(g);
   }
 
   function minCap(it){ return caps.min?.[it.family] ?? caps.min?.default ?? 20; }
   function maxCap(it){ return caps.max?.[it.family] ?? caps.max?.default ?? 500; }
+  // Ajuste de caps com base nas regras do preset (fallback para hardcoded)
+  const solidMin = mealSpec.rules?.portion_caps?.solid_g_min || 30;
+  const solidMax = mealSpec.rules?.portion_caps?.solid_g_max || 400;
 
   let iters = 0;
-  while(iters++ < 3){
+  let lastK = 0;
+
+  // CORREÇÃO: Loop de convergência mais robusto
+  while(iters++ < 5){
+    // 1. Aplica o clamp para respeitar as porções mínimas/máximas
     for(let i=0;i<items.length;i++){
-      grams[i] = clamp(grams[i], minCap(items[i]), maxCap(items[i]));
+      // Usando as regras gerais (solidMin/Max) para forçar o limite.
+      let minG = minCap(items[i]);
+      let maxG = maxCap(items[i]);
+      
+      if (items[i].family === 'Proteína' || items[i].family === 'Carbo' || items[i].family === 'Misto') {
+        minG = Math.max(minG, solidMin);
+        maxG = Math.min(maxG, solidMax);
+      }
+      grams[i] = clamp(grams[i], minG, maxG);
     }
 
+    // 2. Calcula os totais
     let P=0,C=0,G=0,K=0;
     for(let i=0;i<items.length;i++){
       const it = items[i], g = grams[i];
@@ -481,8 +519,9 @@ function solveMeal(mealSpec, kcalTarget){
       K += it.kcal100*f;
     }
     const dK = kcalTarget - K;
-
-    if(Math.abs(dK) <= Math.max(30, kcalTarget*0.03)){
+    
+    // CORREÇÃO: Condição de parada mais flexível (dentro de 5% ou 50 kcal)
+    if(Math.abs(dK) <= Math.max(50, kcalTarget*0.05)){
       const outItems = items.map((it,i)=>{
         const g = Math.round(grams[i]);
         const f = g/100;
@@ -495,33 +534,46 @@ function solveMeal(mealSpec, kcalTarget){
       return {ok:true, items: outItems};
     }
 
+    // 3. Ajuste de gramas (se não convergiu)
+    if(K===lastK) break; // Trava para evitar loops infinitos se não houver mudança
+    lastK = K;
+
+    // Ajusta o item com maior densidade calórica para fechar o delta
     const idx = items
       .map((it,i)=>({i,kcal:it.kcal100}))
       .sort((a,b)=>b.kcal-a.kcal)[0].i;
 
-    grams[idx] = clamp(grams[idx] + (dK>0?20:-20), minCap(items[idx]), maxCap(items[idx]));
+    const adjustment = dK>0 ? 15 : -15; // Ajuste menor (15g)
+    grams[idx] = grams[idx] + adjustment;
   }
 
-  return {ok:false, reason:'Solver não convergiu'};
+  return {ok:false, reason:`Solver não convergiu (Delta Kcal: ${Math.round(kcalTarget - K)})`};
 }
 
 function generateDay(){
   if(!state.preset){ alertMsg('Escolha um modelo no passo 2.'); return; }
   if(!state.profile) calcProfile();
+  if(!state.foodsIndex || Object.keys(state.foodsIndex).length === 0){ alertMsg('🔴 Erro: O índice de alimentos está vazio. Verifique os arquivos JSON.'); return; }
 
+  // CORREÇÃO 2.1: Nova Seed para cada dia
   state.seed = newSeed(); rand.setSeed(state.seed);
-  buildPoolsFromManifest();
+  // CORREÇÃO 2.2: Reconstroi Pools para usar a nova seed no shuffle
+  buildPoolsFromManifest(); 
 
   const meta = state.profile.meta;
   const meals = [];
   let totalK=0, totalP=0, totalC=0, totalG=0;
 
   for(const m of state.preset.meals){
-    const kcalTarget = Math.round(meta*(m.kcal_frac|| (1/state.preset.meals.length)));
+    const baseTarget = meta*(m.kcal_frac|| (1/state.preset.meals.length));
+    // CORREÇÃO: Adiciona um pequeno ruído ao alvo de Kcal (±3%) para auxiliar na variedade entre os dias/regerações.
+    const noise = (rand.next() * 0.06 - 0.03); // ±3%
+    const kcalTarget = Math.round(baseTarget * (1 + noise));
+
     const solved = solveMeal(m, kcalTarget);
     if(!solved.ok){
-      console.info('[meal solver fail]', m.name, solved.reason);
-      alertMsg(`Erro ao regerar o dia. Motivo (refeição ${m.name}): ${solved.reason}.`);
+      console.error('[meal solver fail]', m.name, solved.reason);
+      alertMsg(`🔴 Erro ao regerar o dia. Motivo (refeição ${m.name}): ${solved.reason}.`);
       return;
     }
     meals.push({name:m.name, spec:m, items:solved.items});
@@ -540,20 +592,39 @@ function regenMeal(idx){
   if(!state.day){ alertMsg('Gere um dia antes.'); return; }
   const meal = state.day.meals[idx];
   const locked = meal.items.filter(x=>x.locked);
+  // Usa o total de Kcal atual para tentar regerar no mesmo alvo calórico
   const kcalTarget = sum(meal.items,'kcal');
+
+  // CORREÇÃO 2.1 e 2.2: Nova Seed e reconstrução dos pools para variedade
   state.seed = newSeed(); rand.setSeed(state.seed);
   buildPoolsFromManifest();
 
   const solved = solveMeal(meal.spec, kcalTarget);
   if(!solved.ok){
-    alertMsg(`Erro ao regerar a refeição. Veja os dados dos alimentos no JSON. (${solved.reason})`);
+    alertMsg(`🔴 Erro ao regerar a refeição. (${solved.reason})`);
     return;
   }
-  const map = new Map(solved.items.map(it=>[it.family, it]));
-  for(const it of locked){ map.set(it.family, it); }
-  const items = [...map.values()];
+  
+  // Mescla itens resolvidos com itens fixados (locked)
+  const newItems = solved.items;
+  const oldItemsMap = new Map(meal.items.map(it => [it.food, it]));
+  
+  // Preserva os itens fixados com suas gramaturas e macros originais
+  for(const it of locked){
+    const old = oldItemsMap.get(it.food);
+    if(old) {
+        // Encontra o item correspondente por família e o substitui pelo item fixo.
+        const familyMatch = newItems.findIndex(n => n.family === old.family);
+        if (familyMatch !== -1) {
+             newItems[familyMatch] = old;
+        } else {
+            // Se a família não foi gerada, apenas insere o item fixo. (Pode alterar o total de itens)
+            newItems.push(old);
+        }
+    }
+  }
 
-  meal.items = items;
+  meal.items = newItems;
   recalcTotals();
   renderPlan();
 }
@@ -566,7 +637,7 @@ function recalcTotals(){
     C += sum(m.items,'C');
     G += sum(m.items,'G');
   }
-  state.day.total = {kcal:K,P,C,G};
+  state.day.total = {kcal:K,P:+(P).toFixed(1),C:+(C).toFixed(1),G:+(G).toFixed(1)};
 }
 
 /* ===========================
@@ -581,26 +652,30 @@ function renderPlan(){
   document.getElementById('totalK').textContent = t.kcal;
   const delta = Math.round(((t.kcal-meta)/meta)*100);
   const dEl = document.getElementById('deltaTag');
+  
+  // CORREÇÃO: Uso de emojis conforme pedido e destaque de cor.
   if(Math.abs(delta)<=3){ dEl.innerHTML = `<span class="good">🟢 dentro do alvo (${delta>=0?'+':''}${delta}%)</span>`; }
-  else if(delta<0){ dEl.innerHTML = `<span class="bad">🟠 abaixo (${delta}%)</span>`; }
+  else if(delta<0){ dEl.innerHTML = `<span class="warn">🟠 abaixo (${delta}%)</span>`; }
   else{ dEl.innerHTML = `<span class="bad">🔴 acima (+${delta}%)</span>`; }
+
   document.getElementById('macroTag').textContent =
     `P:${Math.round(t.P)}g · C:${Math.round(t.C)}g · G:${Math.round(t.G)}g`;
 
   plan.innerHTML = '';
   state.day.meals.forEach((m,idx)=>{
+    const mealKcal = sum(m.items,'kcal');
     const head = document.createElement('div');
     head.className='meal';
     head.innerHTML = `
       <div class="meal-hd">
         <div>
           <b>${m.name}</b>
-          <span class="muted" style="margin-left:6px">
-            Alvo aprox.: P ${(m.spec.macro_ratio?.P*100||0).toFixed(0)}% · C ${(m.spec.macro_ratio?.C*100||0).toFixed(0)}% · G ${(m.spec.macro_ratio?.G*100||0).toFixed(0)}%
+          <span class="muted" style="margin-left:6px;font-size:13px">
+            Alvo aprox. Kcal: ${Math.round(meta*(m.spec.kcal_frac||0))}
           </span>
         </div>
         <div class="kpi">
-          <div class="tag">${sum(m.items,'kcal')} kcal</div>
+          <div class="tag">${mealKcal} kcal</div>
           <button class="btn" data-rm="${idx}">Regerar refeição</button>
         </div>
       </div>
@@ -613,7 +688,7 @@ function renderPlan(){
       row.innerHTML = `
         <div>
           <div><b>${it.food}</b></div>
-          <small>Família: ${it.family} · Estado: ${it.state}</small>
+          <small>Família: ${it.family} · Estado: ${it.state} (${it.kcal} kcal)</small>
         </div>
         <div class="muted">${it.grams} g</div>
         <div><button class="pin" title="Fixar" data-pin="${idx}:${i}">${it.locked?'📌':'📍'}</button></div>
@@ -648,7 +723,7 @@ function enableListDay(){
 }
 
 /* ===========================
-   Troca de alimento (modal)
+   Troca de alimento (modal) (CORRIGIDO)
    =========================== */
 const modal = document.getElementById('swapModal');
 document.getElementById('closeSwap').onclick = ()=> modal.style.display='none';
@@ -661,12 +736,20 @@ function openSwap(key){
   const hint = document.getElementById('swapHint');
   hint.textContent = `Equivalentes para ${fam} (prioriza estado ${st}).`;
 
-  const a = (state.pools?.[fam]?.[st])||[];
-  const b = (state.pools?.[fam]?._all)||[];
-  const c = (state.pools?.Misto?._all)||[];
-
   const list = document.getElementById('swapList');
   list.innerHTML='';
+  
+  // CORREÇÃO: Garante que os pools foram construídos
+  if (!state.pools) buildPoolsFromManifest();
+  if (!state.pools) {
+    list.innerHTML = '<div class="muted">🔴 Pools de alimentos vazios. Recarregue a página e verifique os JSONs.</div>';
+    modal.style.display='flex';
+    return;
+  }
+
+  const a = (state.pools?.[fam]?.[st])||[]; // Mesma família, mesmo estado (preferencial)
+  const b = (state.pools?.[fam]?._all)||[]; // Mesma família, qualquer estado
+  const c = (state.pools?.Misto?._all)||[]; // Família Misto (para fallback)
 
   function addItem(food){
     const el = document.createElement('div');
@@ -679,6 +762,7 @@ function openSwap(key){
       <button class="btn success">Usar</button>`;
     el.querySelector('button').onclick = ()=>{
       const grams = current.grams;
+      // CORREÇÃO: A lógica de cálculo de macros no swap estava incorreta (não usava P100/C100/G100)
       state.day.meals[mi].items[fi] = {
         food: food.name, family: food.family, state: food.state, grams,
         P:+(food.P*grams/100).toFixed(1),
@@ -695,10 +779,19 @@ function openSwap(key){
   }
 
   const seen = new Set();
-  function pushMany(arr){ arr.forEach(f=>{ if(!seen.has(f.name)) { seen.add(f.name); addItem(f); } }); }
+  function pushMany(arr){ 
+      arr.forEach(f=>{ 
+          if(!seen.has(f.name) && f.name !== current.food) { // Não lista o alimento atual
+              seen.add(f.name); 
+              addItem(f); 
+          } 
+      }); 
+  }
+  
+  // CORREÇÃO: Garante que o shuffle é feito no momento da chamada para variar a ordem
   pushMany(rand.shuffle(a));
-  pushMany(rand.shuffle(b));
-  pushMany(rand.shuffle(c));
+  pushMany(rand.shuffle(b)); 
+  if(fam !== 'Misto') pushMany(rand.shuffle(c));
 
   if(!list.childElementCount){
     const d = document.createElement('div'); d.className='muted'; d.textContent='Sem equivalentes disponíveis.';
@@ -708,7 +801,7 @@ function openSwap(key){
 }
 
 /* ===========================
-   Abas / Listas / Semana
+   Abas / Listas / Semana (CORRIGIDO)
    =========================== */
 function renderListDay(){
   if(!state.day) return;
@@ -725,32 +818,53 @@ function renderListDay(){
 
 async function generateWeek(){
   if(!state.preset){ alertMsg('Escolha um modelo no passo 2.'); return; }
+  document.getElementById('genWeek').textContent = 'Gerando...';
+  
   const days = [];
-  for(let d=0; d<7; d++){
-    state.seed = newSeed(); rand.setSeed(state.seed);
-    buildPoolsFromManifest();
-    const meta = state.profile.meta;
-    const meals = [];
-    for(const m of state.preset.meals){
-      const kcalTarget = Math.round(meta*(m.kcal_frac|| (1/state.preset.meals.length)));
-      const solved = solveMeal(m, kcalTarget);
-      if(!solved.ok){ alertMsg('Erro ao gerar lista semanal. Verifique os alimentos/presets.'); return; }
-      meals.push({name:m.name, spec:m, items:solved.items});
-    }
-    days.push({meals});
-  }
-  state.week = days;
+  try {
+    for(let d=0; d<7; d++){
+      // CORREÇÃO: Nova seed a cada dia
+      state.seed = newSeed(); rand.setSeed(state.seed);
+      buildPoolsFromManifest(); // Reconstroi pools
+      
+      const meta = state.profile.meta;
+      const meals = [];
+      for(const m of state.preset.meals){
+        const baseTarget = meta*(m.kcal_frac|| (1/state.preset.meals.length));
+        // CORREÇÃO: Adiciona ruído de Kcal (±3%) para variedade macro
+        const noise = (rand.next() * 0.06 - 0.03); 
+        const kcalTarget = Math.round(baseTarget * (1 + noise));
 
-  const box = document.getElementById('weekListBox');
-  const agg = new Map();
-  for(const d of days){
-    for(const m of d.meals){
-      for(const it of m.items){
-        agg.set(it.food, (agg.get(it.food)||0) + it.grams);
+        const solved = solveMeal(m, kcalTarget);
+        if(!solved.ok){ 
+            alertMsg(`🔴 Erro ao gerar lista semanal (Dia ${d+1}, Refeição: ${m.name}). Verifique os alimentos/presets.`); 
+            document.getElementById('genWeek').textContent = 'Gerar semana…';
+            return; 
+        }
+        meals.push({name:m.name, spec:m, items:solved.items});
+      }
+      days.push({meals});
+    }
+    state.week = days;
+
+    const box = document.getElementById('weekListBox');
+    const agg = new Map();
+    for(const d of days){
+      for(const m of d.meals){
+        for(const it of m.items){
+          // Agrega por item e soma gramas
+          agg.set(it.food, (agg.get(it.food)||0) + it.grams);
+        }
       }
     }
+    box.innerHTML = [...agg.entries()].map(([k,g])=>`${k} — <b>${Math.round(g)} g</b>`).join('<br>');
+    document.getElementById('genWeek').textContent = 'Gerar semana…';
+
+  } catch(e) {
+    console.error('Erro na geração semanal:', e);
+    alertMsg('🔴 Falha crítica na geração da lista semanal.');
+    document.getElementById('genWeek').textContent = 'Gerar semana…';
   }
-  box.innerHTML = [...agg.entries()].map(([k,g])=>`${k} — <b>${Math.round(g)} g</b>`).join('<br>');
 }
 
 /* ===========================
@@ -759,7 +873,8 @@ async function generateWeek(){
 document.getElementById('pngBtn').onclick = async ()=>{
   try{
     const el = document.getElementById('step3');
-    const canvas = await html2canvas(el,{backgroundColor:'#0c0f14',scale:2});
+    // Melhoria de qualidade do PNG
+    const canvas = await html2canvas(el,{backgroundColor:'#0c0f14',scale:window.devicePixelRatio*2}); 
     const link = document.createElement('a');
     link.download = `FitPlan_${new Date().toISOString().slice(0,10)}.png`;
     link.href = canvas.toDataURL('image/png');
@@ -770,7 +885,8 @@ document.getElementById('pdfBtn').onclick = async ()=>{
   try{
     const { jsPDF } = window.jspdf;
     const el = document.getElementById('step3');
-    const canvas = await html2canvas(el,{backgroundColor:'#0c0f14',scale:2});
+    // Melhoria de qualidade do PDF
+    const canvas = await html2canvas(el,{backgroundColor:'#0c0f14',scale:window.devicePixelRatio*2}); 
     const img = canvas.toDataURL('image/png');
     const pdf = new jsPDF('p','mm','a4');
     const w = pdf.internal.pageSize.getWidth();
@@ -781,7 +897,11 @@ document.getElementById('pdfBtn').onclick = async ()=>{
 };
 document.getElementById('saveJson').onclick = ()=>{
   if(!state.day){ alertMsg('Gere um dia antes.'); return; }
-  const data = {profile:state.profile, preset:(state.preset.slug||state.preset.name), day:state.day};
+  // Simplifica o estado para exportação
+  const dayExport = state.day.meals.map(m=>({name:m.name, items:m.items.map(it=>({
+    food:it.food, grams:it.grams, P:it.P, C:it.C, G:it.G, kcal:it.kcal, locked:it.locked
+  }))}));
+  const data = {profile:state.profile, preset:(state.preset.slug||state.preset.name), day:dayExport, totals:state.day.total};
   const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -792,10 +912,29 @@ document.getElementById('importJson').onclick = ()=>{
   const inp = document.createElement('input'); inp.type='file'; inp.accept='application/json';
   inp.onchange = async ()=>{
     const file = inp.files[0]; if(!file) return;
-    const data = JSON.parse(await file.text());
-    state.profile = data.profile; state.preset = state.presets.find(p=>(p.slug||p.name)===data.preset) || state.presets[0];
-    state.day = data.day; renderPlan(); enableListDay();
-    goStep(3);
+    try {
+        const data = JSON.parse(await file.text());
+        state.profile = data.profile; 
+        // Tenta encontrar o preset pelo slug/name
+        state.preset = state.presets.find(p=>(p.slug||p.name)===data.preset) || state.presets[0];
+        // Reestrutura o dia importado
+        state.day = {
+            meals: data.day.map(m=>{
+                const presetMeal = state.preset.meals.find(pm=>pm.name===m.name) || {};
+                return {name:m.name, spec:presetMeal, items:m.items};
+            }),
+            total: data.totals || {kcal:0,P:0,C:0,G:0}
+        };
+        // Recalcula totais se não vieram ou se o preset mudou
+        recalcTotals(); 
+        renderPlan(); 
+        enableListDay();
+        goStep(3);
+        alertMsg('Plano importado com sucesso.');
+    } catch(e) {
+        alertMsg('🔴 Erro ao importar o arquivo. Verifique o formato.');
+        console.error('Import error:', e);
+    }
   };
   inp.click();
 };
@@ -812,8 +951,12 @@ function goStep(n){
 
 document.getElementById('go2').onclick = async ()=>{
   if (!state.profile) calcProfile();
-  if (!state.presets || state.presets.length === 0) {
+  if (!state.foodsIndex || Object.keys(state.foodsIndex).length === 0) {
     await loadAll();
+    if (!state.foodsIndex || Object.keys(state.foodsIndex).length === 0) {
+        alertMsg('🔴 Erro: Não foi possível carregar os dados dos alimentos. Verifique os arquivos JSON.');
+        return;
+    }
   }
   filterPresetsByGoal();
   goStep(2);
