@@ -1,1 +1,53 @@
 
+[
+  {
+    "id": 2101,
+    "name": "Peito de frango (cru)",
+    "family": "Proteína",
+    "state": "CRU",
+    "method": "in natura",
+    "kcal": 120, "P": 22, "C": 0, "G": 3,
+    "def": 120,
+    "tags": ["frango","caseiro"]
+  },
+  {
+    "id": 2102,
+    "name": "Peito de frango (cozido)",
+    "family": "Proteína",
+    "state": "COZIDO",
+    "method": "cozido",
+    "kcal": 165, "P": 31, "C": 0, "G": 3.6,
+    "def": 100,
+    "tags": ["franco","caseiro","pronto"]
+  },
+  {
+    "id": 2103,
+    "name": "Peito de frango (assado)",
+    "family": "Proteína",
+    "state": "ASSADO",
+    "method": "assado",
+    "kcal": 170, "P": 30, "C": 0, "G": 5,
+    "def": 100,
+    "tags": ["frango","forno","pronto"]
+  },
+  {
+    "id": 2201,
+    "name": "Patinho moído (cozido)",
+    "family": "Proteína",
+    "state": "COZIDO",
+    "method": "cozido",
+    "kcal": 180, "P": 26, "C": 0, "G": 8,
+    "def": 100,
+    "tags": ["bovino","caseiro","pronto"]
+  },
+  {
+    "id": 2301,
+    "name": "Ovos de galinha (cozidos)",
+    "family": "Proteína",
+    "state": "COZIDO",
+    "method": "cozido",
+    "kcal": 155, "P": 13, "C": 1.1, "G": 11,
+    "def": 100,
+    "tags": ["ovo","rápido","baixo-custo"]
+  }
+]
