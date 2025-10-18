@@ -247,7 +247,7 @@ function clamp(x,min,max){ return Math.max(min, Math.min(max, x)); }
 function sum(arr, k){ return arr.reduce((a,b)=>a+(k?b[k]:b),0); }
 
 /* ===========================
-   Carregamento dos dados (ROBUSTO)
+   Carregamento dos dados (ROBUSTO) - CORRIGIDO O FETCH
    =========================== */
 async function loadAll(){
   // Manifesto e alimentos
@@ -256,10 +256,23 @@ async function loadAll(){
     state.manifest = man;
     const files = man.files || [];
     const foods = {};
+    const promises = [];
+    
+    // Processa cada arquivo listado no manifest
     for(const path of files){
-      const family = path.replace(/foods_|.json/g,'').replace('proteina','Proteína').replace('carbo','Carbo').replace('gordura','Gordura').replace('misto','Misto');
-      foods[family] = await fetch(path).then(r=>r.json());
+        const family = path.replace(/foods_|.json/g,'')
+                           .replace('proteina','Proteína')
+                           .replace('carbo','Carbo')
+                           .replace('gordura','Gordura')
+                           .replace('misto','Misto');
+        
+        // CORREÇÃO: Usa o caminho exato do manifest (path) para o fetch
+        promises.push(fetch(path).then(r=>r.json()).then(data => {
+            foods[family] = data;
+        }));
     }
+    
+    await Promise.all(promises);
 
     // Index por nome
     const byName = {};
@@ -271,6 +284,7 @@ async function loadAll(){
     state.foodsIndex = byName;
   } catch(e) {
     console.error('Falha ao carregar alimentos do JSON:', e);
+    alertMsg('🔴 Erro: Não foi possível carregar os dados dos alimentos. Verifique os arquivos JSON.');
   }
 
   // PRESETS ROBUSTO
@@ -452,9 +466,9 @@ function solveMeal(mealSpec, kcalTarget){
   const items = [];
   for(const f of families){
     // CORREÇÃO: Usa 'base_weighing' do preset como preferência de estado
-    const statePref = mealSpec.rules?.base_weighing?.[f.family] || f.state;
-    const food = pickFood(f.family, statePref);
-    if(!food) return {ok:false, reason:`Sem candidatos para Família: ${f.family} (Estado Pref: ${statePref})`};
+    const statePref = mealSpec.rules?.base_weighing?.[f] || f.state; // Usa f para a família do preset
+    const food = pickFood(f, statePref);
+    if(!food) return {ok:false, reason:`Sem candidatos para Família: ${f} (Estado Pref: ${statePref})`};
     items.push({
       name: food.name, family: food.family, state: food.state,
       P100: food.P, C100: food.C, G100: food.G, kcal100: food.kcal
@@ -486,12 +500,14 @@ function solveMeal(mealSpec, kcalTarget){
     grams.push(g);
   }
 
-  function minCap(it){ return caps.min?.[it.family] ?? caps.min?.default ?? 20; }
-  function maxCap(it){ return caps.max?.[it.family] ?? caps.max?.default ?? 500; }
+  function minCap(it){ return caps.solid_g_min ?? 30; }
+  function maxCap(it){ return caps.solid_g_max ?? 400; }
+
   // Ajuste de caps com base nas regras do preset (fallback para hardcoded)
   const solidMin = mealSpec.rules?.portion_caps?.solid_g_min || 30;
   const solidMax = mealSpec.rules?.portion_caps?.solid_g_max || 400;
 
+  let K=0;
   let iters = 0;
   let lastK = 0;
 
@@ -499,19 +515,19 @@ function solveMeal(mealSpec, kcalTarget){
   while(iters++ < 5){
     // 1. Aplica o clamp para respeitar as porções mínimas/máximas
     for(let i=0;i<items.length;i++){
-      // Usando as regras gerais (solidMin/Max) para forçar o limite.
-      let minG = minCap(items[i]);
-      let maxG = maxCap(items[i]);
+      let minG = solidMin;
+      let maxG = solidMax;
       
-      if (items[i].family === 'Proteína' || items[i].family === 'Carbo' || items[i].family === 'Misto') {
-        minG = Math.max(minG, solidMin);
-        maxG = Math.min(maxG, solidMax);
+      if (items[i].family === 'Gordura') {
+        minG = mealSpec.rules?.portion_caps?.oil_g_min || 5;
+        maxG = mealSpec.rules?.portion_caps?.oil_g_max || 20;
       }
       grams[i] = clamp(grams[i], minG, maxG);
     }
 
     // 2. Calcula os totais
-    let P=0,C=0,G=0,K=0;
+    let P=0,C=0,G=0;
+    K=0;
     for(let i=0;i<items.length;i++){
       const it = items[i], g = grams[i];
       const f = g/100;
@@ -576,7 +592,7 @@ function generateDay(){
       alertMsg(`🔴 Erro ao regerar o dia. Motivo (refeição ${m.name}): ${solved.reason}.`);
       return;
     }
-    meals.push({name:m.name, spec:m, items:solved.items});
+    meals.push({name:m.name, spec:m, items:solved.items, rules:state.preset.rules});
     totalK += sum(solved.items,'kcal');
     totalP += sum(solved.items,'P');
     totalC += sum(solved.items,'C');
@@ -599,7 +615,10 @@ function regenMeal(idx){
   state.seed = newSeed(); rand.setSeed(state.seed);
   buildPoolsFromManifest();
 
-  const solved = solveMeal(meal.spec, kcalTarget);
+  // Garante que meal.spec contenha as regras do preset
+  const mealSpecWithRules = {...meal.spec, rules: state.preset.rules};
+  
+  const solved = solveMeal(mealSpecWithRules, kcalTarget);
   if(!solved.ok){
     alertMsg(`🔴 Erro ao regerar a refeição. (${solved.reason})`);
     return;
@@ -607,11 +626,11 @@ function regenMeal(idx){
   
   // Mescla itens resolvidos com itens fixados (locked)
   const newItems = solved.items;
-  const oldItemsMap = new Map(meal.items.map(it => [it.food, it]));
+  const oldItemsMap = new Map(meal.items.map(it => [it.family, it]));
   
   // Preserva os itens fixados com suas gramaturas e macros originais
   for(const it of locked){
-    const old = oldItemsMap.get(it.food);
+    const old = oldItemsMap.get(it.family);
     if(old) {
         // Encontra o item correspondente por família e o substitui pelo item fixo.
         const familyMatch = newItems.findIndex(n => n.family === old.family);
@@ -762,13 +781,19 @@ function openSwap(key){
       <button class="btn success">Usar</button>`;
     el.querySelector('button').onclick = ()=>{
       const grams = current.grams;
-      // CORREÇÃO: A lógica de cálculo de macros no swap estava incorreta (não usava P100/C100/G100)
+      // O item do foodsIndex é um objeto completo.
+      const foodData = state.foodsIndex[food.name];
+      if (!foodData) {
+          alertMsg('Erro: Dados do alimento de troca não encontrados.');
+          return;
+      }
+
       state.day.meals[mi].items[fi] = {
-        food: food.name, family: food.family, state: food.state, grams,
-        P:+(food.P*grams/100).toFixed(1),
-        C:+(food.C*grams/100).toFixed(1),
-        G:+(food.G*grams/100).toFixed(1),
-        kcal:Math.round(food.kcal*grams/100),
+        food: foodData.name, family: foodData.family, state: foodData.state, grams,
+        P:+(foodData.P*grams/100).toFixed(1),
+        C:+(foodData.C*grams/100).toFixed(1),
+        G:+(foodData.G*grams/100).toFixed(1),
+        kcal:Math.round(foodData.kcal*grams/100),
         locked:false
       };
       recalcTotals();
@@ -834,8 +859,11 @@ async function generateWeek(){
         // CORREÇÃO: Adiciona ruído de Kcal (±3%) para variedade macro
         const noise = (rand.next() * 0.06 - 0.03); 
         const kcalTarget = Math.round(baseTarget * (1 + noise));
+        
+        // Garante que a especificação da refeição contenha as regras do preset
+        const mealSpecWithRules = {...m, rules: state.preset.rules};
 
-        const solved = solveMeal(m, kcalTarget);
+        const solved = solveMeal(mealSpecWithRules, kcalTarget);
         if(!solved.ok){ 
             alertMsg(`🔴 Erro ao gerar lista semanal (Dia ${d+1}, Refeição: ${m.name}). Verifique os alimentos/presets.`); 
             document.getElementById('genWeek').textContent = 'Gerar semana…';
