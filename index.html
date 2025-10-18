@@ -3,52 +3,51 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Dieta Pronta – v2 (Dispensa + Semana)</title>
+<title>Dieta Pronta — v3 (2 arquivos)</title>
 <style>
 :root{
-  --bg:#0b0f14; --card:#10161d; --ink:#e7eef5; --muted:#9fb1c2; --ring:#1f2a37;
-  --ok:#10B981; --warn:#F59E0B; --err:#EF4444; --br:14px;
+  --bg:#0b0f14; --ink:#e7eef5; --muted:#9fb1c2; --line:#1b2735;
+  --card:#0f141a; --accent:#10B981; --warn:#F59E0B; --err:#EF4444; --br:14px;
 }
-*{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,Segoe UI,Roboto,Arial}
-.appbar{position:sticky;top:0;z-index:10;background:#0b0f14ee;border-bottom:1px solid #0f1720;padding:14px 16px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,Segoe UI,Roboto,Arial}
+.appbar{position:sticky;top:0;z-index:20;background:#0b0f14ee;border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+.appbar .wrap{max-width:1080px;margin:0 auto;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between}
 .appbar h1{margin:0;font-size:18px}
-.container{max-width:1060px;margin:14px auto;padding:0 14px}
-.card{background:var(--card);border:1px solid var(--ring);border-radius:var(--br);padding:12px}
-.grid{display:grid;gap:12px}
-label span{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
-input,select,textarea{width:100%;background:#0f141a;color:var(--ink);border:1px solid #182232;border-radius:10px;padding:10px}
-textarea{min-height:66px;resize:vertical}
+.meta-bar{display:flex;gap:8px;flex-wrap:wrap}
+.badge{background:#0c1520;border:1px solid #15263a;color:#cfe4ff;padding:6px 10px;border-radius:999px;font-size:12px}
+.container{max-width:1080px;margin:14px auto;padding:0 14px;display:grid;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--br);padding:12px}
 .row{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .row3{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}
-.stepper{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
-.stepper .step{padding:6px 10px;border-radius:999px;border:1px solid #223243;background:#0f141a;color:#9fb1c2;font-size:12px}
-.stepper .step.active{background:var(--ok);color:#052018;border-color:#0c8f6d;font-weight:700}
-.btn{display:inline-block;background:#1b2a3a;color:#dfe8f2;border:1px solid #223243;border-radius:10px;padding:10px 14px;cursor:pointer}
-.btn.primary{background:var(--ok);color:#062016;border-color:#0c8f6d;font-weight:700}
+label span{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}
+input,select,textarea{width:100%;background:#0b1117;color:var(--ink);border:1px solid #152334;border-radius:10px;padding:10px}
+textarea{min-height:64px;resize:vertical}
+.btn{display:inline-flex;gap:8px;align-items:center;background:#132638;border:1px solid #1b3247;color:#dbe8f7;border-radius:10px;padding:10px 14px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:#0c8f6d;color:#062016;font-weight:700}
 .btn.ghost{background:transparent}
-.meta{color:var(--muted);font-size:14px}
+.stepper{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.step{padding:6px 10px;border:1px solid #1b3247;border-radius:999px;background:#0b1117;color:#a9bfd5;font-size:12px}
+.step.active{background:var(--accent);color:#052018;border-color:#0c8f6d;font-weight:700}
+hr.sep{border:0;border-top:1px solid var(--line);margin:6px 0 10px}
 .totals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.totals .box{background:#0f141a;border:1px solid #19232e;border-radius:10px;padding:10px;display:flex;flex-direction:column}
+.totals .box{background:#0b1117;border:1px solid #152334;border-radius:10px;padding:10px;display:flex;flex-direction:column}
 .totals .box strong{font-size:12px;color:var(--muted)}
 .totals .box span{font-size:18px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{padding:6px 12px;border:1px solid #1b3247;border-radius:999px;background:#0b1117;color:#a9bfd5;cursor:pointer}
+.tab.active{background:#112130;color:#dbe8f7;border-color:#2a4157}
+.day{border:1px dashed #1f3348;border-radius:12px;padding:10px;margin-top:8px}
 .meals{display:grid;gap:12px}
-.meal{background:var(--card);border:1px solid var(--ring);border-radius:var(--br);padding:12px}
-.meal header{display:flex;align-items:center;justify-content:space-between}
-.meal .kcal{color:var(--ok);font-weight:600}
+.meal{background:#0b1117;border:1px solid #152334;border-radius:12px;padding:12px}
+.meal header{display:flex;justify-content:space-between;align-items:center}
+.kcal{color:var(--accent);font-weight:600}
 .meal ul{list-style:none;margin:8px 0 4px;padding:0;display:grid;gap:6px}
-.meal li{display:flex;justify-content:space-between;align-items:center;background:#0f141a;border:1px solid #182232;border-radius:10px;padding:8px 10px}
-.meal .right{display:flex;gap:8px;align-items:center}
-.meal .macros{display:flex;gap:10px;color:#9fb1c2;font-size:14px}
-small.disclaimer{display:block;color:#9fb1c2;text-align:center;margin:18px 0}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-hr.sep{border:0;border-top:1px solid #15202b;margin:6px 0 10px}
-.badge{display:inline-flex;align-items:center;gap:6px;background:#0c1520;border:1px solid #172636;color:#cfe4ff;padding:6px 10px;border-radius:999px;font-size:12px}
-.day{border:1px dashed #1f3348;border-radius:12px;padding:10px;margin-top:10px}
-.day h3{margin:0 0 6px}
-.day .tot{color:#9fb1c2;font-size:14px}
-@media (max-width:740px){ .row3{grid-template-columns:1fr 1fr}; .totals{grid-template-columns:1fr 1fr} }
+.meal li{display:flex;justify-content:space-between;align-items:center;background:#0e151c;border:1px solid #193043;border-radius:10px;padding:8px 10px}
+.right{display:flex;gap:8px;align-items:center}
+.macros{display:flex;gap:10px;color:#9fb1c2;font-size:14px}
+small.disclaimer{display:block;color:#8fa5bb;text-align:center;margin:16px 0}
 
-/* Modal */
 .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:16px}
 .modal .panel{background:#0f141a;border:1px solid #223243;border-radius:14px;max-width:640px;width:100%;padding:12px}
 .modal header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
@@ -57,24 +56,43 @@ hr.sep{border:0;border-top:1px solid #15202b;margin:6px 0 10px}
 .modal .name{font-weight:600}
 .modal .sub{color:#9fb1c2;font-size:12px}
 
-/* Print */
-@media print{ .appbar, .toolbar, .stepper, .generator { display:none !important } body{ background:#fff; color:#000 } .card{ border:0 } .day{ border:0 } }
+@media (max-width:768px){
+  .row3{grid-template-columns:1fr 1fr}
+  .totals{grid-template-columns:1fr 1fr}
+}
+
+/* impressão */
+@media print{
+  .appbar, .generator, .tabs { display:none !important }
+  body{ background:#fff; color:#000 }
+  .card{ border:0 }
+}
 </style>
 </head>
 <body>
-  <header class="appbar"><h1>Dieta Pronta v2 — Dispensa + Semana (2 arquivos)</h1></header>
+  <div class="appbar">
+    <div class="wrap">
+      <h1>Dieta Pronta v3 — 2 arquivos</h1>
+      <div id="metaTop" class="meta-bar">
+        <span class="badge">kcal —</span>
+        <span class="badge">P —</span>
+        <span class="badge">C —</span>
+        <span class="badge">G —</span>
+      </div>
+    </div>
+  </div>
 
-  <main class="container grid">
-    <!-- =========== ONBOARDING =========== -->
+  <main class="container">
+    <!-- ONBOARDING -->
     <section class="card generator">
       <div class="stepper">
-        <span class="step active" id="s1">1) Objetivo</span>
-        <span class="step" id="s2">2) Dados</span>
-        <span class="step" id="s3">3) Atividade & BF</span>
-        <span class="step" id="s4">4) Preferências & Dispensa</span>
+        <span id="sx1" class="step active">1) Objetivo</span>
+        <span id="sx2" class="step">2) Dados</span>
+        <span id="sx3" class="step">3) Atividade & BF</span>
+        <span id="sx4" class="step">4) Preferências</span>
       </div>
 
-      <div id="step1" class="grid">
+      <div id="step1">
         <div class="row">
           <label><span>Objetivo</span>
             <select id="goal">
@@ -83,12 +101,13 @@ hr.sep{border:0;border-top:1px solid #15202b;margin:6px 0 10px}
               <option value="bulk">Ganhar massa</option>
             </select>
           </label>
-          <div style="display:flex;align-items:end"><button class="btn primary" onclick="nextStep(2)">Continuar</button></div>
+          <div style="display:flex;align-items:end;gap:8px">
+            <button class="btn primary" onclick="goStep(2)">Continuar</button>
+          </div>
         </div>
-        <div class="badge">Déficit leve (10–15%) emagrece com aderência.</div>
       </div>
 
-      <div id="step2" class="grid" style="display:none">
+      <div id="step2" style="display:none">
         <div class="row3">
           <label><span>Sexo</span>
             <select id="sex"><option value="male">Masculino</option><option value="female">Feminino</option></select>
@@ -96,11 +115,14 @@ hr.sep{border:0;border-top:1px solid #15202b;margin:6px 0 10px}
           <label><span>Idade</span><input id="age" type="number" min="14" value="30"/></label>
           <label><span>Altura (cm)</span><input id="height" type="number" min="120" value="175"/></label>
           <label><span>Peso (kg)</span><input id="weight" type="number" min="35" step="0.1" value="75"/></label>
+          <label><span>Gerar</span>
+            <select id="days"><option value="1">Dia único (D1)</option><option value="7" selected>Semana (D1–D7)</option></select>
+          </label>
         </div>
-        <div style="display:flex;gap:8px"><button class="btn" onclick="nextStep(1)">Voltar</button><button class="btn primary" onclick="nextStep(3)">Próximo</button></div>
+        <div><button class="btn" onclick="goStep(1)">Voltar</button> <button class="btn primary" onclick="goStep(3)">Próximo</button></div>
       </div>
 
-      <div id="step3" class="grid" style="display:none">
+      <div id="step3" style="display:none">
         <div class="row3">
           <label><span>Atividade</span>
             <select id="activity">
@@ -114,233 +136,320 @@ hr.sep{border:0;border-top:1px solid #15202b;margin:6px 0 10px}
           <label><span>BF (modo)</span>
             <select id="bfMode"><option value="quick" selected>Rápido (sem fita)</option><option value="navy">Precisão (Navy)</option></select>
           </label>
-          <label><span>Gerar semana inteira</span>
-            <select id="days"><option value="1">Só hoje (D1)</option><option value="7" selected>Semana (D1–D7)</option></select>
-          </label>
+          <div></div>
         </div>
-        <div id="navyFields" class="row" style="display:none">
+        <div id="navyRow" class="row" style="display:none">
           <label><span>Pescoço (cm)</span><input id="neck" type="number" step="0.1"/></label>
           <label><span>Cintura (cm)</span><input id="waist" type="number" step="0.1"/></label>
-          <label><span>Quadril (cm) – feminino</span><input id="hip" type="number" step="0.1"/></label>
+          <label><span>Quadril (cm) — feminino</span><input id="hip" type="number" step="0.1"/></label>
         </div>
-        <div style="display:flex;gap:8px"><button class="btn" onclick="nextStep(2)">Voltar</button><button class="btn primary" onclick="nextStep(4)">Próximo</button></div>
+        <div><button class="btn" onclick="goStep(2)">Voltar</button> <button class="btn primary" onclick="goStep(4)">Próximo</button></div>
       </div>
 
-      <div id="step4" class="grid" style="display:none">
-        <div class="row">
+      <div id="step4" style="display:none">
+        <div class="row3">
           <label><span>Tempo de preparo</span>
             <select id="time"><option value="">Qualquer</option><option value="<15">Rápido (&lt;15min)</option><option value="15-30">Médio (15–30)</option><option value=">30">Elaborado (&gt;30)</option></select>
           </label>
           <label><span>Orçamento</span>
             <select id="budget"><option value="">Qualquer</option><option value="low">Baixo</option><option value="mid">Médio</option><option value="high">Alto</option></select>
           </label>
-        </div>
-        <div class="row">
-          <label><span>Costumo comer</span><textarea id="usually" placeholder="Ex.: arroz, feijão, frango, ovo, iogurte, pão"></textarea></label>
-          <label><span>Quero evitar</span><textarea id="avoid" placeholder="Ex.: glúten, lactose, castanhas, abacate"></textarea></label>
-        </div>
-        <div class="row">
-          <label><span>O que tenho em casa (dispensa)</span><textarea id="pantry" placeholder="Itens separados por vírgula — o plano vai priorizar isso"></textarea></label>
           <label><span>Restrições</span>
             <select id="restr"><option value="">Nenhuma</option><option value="lactoseFree">Sem lactose</option><option value="glutenFree">Sem glúten</option><option value="vegetarian">Vegetariano</option><option value="vegan">Vegano</option></select>
           </label>
         </div>
-        <div class="toolbar">
-          <button class="btn" onclick="nextStep(3)">Voltar</button>
-          <button id="gen" class="btn primary">Gerar plano</button>
-          <span id="meta" class="meta"></span>
+
+        <div class="row">
+          <label><span>Usar o que tenho em casa (ligar/desligar)</span>
+            <div style="display:flex;align-items:center;gap:10px">
+              <input id="usePantry" type="checkbox" checked />
+              <small class="muted">Quando desligado, o plano ignora dispensa/costumo/evitar.</small>
+            </div>
+          </label>
+          <label><span>Gerar plano</span>
+            <button id="gen" class="btn primary" style="width:100%">Gerar</button>
+          </label>
+        </div>
+
+        <div id="pantryBlock">
+          <div class="row">
+            <label><span>Dispensa (o que tenho)</span><textarea id="pantry" placeholder="Ex.: arroz, feijão, frango, ovo, iogurte, pão"></textarea></label>
+            <label><span>Costumo comer</span><textarea id="usually" placeholder="Ex.: banana, aveia, peito de frango, macarrão"></textarea></label>
+          </div>
+          <div class="row">
+            <label><span>Quero evitar</span><textarea id="avoid" placeholder="Ex.: glúten, lactose, castanhas, abacate"></textarea></label>
+            <div></div>
+          </div>
+        </div>
+        <small class="disclaimer">Dica: escreva itens simples separados por vírgula.</small>
+      </div>
+    </section>
+
+    <!-- EXPORT -->
+    <section class="card">
+      <div class="row">
+        <div class="tabs" id="dayTabs"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" onclick="window.print()">Imprimir / PDF</button>
+          <button class="btn" id="shareWpp">WhatsApp</button>
         </div>
       </div>
+      <hr class="sep"/>
+      <div class="totals" id="totals"></div>
     </section>
 
-    <!-- =========== EXPORTAÇÃO =========== -->
+    <!-- PLANO -->
     <section class="card">
-      <div class="toolbar">
-        <button class="btn" onclick="window.print()">Imprimir / PDF</button>
-        <button class="btn" id="whats">Compartilhar WhatsApp</button>
-      </div>
-      <hr class="sep" />
-      <h2 style="margin:4px 0 10px;">Resumo</h2>
-      <div id="totals" class="totals"></div>
+      <h3 style="margin:0 0 8px">Plano</h3>
+      <div id="planWrap"></div>
     </section>
 
-    <!-- =========== DIAS/REFEIÇÕES =========== -->
+    <!-- COMPRAS -->
     <section class="card">
-      <h2 style="margin:4px 0 10px;">Plano</h2>
-      <div id="daysWrap"></div>
-    </section>
-
-    <!-- =========== LISTA DE COMPRAS =========== -->
-    <section class="card">
-      <h2 style="margin:4px 0 10px;">Lista de compras (total)</h2>
+      <h3 style="margin:0 0 8px">Lista de compras (total)</h3>
       <div id="shopping"></div>
     </section>
 
-    <small class="disclaimer">Este plano é educativo e não substitui avaliação profissional.</small>
+    <small class="disclaimer">Material educativo — não substitui avaliação profissional.</small>
   </main>
 
-  <footer style="text-align:center;color:#9fb1c2;padding:18px">Feito com 💚 — Single-file (GitHub Pages)</footer>
-
-  <!-- MODAL TROCAS -->
-  <div class="modal" id="modal"><div class="panel">
-    <header><strong>Trocar alimento</strong><button class="btn ghost" onclick="closeModal()">Fechar</button></header>
-    <ul id="swapList"></ul>
-  </div></div>
+  <!-- MODAL TROCA -->
+  <div class="modal" id="modal">
+    <div class="panel">
+      <header><strong>Trocar alimento</strong><button class="btn ghost" onclick="closeModal()">Fechar</button></header>
+      <ul id="swapList"></ul>
+    </div>
+  </div>
 
 <script>
-/* ======== CORE NUMÉRICO ======== */
-const round=(n,d=0)=>Number(Math.round((+n+Number.EPSILON)*10**d)/10**d);
+/* ===== NUMÉRICO ===== */
+const rnd=(n,d=0)=>Number(Math.round((+n+Number.EPSILON)*10**d)/10**d);
 const clamp=(v,mi,ma)=>Math.min(Math.max(+v,mi),ma);
-const safe =(v,f=0)=>isFinite(+v)?+v:f;
+const ACT={sedentary:1.2,light:1.375,moderate:1.55,high:1.725,athlete:1.9};
+const SPLIT={cut:{p:0.35,c:0.4,f:0.25},maintain:{p:0.30,c:0.45,f:0.25},bulk:{p:0.28,c:0.50,f:0.22}};
+function bmr({sex,w,h,a}){return rnd(10*w+6.25*h-5*a+(sex==="male"?5:-161));}
+function tdee(b,act){return rnd(b*(ACT[act]??1.55));}
+const goalDelta=g=>g==="cut"?-0.15:g==="bulk"?0.08:0;
+function macros(kcal,split){return{proteinG:rnd((kcal*split.p)/4,0),carbsG:rnd((kcal*split.c)/4,0),fatG:rnd((kcal*split.f)/9,0)}}
 
-const ACTIVITY={sedentary:1.2,light:1.375,moderate:1.55,high:1.725,athlete:1.9};
-const DEFAULT_MACROS={cut:{p:0.35,c:0.40,f:0.25},maintain:{p:0.30,c:0.45,f:0.25},bulk:{p:0.28,c:0.50,f:0.22}};
-function bmi(w,h){const m=safe(h)/100;return m?round(safe(w)/(m*m),1):0;}
-function bfQuick(bmiV,age,sex){const s=sex==="male"?1:0;return clamp(round(1.2*bmiV+0.23*age-10.8*s-5.4,1),3,60);}
-function bfNavy(sex,h,neck,waist,hip){if(sex==="male"){if(!h||!neck||!waist)return null;return clamp(round(86.010*Math.log10(waist-neck)-70.041*Math.log10(h)+36.76,1),3,60);}else{if(!h||!neck||!waist||!hip)return null;return clamp(round(163.205*Math.log10(waist+hip-neck)-97.684*Math.log10(h)-78.387,1),6,60);}}
-function bmrMifflin({sex,weightKg,heightCm,age}){const s=sex==="male"?5:-161;return round(10*weightKg+6.25*heightCm-5*age+s);}
-function tdee(bmr,activity){return round(bmr*(ACTIVITY[activity]??1.55));}
-function targetKcal(tdeeVal,goal){const d=goal==="cut"?-0.15:goal==="bulk"?0.08:0;return clamp(round(tdeeVal*(1+d)),900,6000);}
-function macroSplit(goal){return DEFAULT_MACROS[goal]||DEFAULT_MACROS.maintain;}
-function macrosGrams(kcal,{p,c,f}){return{proteinG:round((kcal*p)/4,0),carbsG:round((kcal*c)/4,0),fatG:round((kcal*f)/9,0),kcalTarget:round(kcal)};}
-function proteinMin(goal){if(goal==="cut")return 1.6;if(goal==="bulk")return 2.0;return 1.2;}
-function enforceProtein(weightKg,macros,goal){const min=round(weightKg*proteinMin(goal),0);if(macros.proteinG>=min)return macros;const d=min-macros.proteinG;let c=Math.max(0,macros.carbsG-d);let f=Math.max(0,macros.fatG-Math.max(0,d-(macros.carbsG-c)));return{kcalTarget:macros.kcalTarget,proteinG:min,carbsG:c,fatG:f};}
-function compute({sex,age,heightCm,weightKg,activity,goal,bfMode,neck,waist,hip}){const bmiV=bmi(weightKg,heightCm);const bf=bfMode==="navy"?(bfNavy(sex,heightCm,neck,waist,hip)??bfQuick(bmiV,age,sex)):bfQuick(bmiV,age,sex);const bmr=bmrMifflin({sex,weightKg,heightCm,age});const tdeeV=tdee(bmr,activity);const kcal=targetKcal(tdeeV,goal);let m=macrosGrams(kcal,macroSplit(goal));m=enforceProtein(weightKg,m,goal);return{bmiV,bf,bmr,tdeeV,kcal,macros:m,meta:{goal,activity,bfMode}};}
-
-/* ======== CATÁLOGO ======== */
+/* ===== CATÁLOGO ===== */
 async function loadCatalog(){
   try{const r=await fetch("./meals.json",{cache:"no-store"});if(!r.ok)throw 0;return await r.json();}
-  catch{return{protein:[{"name":"Peito de frango grelhado","kcalPer100":165,"p":31,"c":0,"f":3,"unit":"g"},{"name":"Ovo cozido","kcalPer100":155,"p":13,"c":1.1,"f":11,"unit":"g"},{"name":"Tofu firme","kcalPer100":76,"p":8,"c":1.9,"f":4.8,"unit":"g"}],carbs:[{"name":"Arroz branco cozido","kcalPer100":130,"p":2.4,"c":28,"f":0.3,"unit":"g"},{"name":"Arroz integral","kcalPer100":124,"p":2.6,"c":26,"f":1,"unit":"g"},{"name":"Batata-doce cozida","kcalPer100":90,"p":2,"c":21,"f":0.1,"unit":"g"}],fat:[{"name":"Azeite de oliva","kcalPer100":884,"p":0,"c":0,"f":100,"unit":"ml"},{"name":"Abacate","kcalPer100":160,"p":2,"c":9,"f":15,"unit":"g"},{"name":"Castanha de caju","kcalPer100":553,"p":18,"c":30,"f":44,"unit":"g"}],mixed:[{"name":"Iogurte natural","kcalPer100":61,"p":3.5,"c":4.7,"f":3.3,"unit":"g"},{"name":"Feijão cozido","kcalPer100":76,"p":5.1,"c":14,"f":0.5,"unit":"g"},{"name":"Pão francês","kcalPer100":270,"p":8,"c":57,"f":3,"unit":"g"}]};}
-}
-
-/* ======== PREFS & HELPERS ======== */
-const toList = s => (s||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
-const MEALS = [{key:"breakfast",label:"Café da manhã",pct:0.25},{key:"lunch",label:"Almoço",pct:0.35},{key:"snack",label:"Lanche",pct:0.15},{key:"dinner",label:"Jantar",pct:0.25}];
-const state={catalog:null, nums:null, days:[], totals:null, prefs:null};
-function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
-function portionFromKcal(food,kcalPart){const grams=clamp((kcalPart/(food.kcalPer100||100))*100,10,400);const p=round((grams/100)*(food.p||0)),c=round((grams/100)*(food.c||0)),f=round((grams/100)*(food.f||0));const kcal=round((grams/100)*(food.kcalPer100||100));return{grams:round(grams),p,c,f,kcal,unit:food.unit||"g"};}
-function portionVisual(unit,grams){if(unit==="ml"){const cups=grams/240;if(cups>=1)return`≈ ${round(cups,1)} xíc.`;const tbsp=grams/15;return`≈ ${round(tbsp,0)} col. sopa`;}const cups=grams/140;if(cups>=1)return`≈ ${round(cups,1)} xíc.`;const palms=grams/100;if(palms>=1)return`≈ ${round(palms,1)} palma`;const tbsp=grams/15;return`≈ ${round(tbsp,0)} col. sopa`;}
-
-/* Score por preferências (dispensa/usual/evitar) */
-function scoreFood(food, fam, prefs){
-  let s = 0;
-  const name = (food.name||"").toLowerCase();
-  const inc = (list) => list.some(w => name.includes(w));
-  if (inc(prefs.pantry)) s += 4;         // tenho em casa → prioriza forte
-  if (inc(prefs.usually)) s += 2;        // costumo comer
-  if (inc(prefs.avoid)) s -= 10;         // evitar derruba
-  if (prefs.restr==="lactoseFree" && food.flags?.lactose) s -= 50;
-  if (prefs.restr==="glutenFree"  && food.flags?.gluten)  s -= 50;
-  if (prefs.restr==="vegetarian"  && !food.flags?.vegetarian) s -= 30;
-  if (prefs.restr==="vegan"       && !food.flags?.vegan)  s -= 50;
-  if (prefs.budget && food.priceTier && food.priceTier!==prefs.budget) s -= 2;
-  if (prefs.time && food.timeTag && food.timeTag!==prefs.time) s -= 1;
-  // leve diversidade intra-família
-  s += Math.random();
-  return s;
-}
-function chooseFood(catalog, fam, prefs, fallback){
-  const arr = (catalog[fam]||[]).slice().sort((a,b)=> scoreFood(b,fam,prefs)-scoreFood(a,fam,prefs));
-  if (arr.length && scoreFood(arr[0], fam, prefs) > -5) return arr[0];
-  if (fallback){ const arr2=(catalog[fallback]||[]).slice().sort((a,b)=> scoreFood(b,fallback,prefs)-scoreFood(a,fallback,prefs)); if(arr2.length) return arr2[0]; }
-  return null;
-}
-
-/* Monta uma refeição respeitando preferências */
-function composeMeal(catalog, mealKcal, prefs){
-  const prot=chooseFood(catalog,"protein",prefs,"mixed") || {name:"Proteína",kcalPer100:100,p:20,c:0,f:2,unit:"g"};
-  const carb=chooseFood(catalog,"carbs",prefs,"mixed")   || {name:"Carboidrato",kcalPer100:120,p:3,c:24,f:1,unit:"g"};
-  const fat =chooseFood(catalog,"fat",prefs,"mixed")     || {name:"Gordura",kcalPer100:884,p:0,c:0,f:100,unit:"ml"};
-  const p1=portionFromKcal(prot, mealKcal*0.50);
-  const p2=portionFromKcal(carb, mealKcal*0.35);
-  const p3=portionFromKcal(fat,  mealKcal*0.15);
-  return {
-    kcal: p1.kcal+p2.kcal+p3.kcal,
-    proteinG: p1.p+p2.p+p3.p, carbsG: p1.c+p2.c+p3.c, fatG: p1.f+p2.f+p3.f,
-    items: [
-      {name:prot.name,family:"protein",grams:p1.grams,unit:p1.unit,kcalPer100:prot.kcalPer100},
-      {name:carb.name,family:"carbs",  grams:p2.grams,unit:p2.unit,kcalPer100:carb.kcalPer100},
-      {name:fat.name, family:"fat",    grams:p3.grams,unit:p3.unit,kcalPer100:fat.kcalPer100}
-    ]
-  };
-}
-
-/* Constrói N dias com leve aleatoriedade controlada */
-function buildDays(nums,catalog,prefs,days){
-  const out=[]; let grand={kcal:0,p:0,c:0,f:0}; const baseK=nums.kcal;
-  for(let d=1; d<=days; d++){
-    // pequena variação diária ±3% pra não ficar robótico
-    const dayK = round(baseK * (1 + (Math.random()*0.06-0.03)));
-    const meals = MEALS.map(m=> composeMeal(catalog, round(dayK*m.pct), prefs));
-    const tot = meals.reduce((a,x)=>({kcal:a.kcal+x.kcal,p:a.p+x.proteinG,c:a.c+x.carbsG,f:a.f+x.fatG}),{kcal:0,p:0,c:0,f:0});
-    const totals={kcal:round(tot.kcal),proteinG:round(tot.p),carbsG:round(tot.c),fatG:round(tot.f)};
-    out.push({day:d, meals, totals});
-    grand.kcal+=totals.kcal; grand.p+=totals.proteinG; grand.c+=totals.carbsG; grand.f+=totals.fatG;
+  catch{
+    /* fallback simples se meals.json não for enviado */
+    return {"protein":[{"name":"Peito de frango grelhado","kcalPer100":165,"p":31,"c":0,"f":3,"unit":"g"},{"name":"Ovo cozido","kcalPer100":155,"p":13,"c":1.1,"f":11,"unit":"g"},{"name":"Tilápia grelhada","kcalPer100":128,"p":26,"c":0,"f":3,"unit":"g"}],
+            "carbs":[{"name":"Arroz branco cozido","kcalPer100":130,"p":2.4,"c":28,"f":0.3,"unit":"g"},{"name":"Arroz integral","kcalPer100":124,"p":2.6,"c":26,"f":1,"unit":"g"},{"name":"Batata-doce cozida","kcalPer100":90,"p":2,"c":21,"f":0.1,"unit":"g"},{"name":"Macarrão cozido","kcalPer100":157,"p":5.8,"c":30,"f":0.9,"unit":"g"}],
+            "fat":[{"name":"Azeite de oliva","kcalPer100":884,"p":0,"c":0,"f":100,"unit":"ml"},{"name":"Abacate","kcalPer100":160,"p":2,"c":9,"f":15,"unit":"g"}],
+            "mixed":[{"name":"Iogurte natural","kcalPer100":61,"p":3.5,"c":4.7,"f":3.3,"unit":"g"},{"name":"Feijão cozido","kcalPer100":76,"p":5.1,"c":14,"f":0.5,"unit":"g"},{"name":"Pão francês","kcalPer100":270,"p":8,"c":57,"f":3,"unit":"g"}]};
   }
-  const avg={kcal:round(grand.kcal/days),proteinG:round(grand.p/days),carbsG:round(grand.c/days),fatG:round(grand.f/days)};
-  return {days:out, avg};
 }
 
-/* ======== TROCA (MODAL) ======== */
+/* ===== LÓGICA DE TEMPLATES ===== */
+const MEAL_PCT={breakfast:0.22,lunch:0.35,snack:0.13,dinner:0.30};
+const LIMITS = {
+  protein: {min:120,max:230, step:5},
+  carbs:   {min:100,max:260, step:5},
+  fat:     {min:3,max:12,    step:1, unit:"ml"},
+  mixed:   {min:60,max:220,  step:5}
+};
+const toList = s => (s||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
+
+function byName(cat, nm){
+  nm = nm.toLowerCase();
+  return Object.values(cat).flat().find(x=>x.name.toLowerCase().includes(nm));
+}
+function scale(def, targetKcal, kcalPer100, fam){
+  const baseK = (def/100)*(kcalPer100||100)||1;
+  let grams = def * (targetKcal/baseK);
+  const lim = LIMITS[fam]||{min:60,max:250,step:5};
+  grams = clamp(grams, lim.min, lim.max);
+  // óleos usam "ml"
+  grams = lim.step===1 ? Math.round(grams) : Math.round(grams/lim.step)*lim.step;
+  return grams;
+}
+
+function buildTemplates(cat, prefsActive, prefs){
+  // Itens base
+  const arrozB=byName(cat,"arroz branco")||byName(cat,"arroz");
+  const arrozI=byName(cat,"arroz integral");
+  const feij=byName(cat,"feijão");
+  const batata=byName(cat,"batata-doce");
+  const mac=byName(cat,"macarrão");
+  const azeite=byName(cat,"azeite");
+  const frango=byName(cat,"peito de frango");
+  const tilapia=byName(cat,"tilápia")||byName(cat,"atum");
+  const ovo=byName(cat,"ovo");
+  const iog=byName(cat,"iogurte");
+  const aveia=byName(cat,"aveia");
+  const pao=byName(cat,"pão");
+  const fruta=byName(cat,"banana")||byName(cat,"maçã");
+
+  // filtros (apenas se toggle ligado)
+  const avoid  = (x)=> prefsActive && prefs.avoid.some(w=>x?.name?.toLowerCase().includes(w));
+  const prefer = (x)=> prefsActive && (prefs.pantry.concat(prefs.usually)).some(w=>x?.name?.toLowerCase().includes(w));
+  const boost = arr => arr.sort((A,B)=> (prefer(B.ref)?1:0)-(prefer(A.ref)?1:0));
+
+  // café/lanche
+  const BREAKS = boost([
+    {name:"Pão + proteína + fruta", items:[
+      {ref:pao, fam:"carbs", share:0.42, def:60},
+      {ref:iog||ovo, fam:"protein", share:0.36, def:170},
+      {ref:fruta, fam:"carbs", share:0.22, def:100},
+    ]},
+    {name:"Iogurte + aveia + fruta", items:[
+      {ref:iog, fam:"mixed", share:0.40, def:170},
+      {ref:aveia, fam:"carbs", share:0.30, def:40},
+      {ref:fruta, fam:"carbs", share:0.30, def:100},
+    ]},
+  ].filter(t=>t.items.every(it=>it.ref && !avoid(it.ref))));
+
+  // PFs
+  const PF = boost([
+    {name:"PF brasileiro", items:[
+      {ref:frango, fam:"protein", share:0.38, def:150},
+      {ref:arrozB||arrozI, fam:"carbs", share:0.36, def:140},
+      {ref:feij, fam:"carbs", share:0.18, def:100},
+      {ref:azeite, fam:"fat", share:0.08, def:5},
+    ]},
+    {name:"Marmita simples", items:[
+      {ref:frango, fam:"protein", share:0.40, def:150},
+      {ref:batata||arrozI, fam:"carbs", share:0.44, def:160},
+      {ref:azeite, fam:"fat", share:0.16, def:6},
+    ]},
+    {name:"Peixe & arroz", items:[
+      {ref:tilapia||frango, fam:"protein", share:0.42, def:160},
+      {ref:arrozI||arrozB, fam:"carbs", share:0.45, def:150},
+      {ref:azeite, fam:"fat", share:0.13, def:6},
+    ]},
+    {name:"Massa fit", items:[
+      {ref:mac, fam:"carbs", share:0.52, def:150},
+      {ref:frango||tilapia, fam:"protein", share:0.34, def:140},
+      {ref:azeite, fam:"fat", share:0.14, def:5},
+    ]},
+  ].filter(t=>t.items.every(it=>it.ref && !avoid(it.ref))));
+
+  return { BREAKS, PF };
+}
+
+function buildMeal(template, mealKcal){
+  const items = template.items.map(it=>{
+    const kcal100 = it.ref.kcalPer100 || it.ref.kcal || 100;
+    const grams = scale(it.def||100, mealKcal*it.share, kcal100, it.fam);
+    return { name: it.ref.name, family: it.fam, grams, unit: (LIMITS[it.fam]?.unit||"g"), kcalPer100: kcal100 };
+  });
+  const kcal = items.reduce((k,x)=>k+(x.grams/100)*x.kcalPer100,0);
+  return { name: template.name, kcal: rnd(kcal), items };
+}
+
+function buildDay(nums, catalog, prefsActive, prefs){
+  const { BREAKS, PF } = buildTemplates(catalog, prefsActive, prefs);
+  const breakfastTpl = BREAKS[0] || BREAKS[1];
+  const lunchTpl = PF[0], dinnerTpl = PF[1] || PF[0];
+  const snackTpl = {name:"Lanche", items:(breakfastTpl?.items||[]).filter(i=>!/pão/i.test(i.ref?.name||""))};
+
+  const breakfast = buildMeal(breakfastTpl, nums.kcal*MEAL_PCT.breakfast);
+  const lunch     = buildMeal(lunchTpl,     nums.kcal*MEAL_PCT.lunch);
+  const snack     = buildMeal(snackTpl,     nums.kcal*MEAL_PCT.snack);
+  const dinner    = buildMeal(dinnerTpl,    nums.kcal*MEAL_PCT.dinner);
+
+  const meals = [
+    {label:"Café da manhã", ...breakfast},
+    {label:"Almoço",        ...lunch},
+    {label:"Lanche",        ...snack},
+    {label:"Jantar",        ...dinner},
+  ];
+  const totals = { kcal: rnd(meals.reduce((a,m)=>a+m.kcal,0)) };
+  return { meals, totals };
+}
+
+function buildWeek(nums, catalog, prefsActive, prefs, days=7){
+  const arr=[]; for(let d=1; d<=days; d++) arr.push({ day:d, ...buildDay(nums, catalog, prefsActive, prefs) });
+  return arr;
+}
+
+/* ===== TROCA ===== */
 let swapCtx=null;
 function openSwap(dayIdx,mealIdx,itemIdx){
   swapCtx={dayIdx,mealIdx,itemIdx};
-  const day=state.days[dayIdx], item=day.meals[mealIdx].items[itemIdx];
-  const fam=item.family, kcal=item.kcalPer100;
-  const opts=(state.catalog[fam]||[]).slice().sort((a,b)=>Math.abs(a.kcalPer100-kcal)-Math.abs(b.kcalPer100-kcal)).slice(0,40);
+  const it = state.days[dayIdx].meals[mealIdx].items[itemIdx];
+  const fam = it.family;
+  const list = (state.catalog[fam==="protein"?"protein":fam==="carbs"?"carbs":fam==="fat"?"fat":"mixed"]||[]);
+
   const ul=document.getElementById("swapList");
-  ul.innerHTML=opts.map(o=>`<li><span class="name">${o.name}</span><span class="sub">${o.kcalPer100} kcal/100${o.unit||"g"}</span><button class="btn" onclick='applySwap(${dayIdx},${mealIdx},${itemIdx},${JSON.stringify(o.kcalPer100)}, ${JSON.stringify(o.unit||"g")}, ${JSON.stringify(o.name)})'>Usar</button></li>`).join("");
+  ul.innerHTML = list.slice(0,40).map(o=>`
+    <li>
+      <span class="name">${o.name}</span>
+      <span class="sub">${o.kcalPer100||o.kcal} kcal/100${o.unit||"g"}</span>
+      <button class="btn" onclick='applySwap(${dayIdx},${mealIdx},${itemIdx}, ${JSON.stringify(o)})'>Usar</button>
+    </li>`).join("");
   document.getElementById("modal").style.display="flex";
 }
 function closeModal(){ document.getElementById("modal").style.display="none"; swapCtx=null; }
-function applySwap(dayIdx,mealIdx,itemIdx,kcalPer100,unit,name){
-  const meal=state.days[dayIdx].meals[mealIdx], item=meal.items[itemIdx];
-  const prevKcal=(item.grams/100)*item.kcalPer100;
-  const grams=clamp((prevKcal/(kcalPer100||100))*100,10,400);
-  item.name=name; item.kcalPer100=kcalPer100; item.unit=unit; item.grams=round(grams);
-  // recomputa card
-  const famOf=(it)=> (state.catalog[it.family]||[]).find(f=>f.name===it.name) || {};
-  let p=0,c=0,f=0,k=0; meal.items.forEach(it=>{const base=famOf(it); p+=(it.grams/100)*(base.p||0); c+=(it.grams/100)*(base.c||0); f+=(it.grams/100)*(base.f||0); k+=(it.grams/100)*(it.kcalPer100||100);});
-  meal.proteinG=round(p); meal.carbsG=round(c); meal.fatG=round(f); meal.kcal=round(k);
-  // recomputa totais do dia e gerais
-  state.days[dayIdx].totals = state.days[dayIdx].meals.reduce((a,x)=>({kcal:round(a.kcal+x.kcal),proteinG:round(a.proteinG+x.proteinG),carbsG:round(a.carbsG+x.carbsG),fatG:round(a.fatG+x.fatG)}),{kcal:0,proteinG:0,carbsG:0,fatG:0});
-  state.totals = computeGlobalTotals(state.days);
+function applySwap(dayIdx,mealIdx,itemIdx,newFood){
+  const it = state.days[dayIdx].meals[mealIdx].items[itemIdx];
+  const prevKcal = (it.grams/100)*(it.kcalPer100||100);
+  const kcal100 = newFood.kcalPer100||newFood.kcal||100;
+  // reescala para manter kcal do item
+  let grams = (prevKcal / kcal100) * 100;
+  const fam = it.family;
+  const lim = LIMITS[fam]||{min:60,max:250,step:5};
+  grams = clamp(grams, lim.min, lim.max);
+  grams = lim.step===1 ? Math.round(grams) : Math.round(grams/lim.step)*lim.step;
+
+  it.name = newFood.name;
+  it.kcalPer100 = kcal100;
+  it.grams = grams;
+  it.unit = lim.unit || "g";
+
+  // atualiza card e totais
+  const meal = state.days[dayIdx].meals[mealIdx];
+  meal.kcal = rnd(meal.items.reduce((k,x)=>k+(x.grams/100)*(x.kcalPer100||100),0));
+  state.days[dayIdx].totals.kcal = rnd(state.days[dayIdx].meals.reduce((a,m)=>a+m.kcal,0));
+  recomputeGlobal();
   render();
+  closeModal();
 }
 
-/* ======== RENDER ======== */
-function computeGlobalTotals(days){
-  const t=days.reduce((A,d)=>({kcal:A.kcal+d.totals.kcal,p:A.p+d.totals.proteinG,c:A.c+d.totals.carbsG,f:A.f+d.totals.fatG}),{kcal:0,p:0,c:0,f:0});
-  return {kcal:round(t.kcal),proteinG:round(t.p),carbsG:round(t.c),fatG:round(t.f)};
+/* ===== RENDER ===== */
+const state={catalog:null, days:[], nums:null, prefsActive:true, prefs:{pantry:[],usually:[],avoid:[]}};
+function renderTabs(){
+  const tabs=document.getElementById("dayTabs");
+  tabs.innerHTML = state.days.map((d,i)=>`<button class="tab ${i===state.active?'active':''}" onclick="setActive(${i})">Dia ${d.day}</button>`).join("");
 }
-function renderTotals(t){
+function renderTotals(){
+  const t = state.days[state.active]?.totals || {kcal:0};
   document.getElementById("totals").innerHTML = `
-    <div class="box"><strong>Total kcal</strong><span>${t.kcal}</span></div>
-    <div class="box"><strong>Proteína</strong><span>${t.proteinG} g</span></div>
-    <div class="box"><strong>Carbo</strong><span>${t.carbsG} g</span></div>
-    <div class="box"><strong>Gordura</strong><span>${t.fatG} g</span></div>`;
+    <div class="box"><strong>kcal</strong><span>${t.kcal}</span></div>
+    <div class="box"><strong>Proteína</strong><span>—</span></div>
+    <div class="box"><strong>Carbo</strong><span>—</span></div>
+    <div class="box"><strong>Gordura</strong><span>—</span></div>`;
+  document.getElementById("metaTop").innerHTML = `
+    <span class="badge">kcal ${t.kcal}</span>
+    <span class="badge">P —</span><span class="badge">C —</span><span class="badge">G —</span>`;
 }
-function renderDays(){
-  const wrap=document.getElementById("daysWrap");
-  wrap.innerHTML = state.days.map((d,di)=>`
+function portionText(unit,g){
+  if(unit==="ml"){ const tbsp=g/15; if(tbsp<12) return `≈ ${Math.max(1,Math.round(tbsp))} col. sopa`; const cup=g/240; return `≈ ${rnd(cup,1)} xíc.`; }
+  const cup=g/140; if(cup>=1) return `≈ ${rnd(cup,1)} xíc.`; const palm=g/100; if(palm>=1) return `≈ ${rnd(palm,1)} palma`; const tbsp=g/15; return `≈ ${Math.max(1,Math.round(tbsp))} col. sopa`;
+}
+function renderDay(){
+  const wrap=document.getElementById("planWrap");
+  const d = state.days[state.active]; if(!d){wrap.innerHTML=""; return;}
+  wrap.innerHTML = `
     <div class="day">
-      <h3>Dia ${d.day}</h3>
-      <div class="tot">kcal ${d.totals.kcal} • P ${d.totals.proteinG}g • C ${d.totals.carbsG}g • G ${d.totals.fatG}g</div>
       <div class="meals">
         ${d.meals.map((m,mi)=>`
           <article class="meal">
-            <header><h4>${["Café","Almoço","Lanche","Jantar"][mi]}</h4><span class="kcal">${m.kcal} kcal</span></header>
+            <header><h4>${["Café da manhã","Almoço","Lanche","Jantar"][mi]} — ${m.name}</h4><span class="kcal">${m.kcal} kcal</span></header>
             <ul>
               ${m.items.map((it,ii)=>`
                 <li>
-                  <span>${it.name} <small style="color:#9fb1c2">(${portionVisual(it.unit,it.grams)}, ${it.grams}${it.unit})</small></span>
-                  <div class="right"><button class="btn" onclick="openSwap(${di},${mi},${ii})">Trocar</button></div>
+                  <span>${it.name} <small style="color:#9fb1c2">(${portionText(it.unit,it.grams)}, ${it.grams}${it.unit})</small></span>
+                  <div class="right"><button class="btn" onclick="openSwap(${state.active},${mi},${ii})">Trocar</button></div>
                 </li>`).join("")}
             </ul>
-            <div class="macros"><span>P: ${m.proteinG||0} g</span><span>C: ${m.carbsG||0} g</span><span>G: ${m.fatG||0} g</span></div>
           </article>`).join("")}
       </div>
-    </div>`).join("");
+    </div>`;
 }
 function renderShopping(){
   const map=new Map();
@@ -348,37 +457,35 @@ function renderShopping(){
     const key=`${it.name}__${it.unit}`;
     map.set(key,(map.get(key)||0)+it.grams);
   })));
-  const arr=[...map.entries()].map(([k,g])=>({name:k.split("__")[0],unit:k.split("__")[1],grams:round(g)}));
+  const arr=[...map.entries()].map(([k,g])=>({name:k.split("__")[0],unit:k.split("__")[1],grams:rnd(g)}));
   document.getElementById("shopping").innerHTML = `<ul style="list-style:none;margin:0;padding:0;display:grid;gap:6px">${arr.map(i=>`<li class="badge">${i.name} — ${i.grams}${i.unit}</li>`).join("")}</ul>`;
 }
-function render(){
-  renderTotals(state.totals);
-  renderDays();
-  renderShopping();
+function render(){ renderTabs(); renderTotals(); renderDay(); renderShopping(); }
+
+/* ===== FLUXO ===== */
+function goStep(n){
+  for(let i=1;i<=4;i++){
+    document.getElementById(`step${i}`).style.display = (i===n)?"block":"none";
+    document.getElementById(`sx${i}`).classList.toggle("active", i===n);
+  }
 }
-
-/* ======== FLUXO ======== */
-function nextStep(n){for(let i=1;i<=4;i++){document.getElementById(`step${i}`).style.display=(i===n)?"grid":"none";document.getElementById(`s${i}`).classList.toggle("active",i===n);}}
-document.getElementById("bfMode").addEventListener("change",e=>{document.getElementById("navyFields").style.display=e.target.value==="navy"?"grid":"none";});
-
+document.getElementById("bfMode").addEventListener("change", e=>{
+  document.getElementById("navyRow").style.display = e.target.value==="navy"?"grid":"none";
+});
+document.getElementById("usePantry").addEventListener("change", e=>{
+  state.prefsActive = e.target.checked;
+  document.getElementById("pantryBlock").style.display = e.target.checked ? "block" : "none";
+});
 document.getElementById("gen").addEventListener("click", async ()=>{
   const sex=document.getElementById("sex").value;
   const age=+document.getElementById("age").value;
-  const heightCm=+document.getElementById("height").value;
-  const weightKg=+document.getElementById("weight").value;
+  const height=+document.getElementById("height").value;
+  const weight=+document.getElementById("weight").value;
   const activity=document.getElementById("activity").value;
   const goal=document.getElementById("goal").value;
-  const bfMode=document.getElementById("bfMode").value;
-  const neck=+document.getElementById("neck").value||null;
-  const waist=+document.getElementById("waist").value||null;
-  const hip=+document.getElementById("hip").value||null;
-  const days = +document.getElementById("days").value;
-
+  const days=+document.getElementById("days").value;
+  const kcal = rnd(tdee(bmr({sex,w:weight,h:height,a:age}), activity) * (1+goalDelta(goal)));
   state.catalog = state.catalog || await loadCatalog();
-
-  state.nums = compute({sex,age,heightCm,weightKg,activity,goal,bfMode,neck,waist,hip});
-  document.getElementById("meta").textContent =
-    `Meta: ${state.nums.kcal} kcal • Prot ${state.nums.macros.proteinG}g • Carb ${state.nums.macros.carbsG}g • Gord ${state.nums.macros.fatG}g`;
 
   state.prefs = {
     time: document.getElementById("time").value || null,
@@ -389,27 +496,24 @@ document.getElementById("gen").addEventListener("click", async ()=>{
     avoid: toList(document.getElementById("avoid").value)
   };
 
-  const built = buildDays(state.nums, state.catalog, state.prefs, days);
-  state.days = built.days;
-  state.totals = computeGlobalTotals(state.days);
-
-  nextStep(4);
+  state.days = buildWeek({kcal}, state.catalog, state.prefsActive, state.prefs, days);
+  state.active = 0;
   render();
 });
+function setActive(i){ state.active=i; render(); }
 
-/* WhatsApp compartilhar (semana inteira) */
-document.getElementById("whats").addEventListener("click", ()=>{
+/* Compartilhar WhatsApp (semana inteira) */
+document.getElementById("shareWpp").addEventListener("click", ()=>{
   if(!state.days?.length) return;
-  let text = `Plano (${state.days.length} dia(s)) — Média alvo ${state.nums.kcal} kcal\n`;
+  let text = `Plano (${state.days.length} dia(s))\n`;
   state.days.forEach(d=>{
     text += `\nDia ${d.day} (${d.totals.kcal} kcal)\n`;
     d.meals.forEach((m,mi)=>{
-      text += ` ${["Café","Almoço","Lanche","Jantar"][mi]}:\n`;
+      text += ` ${["Café","Almoço","Lanche","Jantar"][mi]} — ${m.name} (${m.kcal} kcal)\n`;
       m.items.forEach(it=> text += `  - ${it.name}: ${it.grams}${it.unit}\n`);
     });
   });
-  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-  window.open(url, "_blank");
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank");
 });
 
 /* Boot */
