@@ -3,16 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FitPlan Pro ⚡ | v3</title>
+  <title>FitPlan Pro ⚡ | v4</title>
 
   <!-- Tailwind (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- html2canvas para exportação -->
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <!-- Plano B de exportação (fallback) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.2.0/dist/dom-to-image-more.min.js"></script>
 
   <style>
     :root{
-      --bg:#0a0f1c; --card:#0b1220; --muted:#9ca3af; --text:#e5e7eb; --green:#10b981; --green2:#86efac; --amber:#f59e0b; --red:#ef4444; --border:#334155;
+      --bg:#0a0f1c; --card:#0b1220; --muted:#9ca3af; --text:#e5e7eb;
+      --green:#10b981; --green2:#86efac; --amber:#f59e0b; --red:#ef4444; --border:#334155;
     }
     html,body{background:var(--bg);color:var(--text)}
     .shadow-soft{box-shadow:0 10px 30px rgba(0,0,0,.28)}
@@ -105,7 +108,7 @@
       <div class="mt-6 flex items-center justify-between"><button id="prev2" class="btn-ghost">Voltar</button><button id="next2" class="btn">Próximo</button></div>
     </section>
 
-    <!-- Slide 3: Filtros rápidos -->
+    <!-- Slide 3: Preferências (opcional) -->
     <section id="s3" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <h2 class="text-xl font-semibold mb-3">3) Preferências (opcional)</h2>
       <div class="flex flex-wrap items-center">
@@ -207,33 +210,47 @@
     list=list.filter(f=>!(f.tags||[]).map(sf).some(t=>exc.has(t)));
     const varF=(+prefs.var||45)/100; // 0..1
     const score=f=>{
-      const tags=(f.tags||[]).map(sf); const match=tags.filter(t=>inc.has(t)).length; const penal=Memory.has(f.id)?(0.35+0.3*varF):0; const same=(preferState&&f.state===preferState)?0.25:0; const fast=(f.prep_min!=null&&f.prep_min<=10)?0.15:0; const cheap=(tags.includes('baixo-custo')?0.1:0); return Math.max(0.05,1+0.5*match+same+fast+cheap-penal);
+      const tags=(f.tags||[]).map(sf); const match=tags.filter(t=>inc.has(t)).length;
+      const penal=Memory.has(f.id)?(0.35+0.3*varF):0;
+      const same=(preferState&&f.state===preferState)?0.25:0;
+      const fast=(f.prep_min!=null&&f.prep_min<=10)?0.15:0;
+      const cheap=(tags.includes('baixo-custo')?0.1:0);
+      return Math.max(0.05,1+0.5*match+same+fast+cheap-penal);
     };
     return shuffle(list.slice(0)).map(x=>({...x,__w:score(x)})).sort((a,b)=>b.__w-a.__w)
   }
 
-  function gramsForTargets(food,t){ const p=food.P||0,c=food.C||0,g=food.G||0; const basis = (t.P>=t.C && t.P>=t.G && p)?'P':(t.C>=t.P && t.C>=t.G && c)?'C':(g?'G':'C'); const v=basis==='P'?p:basis==='C'?c:g; if(v<=0) return 0; let gms=(t[basis]/v)*100; if(isFamily(food,'Gordura')) gms=Math.min(Math.max(gms,CAPS.oilMin),CAPS.oilMax); else gms=Math.min(Math.max(gms,CAPS.solidMin),CAPS.solidMax); return Math.round(gms); }
+  function gramsForTargets(food,t){
+    const p=food.P||0,c=food.C||0,g=food.G||0;
+    const basis = (t.P>=t.C && t.P>=t.G && p)?'P':(t.C>=t.P && t.C>=t.G && c)?'C':(g?'G':'C');
+    const v=basis==='P'?p:basis==='C'?c:g; if(v<=0) return 0;
+    let gms=(t[basis]/v)*100;
+    if(isFamily(food,'Gordura')) gms=Math.min(Math.max(gms,CAPS.oilMin),CAPS.oilMax);
+    else gms=Math.min(Math.max(gms,CAPS.solidMin),CAPS.solidMax);
+    return Math.round(gms);
+  }
 
-  function sumMeal(items){ let kcal=0,P=0,C=0,G=0; for(const it of items){ const f=getFood(it.id); if(!f) continue; const k=(it.g||0)/100; kcal+=(f.kcal||0)*k; P+=(f.P||0)*k; C+=(f.C||0)*k; G+=(f.G||0)*k; } return {kcal:Math.round(kcal),P:+P.toFixed(1),C:+C.toFixed(1),G:+G.toFixed(1)} }
+  function sumMeal(items){
+    let kcal=0,P=0,C=0,G=0; for(const it of items){ const f=getFood(it.id); if(!f) continue; const k=(it.g||0)/100;
+      kcal+=(f.kcal||0)*k; P+=(f.P||0)*k; C+=(f.C||0)*k; G+=(f.G||0)*k; }
+    return {kcal:Math.round(kcal),P:+P.toFixed(1),C:+C.toFixed(1),G:+G.toFixed(1)}
+  }
 
   /* ===== Template por refeição + compatibilidade ===== */
   function mealKind(name){const n=sf(name); if(n.includes('café')) return 'cafe'; if(n.includes('almoço')||n.includes('almoco')) return 'almoco'; if(n.includes('jantar')) return 'jantar'; return 'lanche'}
-
   function enforceCompatibility(kind, items){
-    // Evitar peixe/atum + feijão em almoço/jantar; evitar feijão em lanches; evitar laticínio + feijão
-    if(kind==='lanche'){
-      // remove feijão se apareceu
+    if(kind==='lanche'){ // sem feijão em lanche
       for(let i=0;i<items.length;i++){ const f=getFood(items[i].id); if(f && isBean(f)){ items.splice(i,1); break; } }
       return items;
     }
     // almoço/jantar
     let hasBean=-1, fishIdx=-1, dairyIdx=-1;
     items.forEach((it,idx)=>{ const f=getFood(it.id); if(!f) return; if(isBean(f)) hasBean=idx; if(isFishOrTuna(f)) fishIdx=idx; if(isDairy(f)) dairyIdx=idx; });
-    if(hasBean>-1 && fishIdx>-1){ // troca o feijão por um carb base
+    if(hasBean>-1 && fishIdx>-1){ // troca feijão por carbo base
       const prefs=State.load(LS.prefs)||{tags_incluir:[]}; const pool=pickPoolByFamily('Carbo',prefs,null);
       const rice= pool.find(x=>sf(x.name).includes('arroz')) || pool[0]; if(rice){ items[hasBean]={id:rice.id,name:rice.name,family:'Carbo',state:rice.state,g:items[hasBean].g,locked:false}; }
     }
-    if(hasBean>-1 && dairyIdx>-1){ // trocar o laticínio (prefira manter o feijão no almoço)
+    if(hasBean>-1 && dairyIdx>-1){ // troca laticínio por proteína não-láctea
       const prefs=State.load(LS.prefs)||{tags_incluir:[]}; const pool=pickPoolByFamily('Proteína',prefs,null);
       const fr= pool.find(x=>!isDairy(x)) || pool[0]; if(fr){ items[dairyIdx]={id:fr.id,name:fr.name,family:'Proteína',state:fr.state,g:items[dairyIdx].g,locked:false}; }
     }
@@ -249,47 +266,68 @@
         items.push({id:chosen.id,name:chosen.name,family:fam,state:chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);
       }
       enforceCompatibility(kind, items);
-      // Passo B: corretor por refeição
       adjustMealToTarget({target:tgt,items});
       plan.meals.push({id:m.id,name:m.name,target:tgt,items});
     }
-    // Corretor global do dia (±2%)
     adjustDayToMeta(plan);
     return plan;
   }
 
-  function chooseItemForMacro(items, macro){ // preferência por família
+  function chooseItemForMacro(items, macro){
     const order = macro==='C'?[ 'Carbo','Misto','Proteína','Gordura'] : macro==='P'?[ 'Proteína','Misto','Carbo','Gordura'] : ['Gordura','Misto','Carbo','Proteína'];
-    for(const fam of order){ const idx=items.findIndex(it=>{ const f=getFood(it.id); if(!f) return false; const v=macro==='P'?f.P:macro==='C'?f.C:f.G; return isFamily(f,fam) && v>0; }); if(idx>-1) return idx; }
+    for(const fam of order){
+      const idx=items.findIndex(it=>{ const f=getFood(it.id); if(!f) return false; const v=macro==='P'?f.P:macro==='C'?f.C:f.G; return isFamily(f,fam) && v>0; });
+      if(idx>-1) return idx;
+    }
     return items.findIndex(it=>{ const f=getFood(it.id); const v=macro==='P'?f.P:macro==='C'?f.C:f.G; return v>0; });
   }
 
   function adjustMealToTarget(meal){ const tgt=meal.target; const calc=()=>sumMeal(meal.items); let cur=calc();
     const clampG=(food, g)=>{ if(isFamily(food,'Gordura')) return Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax); return Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax); };
-    // Ajusta P, depois C, depois G
     for(const M of ['P','C','G']){
-      let deficit = +(tgt[M]-cur[M]).toFixed(1); if(Math.abs(deficit)<1) continue; const idx=chooseItemForMacro(meal.items,M); if(idx<0) continue; const it=meal.items[idx]; const f=getFood(it.id); const per100 = M==='P'?f.P:M==='C'?f.C:f.G; if(!per100) continue; const delta = (deficit/per100)*100; const newG = clampG(f, (it.g||0)+delta); it.g=Math.round(newG); cur=calc();
+      let deficit = +(tgt[M]-cur[M]).toFixed(1); if(Math.abs(deficit)<1) continue; const idx=chooseItemForMacro(meal.items,M); if(idx<0) continue;
+      const it=meal.items[idx]; const f=getFood(it.id); const per100 = M==='P'?f.P:M==='C'?f.C:f.G; if(!per100) continue; const delta = (deficit/per100)*100; const newG = clampG(f, (it.g||0)+delta); it.g=Math.round(newG); cur=calc();
     }
     return meal;
   }
 
-  function adjustDayToMeta(plan){ const meta=plan.meta_kcal; const totals=plan.meals.reduce((a,m)=>{const s=sumMeal(m.items); a.kcal+=s.kcal; return a;},{kcal:0}); const diff = meta - totals.kcal; const tol = Math.abs(diff)/meta; if(tol<=0.02) return plan; // já está ±2%
-    // Ajusta carbo do jantar (ou almoço se não existir)
+  function adjustDayToMeta(plan){
+    const meta=plan.meta_kcal; const totals=plan.meals.reduce((a,m)=>{const s=sumMeal(m.items); a.kcal+=s.kcal; return a;},{kcal:0});
+    const diff = meta - totals.kcal; const tol = Math.abs(diff)/meta; if(tol<=0.02) return plan;
     let targetMealIdx = plan.meals.findIndex(m=>mealKind(m.name)==='jantar'); if(targetMealIdx<0) targetMealIdx=plan.meals.findIndex(m=>mealKind(m.name)==='almoco'); if(targetMealIdx<0) targetMealIdx=0;
     const m=plan.meals[targetMealIdx]; const idx=chooseItemForMacro(m.items,'C'); if(idx<0){ return plan; }
-    const it=m.items[idx]; const f=getFood(it.id); const kcal100 = f.kcal||0; if(kcal100<=0) return plan; const delta = (diff/kcal100)*100; const clampG=(food, g)=>{ if(isFamily(food,'Gordura')) return Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax); return Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax); }; it.g=Math.round(clampG(f,(it.g||0)+delta)); return plan;
+    const it=m.items[idx]; const f=getFood(it.id); const kcal100 = f.kcal||0; if(kcal100<=0) return plan; const delta = (diff/kcal100)*100;
+    const clampG=(food, g)=>{ if(isFamily(food,'Gordura')) return Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax); return Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax); };
+    it.g=Math.round(clampG(f,(it.g||0)+delta)); return plan;
   }
 
   function regenerateDay(plan,preset,prefs){ Memory.clear(); for(const m of plan.meals){ const kind=mealKind(m.name); const tgt=m.target; const newItems=[]; for(const it of m.items){ if(it.locked){ newItems.push(it); Memory.mark(it.id); continue;} const pool=pickPoolByFamily(it.family,prefs,it.state); if(!pool.length){ newItems.push(it); continue;} const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt); newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);} enforceCompatibility(kind,newItems); m.items=newItems; adjustMealToTarget(m);} adjustDayToMeta(plan); return plan; }
 
   function regenerateMeal(plan,mealIdx,prefs){ const m=plan.meals[mealIdx]; Memory.clear(); const tgt=m.target; const kind=mealKind(m.name); const newItems=[]; for(const it of m.items){ if(it.locked){ newItems.push(it); Memory.mark(it.id); continue;} const pool=pickPoolByFamily(it.family,prefs,it.state); if(!pool.length){ newItems.push(it); continue;} const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt); newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);} enforceCompatibility(kind,newItems); m.items=newItems; adjustMealToTarget(m); adjustDayToMeta(plan); return plan; }
 
+  /* ===== Presets filtrados pelo objetivo ===== */
+  function isPresetAllowedForGoal(preset, goal){
+    const name = String(preset.name||'').toLowerCase();
+    if(goal === 'cut'){
+      return !(name.includes('bulk') || name.includes('ganho') || name.includes('superávit') || name.includes('superavit'));
+    }
+    if(goal === 'bulk'){ return true; }
+    return true; // manutenção
+  }
+
   /* ===== Render ===== */
   function pctDev(v,t){if(!t) return 0; return Math.round(((v-t)/t)*100)}
   function devTxt(p){return (Math.abs(p)<=2?'±2%': (p>0?('+'+p+'%'):(p+'%')))}
 
-  function renderPresets(){ const box=document.getElementById('presetList'); box.innerHTML='';
-    Data.presets.forEach(p=>{ const meals=(p.meals||[]).map(m=>m.name).join(' · '); const desc=p.description||'Variedade elástica com trocas simples.'; const who=p.indicado_para||'Público geral (2–4x/sem).'; const chips=(p.chips||meals.split(' · '));
+  function renderPresets(){
+    const box=document.getElementById('presetList'); box.innerHTML='';
+    const prof = readProfile();
+    const filtered = (Data.presets||[]).filter(p => isPresetAllowedForGoal(p, prof.objetivo));
+    (filtered.length ? filtered : Data.presets).forEach(p=>{
+      const meals=(p.meals||[]).map(m=>m.name).join(' · ');
+      const desc=p.description||'Variedade elástica com trocas simples.';
+      const who=p.indicado_para||'Público geral (2–4x/sem).';
+      const chips=(p.chips||meals.split(' · '));
       const el=document.createElement('div'); el.className='bg-[#0f172a] border border-[color:var(--border)] rounded-xl p-4';
       el.innerHTML=`<div class="flex items-start justify-between gap-3">
         <div>
@@ -302,32 +340,50 @@
           <div class="text-slate-400 text-xs mb-1">Refeições: ${meals}</div>
           <button class="btn" data-pid="${p.id}">Selecionar</button>
         </div>
-      </div>`; box.appendChild(el);
+      </div>`;
+      box.appendChild(el);
     });
-    box.querySelectorAll('button[data-pid]').forEach(b=>b.addEventListener('click',()=>{ const p=Data.presets.find(x=>x.id===b.dataset.pid); const prof=readProfile(); const bmr=bmrMifflin(prof.sexo,prof.peso_kg,prof.altura_cm,prof.idade); const td=tdeeFrom(bmr,prof.atividade); const meta=targetFrom(td,prof.objetivo); showCalc(bmr,td,meta); const prefs=State.load(LS.prefs)||{tags_incluir:[],tags_evitar:[],var:45}; const plan=buildPlan(meta,p,prefs); State.save(LS.plan,plan); renderPlanner(plan); showStep(4); }));
+    box.querySelectorAll('button[data-pid]').forEach(b=>b.addEventListener('click',()=>{
+      const p=Data.presets.find(x=>x.id===b.dataset.pid);
+      const prof=readProfile(); const bmr=bmrMifflin(prof.sexo,prof.peso_kg,prof.altura_cm,prof.idade);
+      const td=tdeeFrom(bmr,prof.atividade); const meta=targetFrom(td,prof.objetivo);
+      showCalc(bmr,td,meta);
+      const prefs=State.load(LS.prefs)||{tags_incluir:[],tags_evitar:[],var:45};
+      const plan=buildPlan(meta,p,prefs); State.save(LS.plan,plan); renderPlanner(plan); showStep(4);
+    }));
   }
 
-  function renderPlanner(plan){ const host=document.getElementById('planner'); host.innerHTML=''; if(!plan||!plan.meals) return; const meta=plan.meta_kcal; const totals=plan.meals.reduce((a,m)=>{ const s=sumMeal(m.items); a.kcal+=s.kcal; a.P+=s.P; a.C+=s.C; a.G+=s.G; return a; },{kcal:0,P:0,C:0,G:0}); const tol=Math.abs(totals.kcal-meta)/meta; const status= tol<=0.02?`<span class='text-emerald-400'>🟢 dentro do alvo (±2%)</span>`:`<span class='text-amber-300'>🟠 fora do alvo (${Math.round(tol*100)}%)</span>`;
-    const head=document.createElement('div'); head.className='bg-[#0f172a] rounded-xl p-3 border border-[color:var(--border)] flex items-center justify-between flex-wrap gap-2'; head.innerHTML=`<div class='text-sm md:text-base'>Meta: <b>${meta}</b> kcal · Total: <b>${totals.kcal}</b> kcal ${status}</div><div class='text-slate-400 text-sm'>P:${totals.P.toFixed(0)}g · C:${totals.C.toFixed(0)}g · G:${totals.G.toFixed(0)}g</div>`; host.appendChild(head);
+  function renderPlanner(plan){
+    const host=document.getElementById('planner'); host.innerHTML=''; if(!plan||!plan.meals) return; const meta=plan.meta_kcal;
+    const totals=plan.meals.reduce((a,m)=>{ const s=sumMeal(m.items); a.kcal+=s.kcal; a.P+=s.P; a.C+=s.C; a.G+=s.G; return a; },{kcal:0,P:0,C:0,G:0});
+    const tol=Math.abs(totals.kcal-meta)/meta; const status= tol<=0.02?`<span class='text-emerald-400'>🟢 dentro do alvo (±2%)</span>`:`<span class='text-amber-300'>🟠 fora do alvo (${Math.round(tol*100)}%)</span>`;
+    const head=document.createElement('div'); head.className='bg-[#0f172a] rounded-xl p-3 border border-[color:var(--border)] flex items-center justify-between flex-wrap gap-2';
+    head.innerHTML=`<div class='text-sm md:text-base'>Meta: <b>${meta}</b> kcal · Total: <b>${totals.kcal}</b> kcal ${status}</div><div class='text-slate-400 text-sm'>P:${totals.P.toFixed(0)}g · C:${totals.C.toFixed(0)}g · G:${totals.G.toFixed(0)}g</div>`;
+    host.appendChild(head);
 
-    plan.meals.forEach((m,mi)=>{ const sum=sumMeal(m.items); const devP=pctDev(sum.P,m.target.P), devC=pctDev(sum.C,m.target.C), devG=pctDev(sum.G,m.target.G); const card=document.createElement('div'); card.className='bg-[#0f172a] rounded-xl p-4 border border-[color:var(--border)]'; card.innerHTML=`
-      <div class='flex items-center justify-between gap-2 flex-wrap'>
-        <div class='font-semibold'>${m.name}</div>
-        <div class='flex items-center gap-2'>
-          <button class='btn-ghost btn-xs' data-regmi='${mi}'>Regerar refeição</button>
-          <div class='kcal-flag font-semibold'>${sum.kcal} kcal</div>
-        </div>
-      </div>
-      <div class='text-slate-400 text-sm mt-1'>Alvo: P ${m.target.P}g (${devTxt(devP)}) · C ${m.target.C}g (${devTxt(devC)}) · G ${m.target.G}g (${devTxt(devG)})</div>
-      <div class='mt-3 space-y-2'>
-        ${m.items.map((it,ii)=>{ const f=getFood(it.id)||{}; const pin=it.locked?"📌":"📍"; return `<div class='flex items-center justify-between bg-[#111827] rounded-lg p-2 border border-[color:var(--border)]'>
-          <div><div class='font-medium'>${f.name||it.name}</div><div class='text-slate-400 text-xs'>Família: ${it.family} · Estado: ${it.state||'-'}</div></div>
+    plan.meals.forEach((m,mi)=>{ const sum=sumMeal(m.items); const devP=pctDev(sum.P,m.target.P), devC=pctDev(sum.C,m.target.C), devG=pctDev(sum.G,m.target.G);
+      const card=document.createElement('div'); card.className='bg-[#0f172a] rounded-xl p-4 border border-[color:var(--border)]';
+      card.innerHTML=`
+        <div class='flex items-center justify-between gap-2 flex-wrap'>
+          <div class='font-semibold'>${m.name}</div>
           <div class='flex items-center gap-2'>
-            <button class='btn-ghost btn-xs' title='Fixar/soltar' data-pin='${mi}:${ii}'>${pin}</button>
-            <div class='text-sm w-20 text-right'>${it.g} g</div>
-            <button class='btn-ghost btn-xs' data-swap='${mi}:${ii}'>Trocar</button>
-          </div></div>`; }).join('')}
-      </div>`; host.appendChild(card);
+            <button class='btn-ghost btn-xs' data-regmi='${mi}'>Regerar refeição</button>
+            <div class='kcal-flag font-semibold'>${sum.kcal} kcal</div>
+          </div>
+        </div>
+        <div class='text-slate-400 text-sm mt-1'>Alvo: P ${m.target.P}g (${devTxt(devP)}) · C ${m.target.C}g (${devTxt(devC)}) · G ${m.target.G}g (${devTxt(devG)})</div>
+        <div class='mt-3 space-y-2'>
+          ${m.items.map((it,ii)=>{ const f=getFood(it.id)||{}; const pin=it.locked?"📌":"📍";
+            return `<div class='flex items-center justify-between bg-[#111827] rounded-lg p-2 border border-[color:var(--border)]'>
+              <div><div class='font-medium'>${f.name||it.name}</div><div class='text-slate-400 text-xs'>Família: ${it.family} · Estado: ${it.state||'-'}</div></div>
+              <div class='flex items-center gap-2'>
+                <button class='btn-ghost btn-xs' title='Fixar/soltar' data-pin='${mi}:${ii}'>${pin}</button>
+                <div class='text-sm w-20 text-right'>${it.g} g</div>
+                <button class='btn-ghost btn-xs' data-swap='${mi}:${ii}'>Trocar</button>
+              </div></div>`;
+          }).join('')}
+        </div>`;
+      host.appendChild(card);
     });
 
     host.querySelectorAll('button[data-swap]').forEach(b=>b.addEventListener('click',()=>{ const [mi,ii]=b.dataset.swap.split(':').map(Number); openSwap(State.load(LS.plan),mi,ii); }));
@@ -350,13 +406,68 @@
   function readProfile(){ return { sexo:document.getElementById('sx').value, idade:+document.getElementById('age').value, altura_cm:+document.getElementById('h').value, peso_kg:+document.getElementById('w').value, atividade:document.getElementById('act').value, objetivo:document.getElementById('goal').value } }
   function gatherFilters(){ const inc=[]; document.querySelectorAll('#s3 input[type=checkbox]').forEach(b=>b.checked&&inc.push(b.value)); const prefs=State.load(LS.prefs)||{tags_incluir:[],tags_evitar:[],var:45}; return {tags_incluir:inc, tags_evitar:prefs.tags_evitar||[], equivalentes_estado:true, var:prefs.var||45}; }
 
-  async function exportPNG(){ try{ const box=document.getElementById('plannerWrap'); const canvas=await html2canvas(box,{backgroundColor:'#0a0f1c',scale:window.devicePixelRatio<2?2:1.5,useCORS:true,windowWidth:document.documentElement.clientWidth}); canvas.toBlob((blob)=>{ if(!blob){alert('Falha ao gerar imagem'); return;} const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png'; a.click(); URL.revokeObjectURL(url); },'image/png'); }catch(e){ alert('Exportação falhou. Tente novamente.'); console.error(e); } }
+  async function exportPNG(){
+    try{
+      const box = document.getElementById('plannerWrap');
+      const canvas = await html2canvas(box, {
+        backgroundColor: '#0a0f1c',
+        scale: 1.3,
+        useCORS: true,
+        foreignObjectRendering: true,
+        windowWidth: document.documentElement.clientWidth,
+        removeContainer: true,
+        logging: false
+      });
+
+      const downloadBlob = (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'FitPlan_' + new Date().toISOString().slice(0,10) + '.png';
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      canvas.toBlob(async (blob)=>{
+        if(blob){ downloadBlob(blob); return; }
+        try{
+          const dataURL = canvas.toDataURL('image/png');
+          const bstr = atob(dataURL.split(',')[1]);
+          let n = bstr.length; const u8arr = new Uint8Array(n);
+          while(n--){ u8arr[n] = bstr.charCodeAt(n); }
+          const blob2 = new Blob([u8arr], {type:'image/png'});
+          downloadBlob(blob2);
+        }catch(e2){
+          // Plano B: dom-to-image
+          try{
+            const blob3 = await window.domtoimage.toBlob(box, {bgcolor:'#0a0f1c',quality:1,style:{'transform':'scale(1)','transform-origin':'top left'}});
+            downloadBlob(blob3);
+          }catch(e3){
+            alert('Falha ao gerar imagem');
+            console.error('exportPNG falhou (todas tentativas)', e3);
+          }
+        }
+      }, 'image/png');
+    }catch(e){
+      try{ // Plano B direto
+        const box = document.getElementById('plannerWrap');
+        const blob = await window.domtoimage.toBlob(box, {bgcolor:'#0a0f1c',quality:1});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png'; a.click(); URL.revokeObjectURL(url);
+      }catch(e2){
+        alert('Falha ao gerar imagem');
+        console.error('exportPNG erro', e2);
+      }
+    }
+  }
 
   /* ===== Eventos ===== */
   ;[1,2,3,4,5].forEach(i=>document.getElementById('st'+i).addEventListener('click',()=>showStep(i)));
   document.getElementById('next1').addEventListener('click',()=>showStep(2));
   document.getElementById('prev2').addEventListener('click',()=>showStep(1));
-  document.getElementById('next2').addEventListener('click',()=>showStep(3));
+  // Pular o passo 3 por padrão
+  document.getElementById('next2').addEventListener('click',()=>showStep(4));
+  // Se quiser manter o 3, troque a linha acima por showStep(3)
   document.getElementById('prev3').addEventListener('click',()=>showStep(2));
   document.getElementById('next3').addEventListener('click',()=>showStep(4));
   document.getElementById('prev4').addEventListener('click',()=>showStep(3));
@@ -377,8 +488,13 @@
   document.getElementById('btnRegenDay').addEventListener('click',()=>{ const plan=State.load(LS.plan); if(!plan) return; const prefs=State.load(LS.prefs)||{tags_incluir:[],var:45}; const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0]; regenerateDay(plan,preset,prefs); State.save(LS.plan,plan); renderPlanner(plan); });
 
   /* ===== Boot ===== */
-  (async function boot(){ const prof=State.load(LS.profile); if(prof){ document.getElementById('sx').value=prof.sexo; document.getElementById('age').value=prof.idade; document.getElementById('h').value=prof.altura_cm; document.getElementById('w').value=prof.peso_kg; document.getElementById('act').value=prof.atividade; document.getElementById('goal').value=prof.objetivo; }
-    const files=await loadManifest(); await loadFoods(files); await loadPresets(); renderPresets(); const plan=State.load(LS.plan); if(plan){ renderPlanner(plan); showStep(4); }
+  (async function boot(){
+    const prof=State.load(LS.profile);
+    if(prof){ document.getElementById('sx').value=prof.sexo; document.getElementById('age').value=prof.idade; document.getElementById('h').value=prof.altura_cm; document.getElementById('w').value=prof.peso_kg; document.getElementById('act').value=prof.atividade; document.getElementById('goal').value=prof.objetivo; }
+    const files=await loadManifest(); await loadFoods(files); await loadPresets(); renderPresets();
+    const plan=State.load(LS.plan); if(plan){ renderPlanner(plan); showStep(4); }
+    // Ocultar o step 3 visualmente (opcional):
+    document.getElementById('st3').style.display='none';
   })();
   </script>
 </body>
