@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FitPlan Pro ⚡ | v5</title>
+  <title>FitPlan Pro ⚡ | v6 (3 passos)</title>
 
-  <!-- Tailwind (CDN) -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Export PNG – biblioteca estável para GH Pages -->
+  <!-- Export PNG: 1) html2canvas (principal)  2) dom-to-image-more (fallback) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.2.0/dist/dom-to-image-more.min.js"></script>
 
   <style>
@@ -17,8 +18,9 @@
       --green:#10b981; --green2:#86efac; --amber:#f59e0b; --red:#ef4444; --border:#334155;
     }
     html,body{background:var(--bg);color:var(--text)}
+    *{text-shadow:none !important;-webkit-font-smoothing:antialiased;image-rendering:auto}
     .shadow-soft{box-shadow:0 10px 30px rgba(0,0,0,.28)}
-    .btn{padding:.6rem 1rem;border-radius:.8rem;background:var(--green);color:#001c12;font-weight:800;}
+    .btn{padding:.6rem 1rem;border-radius:.8rem;background:var(--green);color:#001c12;font-weight:800}
     .btn:hover{filter:brightness(1.05)}
     .btn-ghost{padding:.55rem .9rem;border-radius:.8rem;border:1px solid var(--border);background:#111827;color:#e5e7eb}
     .btn-xs{padding:.35rem .6rem;border-radius:.6rem;font-size:.8rem}
@@ -28,46 +30,41 @@
     .step.active{background:#065f46;color:white;border-color:#0ea5a4}
     .tag{display:inline-flex;align-items:center;border-radius:999px;padding:.15rem .55rem;font-size:.75rem;background:#111827;border:1px solid var(--border);margin:.25rem .35rem .25rem 0}
     .kcal-flag{color:var(--green2)}
+    /* evita artefatos na exportação */
+    #plannerWrap, #planner, .no-transform{transform:none !important}
   </style>
 </head>
 <body class="min-h-screen">
   <header class="max-w-5xl mx-auto px-4 pt-8 pb-4">
     <h1 class="text-3xl md:text-4xl font-extrabold">FitPlan Pro ⚡</h1>
-    <p class="text-slate-300">Gere sua dieta realista em 5 passos — <b>apenas index.html + .json</b>.</p>
+    <p class="text-slate-300">Gere sua dieta realista em <b>3 passos</b> — apenas <b>index.html</b> + <b>.json</b>.</p>
   </header>
 
   <main class="max-w-5xl mx-auto px-4 space-y-6 pb-24">
-    <!-- Stepper -->
-    <nav class="grid grid-cols-5 gap-2 sticky top-0 z-10">
+    <!-- Stepper 3 passos -->
+    <nav class="grid grid-cols-3 gap-2 sticky top-0 z-10">
       <button id="st1" class="step">1</button>
       <button id="st2" class="step">2</button>
       <button id="st3" class="step">3</button>
-      <button id="st4" class="step">4</button>
-      <button id="st5" class="step">5</button>
     </nav>
 
-    <!-- Slide 1: Perfil -->
+    <!-- 1) Perfil -->
     <section id="s1" class="slide show bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <h2 class="text-xl font-semibold mb-3">1) Seu Perfil</h2>
       <div class="grid md:grid-cols-3 gap-4">
-        <div>
-          <div class="label">Sexo</div>
+        <div><div class="label">Sexo</div>
           <select id="sx" class="field"><option value="M">Masculino</option><option value="F">Feminino</option></select>
         </div>
-        <div>
-          <div class="label">Idade (anos)</div>
+        <div><div class="label">Idade (anos)</div>
           <input id="age" type="number" class="field" value="33" min="12" max="90"/>
         </div>
-        <div>
-          <div class="label">Altura (cm)</div>
+        <div><div class="label">Altura (cm)</div>
           <input id="h" type="number" class="field" value="170" min="120" max="220"/>
         </div>
-        <div>
-          <div class="label">Peso (kg)</div>
+        <div><div class="label">Peso (kg)</div>
           <input id="w" type="number" class="field" value="69" min="35" max="200"/>
         </div>
-        <div>
-          <div class="label">Atividade</div>
+        <div><div class="label">Atividade</div>
           <select id="act" class="field">
             <option value="sedentario">Sedentário</option>
             <option value="leve">Leve (1–2x/sem)</option>
@@ -75,8 +72,7 @@
             <option value="intensa">Intensa (5–7x/sem)</option>
           </select>
         </div>
-        <div>
-          <div class="label">Objetivo</div>
+        <div><div class="label">Objetivo</div>
           <select id="goal" class="field">
             <option value="cut" selected>Secar (−15%)</option>
             <option value="maint">Manter (±0%)</option>
@@ -96,46 +92,27 @@
         </div>
         <p class="text-slate-400 text-sm mt-2">Proteína é pesada <b>CRUA</b>; carboidratos <b>COZIDOS</b>. Dica cardio Z2 ≈ <b>145 bpm</b>.</p>
       </div>
-      <div class="mt-6 flex items-center justify-between"><button class="btn-ghost" disabled>Voltar</button><button id="next1" class="btn">Próximo</button></div>
+      <div class="mt-6 flex items-center justify-between">
+        <span></span><button id="next1" class="btn">Próximo</button>
+      </div>
     </section>
 
-    <!-- Slide 2: Presets -->
+    <!-- 2) Presets -->
     <section id="s2" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
-      <h2 class="text-xl font-semibold mb-3">2) Escolha um modelo (presets elásticos)</h2>
+      <h2 class="text-xl font-semibold mb-1">2) Escolha um modelo (presets elásticos)</h2>
       <p id="goalInfo" class="text-emerald-300 text-xs mb-3"></p>
       <p class="text-slate-300 text-sm mb-2">Cada modelo é um <b>estilo</b> de montagem. Você pode trocar alimentos e gramaturas depois.</p>
       <div id="presetList" class="grid md:grid-cols-2 gap-3"></div>
-      <div class="mt-6 flex items-center justify-between"><button id="prev2" class="btn-ghost">Voltar</button><button id="next2" class="btn">Próximo</button></div>
+      <div class="mt-6 flex items-center justify-between">
+        <button id="prev2" class="btn-ghost">Voltar</button>
+        <button id="next2" class="btn">Ir para plano</button>
+      </div>
     </section>
 
-    <!-- Slide 3: Preferências (opcional) -->
+    <!-- 3) Plano -->
     <section id="s3" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
-      <h2 class="text-xl font-semibold mb-3">3) Preferências (opcional)</h2>
-      <div class="flex flex-wrap items-center">
-        <label class="tag"><input class="mr-1" type="checkbox" value="marmita"> Marmita</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="baixo-custo"> Baixo custo</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="rápido"> Rápido</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="integral"> Integral</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="sem-lactose"> Sem lactose</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="sem-glúten"> Sem glúten</label>
-        <label class="tag"><input class="mr-1" type="checkbox" value="alto-proteína"> Alto-proteína</label>
-      </div>
-      <div class="mt-3 flex flex-wrap gap-2 items-center">
-        <button id="btnApplyFilters" class="btn-ghost">Aplicar</button>
-        <button id="btnClearFilters" class="btn-ghost">Limpar</button>
-        <div class="flex items-center gap-2 ml-auto">
-          <span class="label">Variação</span>
-          <input id="varSlider" type="range" min="0" max="100" value="45" class="w-40"/>
-          <span id="varOut" class="text-slate-300 text-sm">45%</span>
-        </div>
-      </div>
-      <div class="mt-6 flex items-center justify-between"><button id="prev3" class="btn-ghost">Voltar</button><button id="next3" class="btn">Próximo</button></div>
-    </section>
-
-    <!-- Slide 4: Plano -->
-    <section id="s4" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
       <div class="flex items-center justify-between gap-2 flex-wrap">
-        <h2 class="text-xl font-semibold">4) Seu Plano Gerado</h2>
+        <h2 class="text-xl font-semibold">3) Seu Plano</h2>
         <div class="flex gap-2 flex-wrap">
           <button id="btnRegenDay" class="btn-ghost">Regerar dia</button>
           <button id="btnExportPNG" class="btn">Exportar PNG</button>
@@ -144,24 +121,22 @@
         </div>
       </div>
       <p class="text-slate-400 text-sm mt-1">Você pode <b>fixar</b> itens (📌) para não mudarem ao regerar. Proteína: CRU · Carbo: COZIDO.</p>
-      <div id="plannerWrap" class="mt-4">
-        <div id="planner" class="space-y-4"></div>
+      <div id="plannerWrap" class="mt-4 no-transform">
+        <div id="planner" class="space-y-4 no-transform"></div>
       </div>
-      <div class="mt-6 flex items-center justify-between"><button id="prev4" class="btn-ghost">Voltar</button><button id="next4" class="btn">Próximo</button></div>
-    </section>
-
-    <!-- Slide 5: Resumo -->
-    <section id="s5" class="slide bg-[color:var(--card)] rounded-2xl p-4 md:p-6 shadow-soft">
-      <h2 class="text-xl font-semibold mb-3">5) Resumo & Exportação</h2>
-      <p class="text-slate-300">Revise o total diário, faça trocas (volte ao passo 4) e <b>exporte</b> seu plano em PNG ou <b>salve</b> como JSON para recuperar depois.</p>
-      <div class="mt-3 flex gap-2"><button id="btnExportPNG2" class="btn">Exportar PNG</button><button id="btnSavePlan2" class="btn-ghost">Salvar Plano</button></div>
-      <div class="mt-6 flex items-center justify-between"><button id="prev5" class="btn-ghost">Voltar</button><button class="btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">Finalizar ↑</button></div>
+      <div class="mt-6 flex items-center justify-between">
+        <button id="prev3" class="btn-ghost">Voltar</button>
+        <button class="btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">Finalizar ↑</button>
+      </div>
     </section>
 
     <!-- Modal Swap -->
     <div id="swapModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
       <div class="bg-[color:var(--card)] rounded-2xl p-4 md:p-6 max-w-2xl w-full shadow-soft border border-[color:var(--border)]">
-        <div class="flex items-center justify-between"><h3 class="text-lg font-semibold">Trocar alimento</h3><button id="btnCloseSwap" class="btn-ghost">Fechar</button></div>
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold">Trocar alimento</h3>
+          <button id="btnCloseSwap" class="btn-ghost">Fechar</button>
+        </div>
         <p id="swapHint" class="text-slate-400 text-sm mt-1"></p>
         <div id="swapList" class="mt-3 max-h-[58vh] overflow-auto space-y-2"></div>
       </div>
@@ -169,13 +144,13 @@
   </main>
 
   <script>
-  /* =================== Núcleo =================== */
-  const slides=["s1","s2","s3","s4","s5"]; let step=1;
+  /* ====== base ====== */
+  const slides=["s1","s2","s3"]; let step=1;
   const showStep=n=>{
-    step=Math.min(5,Math.max(1,n));
-    slides.forEach((id,i)=>{const el=document.getElementById(id); if(el) el.style.display=(i===step-1?'block':'none')});
-    [1,2,3,4,5].forEach(i=>document.getElementById('st'+i).classList.toggle('active',i===step));
-    if(step===2) renderPresets(); // garante filtro atualizado ao abrir passo 2
+    step=Math.min(3,Math.max(1,n));
+    slides.forEach((id,i)=>{const el=document.getElementById(id); el.style.display=(i===step-1?'block':'none')});
+    [1,2,3].forEach(i=>document.getElementById('st'+i).classList.toggle('active',i===step));
+    if(step===2) renderPresets();
     window.scrollTo({top:0,behavior:'smooth'});
   };
   showStep(1);
@@ -188,26 +163,26 @@
   async function loadFoods(files){const acc=[]; for(const f of files){ try{ const r=await fetch('data/'+f+'?v='+Data.manifestVersion); const j=await r.json(); Array.isArray(j)&&acc.push(...j);}catch(e){console.warn('Falha ao carregar',f,e)} } const seen=new Set(); Data.foods=acc.filter(x=>x && !seen.has(x.id) && seen.add(x.id)===true || x)}
   async function loadPresets(){ const r=await fetch('data/presets.json?v='+Data.manifestVersion); const j=await r.json(); Data.presets=j.presets||[] }
 
-  /* ========= Cálculo TDEE ========= */
+  /* ====== cálculo ====== */
   function bmrMifflin(sexo,peso,alt,idade){return sexo==='M'?(10*peso+6.25*alt-5*idade+5):(10*peso+6.25*alt-5*idade-161)}
   function tdeeFrom(bmr,act){const mult={sedentario:1.2,leve:1.375,moderada:1.55,intensa:1.725}; return bmr*(mult[act]||1.55)}
   function targetFrom(tdee,goal){if(goal==='cut') return Math.round(tdee*0.85); if(goal==='bulk') return Math.round(tdee*1.08); return Math.round(tdee)}
 
-  /* ===== Variedade ponderada ===== */
+  /* ====== variedade & memória ====== */
   function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a}
   function weightedPick(items,getW){const acc=[]; let s=0; for(const it of items){ s+=Math.max(.0001,getW(it)); acc.push(s); } const r=Math.random()*s; const idx=acc.findIndex(x=>x>=r); return items[Math.max(0,idx)]}
-  const Memory={last:new Set(),clear(){this.last.clear()},mark(id){this.last.add(id)},has(id){return this.last.has(id)}}
+  const Memory={last:new Set(),clear(){this.last.clear()},mark(id){this.last.add(id)},has(id){return this.last.has(id)}};
 
-  /* ===== Caps & metas ===== */
+  /* ====== caps & metas ====== */
   const CAPS={solidMin:30,solidMax:300, oilMin:5, oilMax:20};
   function mealTargets(kcal,ratio){const P=(ratio.P||.3),C=(ratio.C||.45),G=(ratio.G||.25); return {kcal:Math.round(kcal),P:+(kcal*P/4).toFixed(1),C:+(kcal*C/4).toFixed(1),G:+(kcal*G/9).toFixed(1)}}
 
-  /* ===== Helpers de alimento ===== */
+  /* ====== helpers alimento ====== */
   const sf=s=>String(s||'').toLowerCase();
   function getFood(id){return Data.foods.find(x=>x.id===id)}
   function isFamily(f, fam){return sf(f.family)===sf(fam)}
-  function isBean(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return n.includes('feijao')||n.includes('feijão')||t.includes('feijao')||t.includes('feijão')||t.includes('leguminosa')}
-  function isFishOrTuna(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return t.includes('peixe')||t.includes('atum')||t.includes('tilapia')||t.includes('sardinha')||n.includes('tilápia')||n.includes('peixe')||n.includes('atum')||n.includes('sardinha')}
+  function isBean(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return n.includes('feijao')||n.includes('feijão')||t.includes('leguminosa')}
+  function isFishOrTuna(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return t.includes('peixe')||t.includes('atum')||t.includes('tilapia')||t.includes('sardinha')||n.includes('tilápia')||n.includes('peixe')||n.includes('atum')}
   function isDairy(f){const n=sf(f.name); const t=(f.tags||[]).map(sf); return t.includes('laticinio')||t.includes('laticínio')||n.includes('iogurte')||n.includes('queijo')}
 
   function pickPoolByFamily(family,prefs,preferState){
@@ -215,7 +190,7 @@
     if(!list.length) return [];
     const inc=new Set((prefs.tags_incluir||[]).map(sf)); const exc=new Set((prefs.tags_evitar||[]).map(sf));
     list=list.filter(f=>!(f.tags||[]).map(sf).some(t=>exc.has(t)));
-    const varF=(+prefs.var||45)/100; // 0..1
+    const varF=(+prefs.var||45)/100;
     const score=f=>{
       const tags=(f.tags||[]).map(sf); const match=tags.filter(t=>inc.has(t)).length;
       const penal=Memory.has(f.id)?(0.35+0.3*varF):0;
@@ -243,28 +218,23 @@
     return {kcal:Math.round(kcal),P:+P.toFixed(1),C:+C.toFixed(1),G:+G.toFixed(1)}
   }
 
-  /* ===== Template por refeição + compatibilidade ===== */
   function mealKind(name){const n=sf(name); if(n.includes('café')) return 'cafe'; if(n.includes('almoço')||n.includes('almoco')) return 'almoco'; if(n.includes('jantar')) return 'jantar'; return 'lanche'}
   function enforceCompatibility(kind, items){
-    if(kind==='lanche'){ // sem feijão em lanche
-      for(let i=0;i<items.length;i++){ const f=getFood(items[i].id); if(f && isBean(f)){ items.splice(i,1); break; } }
-      return items;
-    }
-    // almoço/jantar
+    if(kind==='lanche'){ for(let i=0;i<items.length;i++){ const f=getFood(items[i].id); if(f && isBean(f)){ items.splice(i,1); break; } } return items; }
     let hasBean=-1, fishIdx=-1, dairyIdx=-1;
     items.forEach((it,idx)=>{ const f=getFood(it.id); if(!f) return; if(isBean(f)) hasBean=idx; if(isFishOrTuna(f)) fishIdx=idx; if(isDairy(f)) dairyIdx=idx; });
-    if(hasBean>-1 && fishIdx>-1){ // troca feijão por carbo base
+    if(hasBean>-1 && fishIdx>-1){
       const prefs=State.load(LS.prefs)||{tags_incluir:[]}; const pool=pickPoolByFamily('Carbo',prefs,null);
       const rice= pool.find(x=>sf(x.name).includes('arroz')) || pool[0]; if(rice){ items[hasBean]={id:rice.id,name:rice.name,family:'Carbo',state:rice.state,g:items[hasBean].g,locked:false}; }
     }
-    if(hasBean>-1 && dairyIdx>-1){ // troca laticínio por proteína não-láctea
+    if(hasBean>-1 && dairyIdx>-1){
       const prefs=State.load(LS.prefs)||{tags_incluir:[]}; const pool=pickPoolByFamily('Proteína',prefs,null);
       const fr= pool.find(x=>!isDairy(x)) || pool[0]; if(fr){ items[dairyIdx]={id:fr.id,name:fr.name,family:'Proteína',state:fr.state,g:items[dairyIdx].g,locked:false}; }
     }
     return items;
   }
 
-  /* ===== Construção do plano ===== */
+  /* ====== plano ====== */
   function buildPlan(meta,preset,prefs){ const plan={meta_kcal:meta,preset_id:preset.id,meals:[]}; Memory.clear();
     for(const m of (preset.meals||[])){
       const kcalMeal= meta*(m.kcal_frac||0.25); const tgt=mealTargets(kcalMeal, m.macro_ratio||{P:.3,C:.45,G:.25}); const kind=mealKind(m.name||''); const items=[];
@@ -309,10 +279,9 @@
   }
 
   function regenerateDay(plan,preset,prefs){ Memory.clear(); for(const m of plan.meals){ const kind=mealKind(m.name); const tgt=m.target; const newItems=[]; for(const it of m.items){ if(it.locked){ newItems.push(it); Memory.mark(it.id); continue;} const pool=pickPoolByFamily(it.family,prefs,it.state); if(!pool.length){ newItems.push(it); continue;} const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt); newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);} enforceCompatibility(kind,newItems); m.items=newItems; adjustMealToTarget(m);} adjustDayToMeta(plan); return plan; }
+  function regenerateMeal(plan,mealIdx,prefs){ const m=plan.meals[mealIdx]; Memory.clear(); const tgt=m.target; const kind=mealKind(m.name); const newItems=[]; for(const it of m.items){ if(it.locked){ newItems.push(it); Memory.mark(it.id); continue;} const pool=pickPoolByFamily(it.family,prefs,it.state); if(!pool.length){ newItems.push(it); continue;} const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt); newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:it.state||chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);} enforceCompatibility(kind,newItems); m.items=newItems; adjustMealToTarget(m); adjustDayToMeta(plan); return plan; }
 
-  function regenerateMeal(plan,mealIdx,prefs){ const m=plan.meals[mealIdx]; Memory.clear(); const tgt=m.target; const kind=mealKind(m.name); const newItems=[]; for(const it of m.items){ if(it.locked){ newItems.push(it); Memory.mark(it.id); continue;} const pool=pickPoolByFamily(it.family,prefs,it.state); if(!pool.length){ newItems.push(it); continue;} const chosen=weightedPick(pool,x=>x.__w||1); const grams=gramsForTargets(chosen,tgt); newItems.push({id:chosen.id,name:chosen.name,family:it.family,state:chosen.state,g:grams,locked:false}); Memory.mark(chosen.id);} enforceCompatibility(kind,newItems); m.items=newItems; adjustMealToTarget(m); adjustDayToMeta(plan); return plan; }
-
-  /* ===== Presets filtrados pelo objetivo ===== */
+  /* ====== presets filtrados ====== */
   function isPresetAllowedForGoal(preset, goal){
     const name = String(preset.name||'').toLowerCase();
     const isCutLike  = /cut|secar|defini[cç][aã]o|low[- ]?carb/.test(name);
@@ -322,7 +291,7 @@
     return true;
   }
 
-  /* ===== Render ===== */
+  /* ====== render ====== */
   function pctDev(v,t){if(!t) return 0; return Math.round(((v-t)/t)*100)}
   function devTxt(p){return (Math.abs(p)<=2?'±2%': (p>0?('+'+p+'%'):(p+'%')))}
 
@@ -330,7 +299,6 @@
     const box=document.getElementById('presetList'); box.innerHTML='';
     const prof = readProfile();
     const filtered = (Data.presets||[]).filter(p => isPresetAllowedForGoal(p, prof.objetivo));
-
     const gi = document.getElementById('goalInfo');
     if (gi) {
       gi.textContent = prof.objetivo==='cut'
@@ -367,7 +335,7 @@
       const td=tdeeFrom(bmr,prof.atividade); const meta=targetFrom(td,prof.objetivo);
       showCalc(bmr,td,meta);
       const prefs=State.load(LS.prefs)||{tags_incluir:[],tags_evitar:[],var:45};
-      const plan=buildPlan(meta,p,prefs); State.save(LS.plan,plan); renderPlanner(plan); showStep(4);
+      const plan=buildPlan(meta,p,prefs); State.save(LS.plan,plan); renderPlanner(plan); showStep(3);
     }));
   }
 
@@ -411,81 +379,108 @@
 
   function showCalc(bmr,tdee,meta){ document.getElementById('calcBox').style.display='block'; document.getElementById('bmrOut').textContent=Math.round(bmr); document.getElementById('tdeeOut').textContent=Math.round(tdee); document.getElementById('targetOut').textContent=meta; }
 
-  /* ===== Pins ===== */
+  /* ====== pins ====== */
   function togglePin(mi,ii){ const plan=State.load(LS.plan); const it=plan.meals[mi].items[ii]; it.locked=!it.locked; State.save(LS.plan,plan); renderPlanner(plan); }
 
-  /* ===== SWAP ===== */
-  let SWAP=null; function openSwap(plan,mi,ii){ SWAP={plan,mi,ii}; const m=plan.meals[mi], it=m.items[ii]; document.getElementById('swapHint').innerHTML=`Equivalentes para <b>${it.family}</b> (prioriza estado <b>${it.state||'-'}</b>).`; const prefs=State.load(LS.prefs)||{tags_incluir:[],var:45}; const list=pickPoolByFamily(it.family,prefs,it.state); const box=document.getElementById('swapList'); box.innerHTML=''; list.slice(0,150).forEach(f=>{ const id=`g_${f.id}`; const row=document.createElement('div'); row.className='bg-[#111827] border border-[color:var(--border)] rounded-lg p-2'; row.innerHTML=`<div class='flex items-start justify-between gap-3'><div><div class='font-medium'>${f.name}</div><div class='text-slate-400 text-xs'>Estado: ${f.state||'-'} · 100 g → P ${f.P||0}g · C ${f.C||0}g · G ${f.G||0}g</div></div><div class='flex items-center gap-2'><input id='${id}' type='number' min='1' max='1000' placeholder='g' class='field w-28'/><button class='btn-ghost btn-xs' data-use='${f.id}'>Usar</button><button class='btn btn-xs' data-useg='${f.id}'>Usar c/gramas</button></div></div>`; box.appendChild(row); }); document.getElementById('swapModal').style.display='flex'; box.querySelectorAll('button[data-use]').forEach(b=>b.addEventListener('click',()=>applySwap(+b.dataset.use,null))); box.querySelectorAll('button[data-useg]').forEach(b=>b.addEventListener('click',()=>{ const fid=+b.dataset.useg; const v=document.getElementById('g_'+fid).value; applySwap(fid, v?+v:null); })); }
+  /* ====== swap ====== */
+  let SWAP=null;
+  function openSwap(plan,mi,ii){
+    SWAP={plan,mi,ii};
+    const m=plan.meals[mi], it=m.items[ii];
+    document.getElementById('swapHint').innerHTML=`Equivalentes para <b>${it.family}</b> (prioriza estado <b>${it.state||'-'}</b>).`;
+    const prefs=State.load(LS.prefs)||{tags_incluir:[],var:45};
+    const list=pickPoolByFamily(it.family,prefs,it.state);
+    const box=document.getElementById('swapList'); box.innerHTML='';
+    list.slice(0,150).forEach(f=>{
+      const id=`g_${f.id}`;
+      const row=document.createElement('div'); row.className='bg-[#111827] border border-[color:var(--border)] rounded-lg p-2';
+      row.innerHTML=`<div class='flex items-start justify-between gap-3'>
+        <div><div class='font-medium'>${f.name}</div>
+          <div class='text-slate-400 text-xs'>Estado: ${f.state||'-'} · 100 g → P ${f.P||0}g · C ${f.C||0}g · G ${f.G||0}g</div></div>
+        <div class='flex items-center gap-2'>
+          <input id='${id}' type='number' min='1' max='1000' placeholder='g' class='field w-28'/>
+          <button class='btn-ghost btn-xs' data-use='${f.id}'>Usar</button>
+          <button class='btn btn-xs' data-useg='${f.id}'>Usar c/gramas</button>
+        </div></div>`;
+      box.appendChild(row);
+    });
+    document.getElementById('swapModal').style.display='flex';
+    box.querySelectorAll('button[data-use]').forEach(b=>b.addEventListener('click',()=>applySwap(+b.dataset.use,null)));
+    box.querySelectorAll('button[data-useg]').forEach(b=>b.addEventListener('click',()=>{ const fid=+b.dataset.useg; const v=document.getElementById('g_'+fid).value; applySwap(fid, v?+v:null); }));
+  }
   function closeSwap(){ document.getElementById('swapModal').style.display='none'; SWAP=null; }
   document.getElementById('btnCloseSwap').addEventListener('click',closeSwap);
-  function applySwap(foodId, grams){ if(!SWAP) return; const {plan,mi,ii}=SWAP; const m=plan.meals[mi]; const tgt=m.target; const chosen=getFood(foodId); if(!chosen) return; if(!grams||grams<=0){ const others=m.items.filter((_,k)=>k!==ii); const partial=sumMeal(others); const remaining={kcal:Math.max(tgt.kcal-partial.kcal,0),P:Math.max(tgt.P-partial.P,0),C:Math.max(tgt.C-partial.C,0),G:Math.max(tgt.G-partial.G,0)}; grams=gramsForTargets(chosen,remaining); } const clamp=(f,g)=> isFamily(f,'Gordura')?Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax):Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax); grams=Math.round(clamp(chosen,grams)); m.items[ii]={id:chosen.id,name:chosen.name,family:chosen.family,state:chosen.state,g:grams,locked:false}; enforceCompatibility(mealKind(m.name), m.items); adjustMealToTarget(m); adjustDayToMeta(plan); State.save(LS.plan,plan); renderPlanner(plan); closeSwap(); }
 
-  /* ===== UI Utils ===== */
+  function applySwap(foodId, grams){
+    if(!SWAP) return; const {plan,mi,ii}=SWAP;
+    const m=plan.meals[mi]; const tgt=m.target; const chosen=getFood(foodId); if(!chosen) return;
+    if(!grams||grams<=0){
+      const others=m.items.filter((_,k)=>k!==ii); const partial=sumMeal(others);
+      const remaining={kcal:Math.max(tgt.kcal-partial.kcal,0),P:Math.max(tgt.P-partial.P,0),C:Math.max(tgt.C-partial.C,0),G:Math.max(tgt.G-partial.G,0)};
+      grams=gramsForTargets(chosen,remaining);
+    }
+    const clamp=(f,g)=> isFamily(f,'Gordura')?Math.min(Math.max(g,CAPS.oilMin),CAPS.oilMax):Math.min(Math.max(g,CAPS.solidMin),CAPS.solidMax);
+    grams=Math.round(clamp(chosen,grams));
+    m.items[ii]={id:chosen.id,name:chosen.name,family:chosen.family,state:chosen.state,g:grams,locked:false};
+    enforceCompatibility(mealKind(m.name), m.items); adjustMealToTarget(m); adjustDayToMeta(plan);
+    State.save(LS.plan,plan); renderPlanner(plan); closeSwap();
+  }
+
+  /* ====== util ====== */
   function readProfile(){ return { sexo:document.getElementById('sx').value, idade:+document.getElementById('age').value, altura_cm:+document.getElementById('h').value, peso_kg:+document.getElementById('w').value, atividade:document.getElementById('act').value, objetivo:document.getElementById('goal').value } }
-  function gatherFilters(){ const inc=[]; document.querySelectorAll('#s3 input[type=checkbox]').forEach(b=>b.checked&&inc.push(b.value)); const prefs=State.load(LS.prefs)||{tags_incluir:[],tags_evitar:[],var:45}; return {tags_incluir:inc, tags_evitar:prefs.tags_evitar||[], equivalentes_estado:true, var:prefs.var||45}; }
 
   async function exportPNG(){
     const node = document.getElementById('plannerWrap');
     try{
-      const scale = 2;
-      const style = {
-        transform: `scale(${scale})`,
-        transformOrigin: 'top left',
-        width: node.scrollWidth + 'px',
-        height: node.scrollHeight + 'px',
-        backgroundColor: '#0a0f1c'
-      };
-      const dataUrl = await window.domtoimage.toPng(node, {
-        bgcolor: '#0a0f1c',
-        quality: 1,
-        style
+      // html2canvas (preferido): sem transform, escala 2
+      const canvas = await html2canvas(node, {
+        backgroundColor: '#0a0f1c',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        windowWidth: document.documentElement.clientWidth
       });
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = 'FitPlan_' + new Date().toISOString().slice(0,10) + '.png';
-      a.click();
+      const blob = await new Promise(res=>canvas.toBlob(res, 'image/png'));
+      if(blob){
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png'; a.click(); URL.revokeObjectURL(url);
+        return;
+      }
+      throw new Error('no-blob');
     }catch(e){
-      alert('Falha ao gerar imagem');
-      console.error('exportPNG (dom-to-image) erro', e);
+      // fallback dom-to-image-more, sem transform
+      try{
+        const dataUrl = await window.domtoimage.toPng(node, {bgcolor:'#0a0f1c',quality:1,style:{transform:'none',transformOrigin:'top left'}});
+        const a = document.createElement('a'); a.href=dataUrl; a.download='FitPlan_'+new Date().toISOString().slice(0,10)+'.png'; a.click();
+      }catch(e2){
+        alert('Falha ao gerar imagem'); console.error('exportPNG erro', e2);
+      }
     }
   }
 
-  /* ===== Eventos ===== */
-  ;[1,2,3,4,5].forEach(i=>document.getElementById('st'+i).addEventListener('click',()=>showStep(i)));
-  document.getElementById('next1').addEventListener('click',()=>{ renderPresets(); showStep(2); }); // garante filtro
+  /* ====== eventos ====== */
+  ;[1,2,3].forEach(i=>document.getElementById('st'+i).addEventListener('click',()=>showStep(i)));
+  document.getElementById('next1').addEventListener('click',()=>{ renderPresets(); showStep(2); });
   document.getElementById('prev2').addEventListener('click',()=>showStep(1));
-  // Pular o passo 3 por padrão:
-  document.getElementById('next2').addEventListener('click',()=>showStep(4));
-  // Se quiser manter o 3, troque a linha acima por: showStep(3)
+  document.getElementById('next2').addEventListener('click',()=>showStep(3));
   document.getElementById('prev3').addEventListener('click',()=>showStep(2));
-  document.getElementById('next3').addEventListener('click',()=>showStep(4));
-  document.getElementById('prev4').addEventListener('click',()=>showStep(3));
-  document.getElementById('next4').addEventListener('click',()=>showStep(5));
-  document.getElementById('prev5').addEventListener('click',()=>showStep(4));
 
   document.getElementById('btnCalc').addEventListener('click',()=>{ const p=readProfile(); const b=bmrMifflin(p.sexo,p.peso_kg,p.altura_cm,p.idade); const td=tdeeFrom(b,p.atividade); const meta=targetFrom(td,p.objetivo); showCalc(b,td,meta); });
   document.getElementById('btnSaveProfile').addEventListener('click',()=>State.save(LS.profile,readProfile()));
-  document.getElementById('btnApplyFilters').addEventListener('click',()=>{ const prefs=gatherFilters(); State.save(LS.prefs,prefs); const plan=State.load(LS.plan); if(plan) renderPlanner(plan); });
-  document.getElementById('btnClearFilters').addEventListener('click',()=>{ document.querySelectorAll('#s3 input[type=checkbox]').forEach(b=>b.checked=false); const prefs=State.load(LS.prefs)||{}; prefs.tags_incluir=[]; State.save(LS.prefs,prefs); const plan=State.load(LS.plan); if(plan) renderPlanner(plan); });
-  document.getElementById('varSlider').addEventListener('input',e=>{ document.getElementById('varOut').textContent=e.target.value+'%'; const prefs=State.load(LS.prefs)||{tags_incluir:[],tags_evitar:[]}; prefs.var=+e.target.value; State.save(LS.prefs,prefs); });
-
-  document.getElementById('goal').addEventListener('change', ()=>{ renderPresets(); }); // re-filtra ao trocar objetivo
+  document.getElementById('goal').addEventListener('change', ()=>{ renderPresets(); });
 
   document.getElementById('btnExportPNG').addEventListener('click',exportPNG);
-  document.getElementById('btnExportPNG2').addEventListener('click',exportPNG);
   document.getElementById('btnSavePlan').addEventListener('click',()=>{ const plan=State.load(LS.plan); if(!plan) return; const blob=new Blob([JSON.stringify(plan,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='meu_plano.json'; a.click(); URL.revokeObjectURL(url); });
-  document.getElementById('btnSavePlan2').addEventListener('click',()=>document.getElementById('btnSavePlan').click());
-  document.getElementById('importPlan').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ const obj=JSON.parse(fr.result); State.save(LS.plan,obj); renderPlanner(obj); showStep(4);}catch{ alert('Arquivo inválido'); } }; fr.readAsText(f); });
-  document.getElementById('btnRegenDay').addEventListener('click',()=>{ const plan=State.load(LS.plan); if(!plan) return; const prefs=State.load(LS.prefs)||{tags_incluir:[],var:45}; const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0]; regenerateDay(plan,preset,prefs); State.save(LS.plan,plan); renderPlanner(plan); });
+  document.getElementById('importPlan').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ const obj=JSON.parse(fr.result); State.save(LS.plan,obj); renderPlanner(obj); showStep(3);}catch{ alert('Arquivo inválido'); } }; fr.readAsText(f); });
+  document.getElementById('btnRegenDay').addEventListener('click',()=>{ const plan=State.load(LS.plan); if(!plan) return; const prefs={tags_incluir:[],var:45}; const preset=Data.presets.find(p=>p.id===plan.preset_id)||Data.presets[0]; regenerateDay(plan,preset,prefs); State.save(LS.plan,plan); renderPlanner(plan); });
 
-  /* ===== Boot ===== */
+  /* ====== boot ====== */
   (async function boot(){
     const prof=State.load(LS.profile);
     if(prof){ document.getElementById('sx').value=prof.sexo; document.getElementById('age').value=prof.idade; document.getElementById('h').value=prof.altura_cm; document.getElementById('w').value=prof.peso_kg; document.getElementById('act').value=prof.atividade; document.getElementById('goal').value=prof.objetivo; }
     const files=await loadManifest(); await loadFoods(files); await loadPresets(); renderPresets();
-    const plan=State.load(LS.plan); if(plan){ renderPlanner(plan); showStep(4); }
-    // Ocultar o step 3 visualmente (opcional):
-    document.getElementById('st3').style.display='none';
+    const plan=State.load(LS.plan); if(plan){ renderPlanner(plan); showStep(3); }
   })();
   </script>
 </body>
