@@ -247,12 +247,13 @@ function clamp(x,min,max){ return Math.max(min, Math.min(max, x)); }
 function sum(arr, k){ return arr.reduce((a,b)=>a+(k?b[k]:b),0); }
 
 /* ===========================
-   Carregamento dos dados (ROBUSTO) - CORRIGIDO O FETCH
+   Carregamento dos dados (ROBUSTO) - CORRIGIDO O FETCH com /data/
    =========================== */
 async function loadAll(){
   // Manifesto e alimentos
   try {
-    const man = await fetch('foods_manifest.json').then(r=>r.json());
+    // CORREÇÃO: Busca o manifesto no diretório base, onde index.html está
+    const man = await fetch('foods_manifest.json').then(r=>r.json()); 
     state.manifest = man;
     const files = man.files || [];
     const foods = {};
@@ -260,13 +261,13 @@ async function loadAll(){
     
     // Processa cada arquivo listado no manifest
     for(const path of files){
-        const family = path.replace(/foods_|.json/g,'')
+        const family = path.replace(/data\/foods_|.json/g,'') // Limpeza para obter o nome da família
                            .replace('proteina','Proteína')
                            .replace('carbo','Carbo')
                            .replace('gordura','Gordura')
                            .replace('misto','Misto');
         
-        // CORREÇÃO: Usa o caminho exato do manifest (path) para o fetch
+        // CORREÇÃO: O path agora inclui 'data/', conforme definido no novo foods_manifest.json
         promises.push(fetch(path).then(r=>r.json()).then(data => {
             foods[family] = data;
         }));
@@ -284,12 +285,14 @@ async function loadAll(){
     state.foodsIndex = byName;
   } catch(e) {
     console.error('Falha ao carregar alimentos do JSON:', e);
-    alertMsg('🔴 Erro: Não foi possível carregar os dados dos alimentos. Verifique os arquivos JSON.');
+    alertMsg('🔴 Erro: Não foi possível carregar os dados dos alimentos. Verifique os arquivos JSON. (Erro no Manifest/Alimentos)');
+    return; // Para o fluxo se o carregamento do alimento falhar
   }
 
   // PRESETS ROBUSTO
   try {
-    const raw = await fetch('presets.json').then(r=>r.json());
+    // CORREÇÃO: Busca o presets.json DENTRO da pasta data/
+    const raw = await fetch('data/presets.json').then(r=>r.json());
     let presets = Array.isArray(raw) ? raw : (raw.presets || raw.items || raw.data || []);
     if (!Array.isArray(presets)) presets = [];
 
@@ -308,6 +311,7 @@ async function loadAll(){
     state.presets = presets;
   } catch(e) {
     console.error('Falha ao carregar presets do JSON:', e);
+    alertMsg('🔴 Erro: Não foi possível carregar os presets. (Erro no Presets)');
   }
 
   console.info('[load] presets carregados:', state.presets.map(p=>p.slug));
@@ -387,7 +391,7 @@ function filterPresetsByGoal(){ // Função mantida, mas o filtro por goal foi d
   grid.innerHTML = '';
 
   if (!Array.isArray(state.presets) || state.presets.length === 0) {
-    grid.innerHTML = `<div class="muted">🔴 Nenhum modelo (preset) foi encontrado ou carregado. Verifique <code>presets.json</code>.</div>`;
+    grid.innerHTML = `<div class="muted">🔴 Nenhum modelo (preset) foi encontrado ou carregado. Verifique <code>data/presets.json</code>.</div>`;
     return;
   }
   
@@ -395,7 +399,7 @@ function filterPresetsByGoal(){ // Função mantida, mas o filtro por goal foi d
   const allowed = state.presets.slice(); 
   
   if (allowed.length === 0) {
-    grid.innerHTML = `<div class="muted">Nenhum modelo disponível. Verifique o <code>presets.json</code>.</div>`;
+    grid.innerHTML = `<div class="muted">Nenhum modelo disponível. Verifique o <code>data/presets.json</code>.</div>`;
     return;
   }
 
