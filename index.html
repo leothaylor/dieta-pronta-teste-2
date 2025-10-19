@@ -247,28 +247,40 @@ function clamp(x,min,max){ return Math.max(min, Math.min(max, x)); }
 function sum(arr, k){ return arr.reduce((a,b)=>a+(k?b[k]:b),0); }
 
 /* ===========================
-   Carregamento dos dados (ROBUSTO) - CORRIGIDO O FETCH com /data/
+   Carregamento dos dados (ROBUSTO) - VERSÃO FINAL DE PATHING
    =========================== */
 async function loadAll(){
-  // Manifesto e alimentos
+  let man;
+  const timestamp = Date.now(); // Para evitar cache
+  
+  // 1. Tenta carregar o manifesto. Tenta primeiro na raiz, depois em /data/
   try {
-    // CORREÇÃO: Busca o manifesto no diretório base, onde index.html está
-    const man = await fetch('foods_manifest.json').then(r=>r.json()); 
+    man = await fetch(`foods_manifest.json?v=${timestamp}`).then(r=>r.json());
+  } catch(e) {
+    try {
+      man = await fetch(`data/foods_manifest.json?v=${timestamp}`).then(r=>r.json());
+    } catch(e2) {
+      console.error('Falha ao carregar foods_manifest.json em ambos os caminhos:', e2);
+      alertMsg('🔴 Erro: Não foi possível carregar o foods_manifest.json. Verifique a localização.');
+      return; 
+    }
+  }
+
+  // 2. Carrega os arquivos de alimentos a partir dos caminhos do manifesto
+  try {
     state.manifest = man;
     const files = man.files || [];
     const foods = {};
     const promises = [];
     
-    // Processa cada arquivo listado no manifest
     for(const path of files){
-        const family = path.replace(/data\/foods_|.json/g,'') // Limpeza para obter o nome da família
+        const family = path.replace(/data\/foods_|.json/g,'')
                            .replace('proteina','Proteína')
                            .replace('carbo','Carbo')
                            .replace('gordura','Gordura')
                            .replace('misto','Misto');
         
-        // CORREÇÃO: O path agora inclui 'data/', conforme definido no novo foods_manifest.json
-        promises.push(fetch(path).then(r=>r.json()).then(data => {
+        promises.push(fetch(`${path}?v=${timestamp}`).then(r=>r.json()).then(data => {
             foods[family] = data;
         }));
     }
@@ -284,15 +296,15 @@ async function loadAll(){
     }
     state.foodsIndex = byName;
   } catch(e) {
-    console.error('Falha ao carregar alimentos do JSON:', e);
+    console.error('Falha ao carregar alimentos listados no manifesto:', e);
     alertMsg('🔴 Erro: Não foi possível carregar os dados dos alimentos. Verifique os arquivos JSON. (Erro no Manifest/Alimentos)');
-    return; // Para o fluxo se o carregamento do alimento falhar
+    return;
   }
 
-  // PRESETS ROBUSTO
+  // 3. Carrega Presets
   try {
-    // CORREÇÃO: Busca o presets.json DENTRO da pasta data/
-    const raw = await fetch('data/presets.json').then(r=>r.json());
+    // CORREÇÃO: Busca o presets.json DENTRO da pasta data/ com cachebuster
+    const raw = await fetch(`data/presets.json?v=${timestamp}`).then(r=>r.json());
     let presets = Array.isArray(raw) ? raw : (raw.presets || raw.items || raw.data || []);
     if (!Array.isArray(presets)) presets = [];
 
