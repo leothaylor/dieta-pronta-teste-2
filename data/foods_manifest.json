@@ -1,9 +1,9 @@
 {
-  "version": 2,
+  "version": 3,
   "files": [
-    "foods_proteina.json",
-    "foods_carbo.json",
-    "foods_gordura.json",
-    "foods_misto.json"
+    "data/foods_proteina.json",
+    "data/foods_carbo.json",
+    "data/foods_gordura.json",
+    "data/foods_misto.json"
   ]
 }
